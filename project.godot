@@ -15,14 +15,15 @@ _global_script_class_icons={
 
 [application]
 
-config/name="godotrl"
+config/name="BAD GOBLET"
 run/main_scene="res://Game.tscn"
+boot_splash/bg_color=Color( 0, 0, 0, 1 )
 config/icon="res://icon.png"
 
 [display]
 
-window/size/width=640
-window/size/height=360
+window/size/width=400
+window/size/height=300
 window/stretch/mode="viewport"
 
 [rendering]
