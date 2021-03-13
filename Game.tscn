@@ -1,9 +1,10 @@
-[gd_scene load_steps=3 format=2]
+[gd_scene load_steps=6 format=2]
 
 [ext_resource path="res://tileset.png" type="Texture" id=1]
+[ext_resource path="res://Game.gd" type="Script" id=2]
 
 [sub_resource type="TileSet" id=1]
-0/name = "empty"
+0/name = "floor"
 0/texture = ExtResource( 1 )
 0/tex_offset = Vector2( 0, 0 )
 0/modulate = Color( 1, 1, 1, 1 )
@@ -101,10 +102,179 @@
 6/shape_one_way_margin = 0.0
 6/shapes = [  ]
 6/z_index = 0
+7/name = "wall"
+7/texture = ExtResource( 1 )
+7/tex_offset = Vector2( 0, 0 )
+7/modulate = Color( 1, 1, 1, 1 )
+7/region = Rect2( 64, 0, 16, 16 )
+7/tile_mode = 0
+7/occluder_offset = Vector2( 0, 0 )
+7/navigation_offset = Vector2( 0, 0 )
+7/shape_offset = Vector2( 0, 0 )
+7/shape_transform = Transform2D( 1, 0, 0, 1, 0, 0 )
+7/shape_one_way = false
+7/shape_one_way_margin = 0.0
+7/shapes = [  ]
+7/z_index = 0
+8/name = "troll"
+8/texture = ExtResource( 1 )
+8/tex_offset = Vector2( 0, 0 )
+8/modulate = Color( 1, 1, 1, 1 )
+8/region = Rect2( 48, 16, 16, 16 )
+8/tile_mode = 0
+8/occluder_offset = Vector2( 0, 0 )
+8/navigation_offset = Vector2( 0, 0 )
+8/shape_offset = Vector2( 0, 0 )
+8/shape_transform = Transform2D( 1, 0, 0, 1, 0, 0 )
+8/shape_one_way = false
+8/shape_one_way_margin = 0.0
+8/shapes = [  ]
+8/z_index = 0
+9/name = "orc"
+9/texture = ExtResource( 1 )
+9/tex_offset = Vector2( 0, 0 )
+9/modulate = Color( 1, 1, 1, 1 )
+9/region = Rect2( 64, 16, 16, 16 )
+9/tile_mode = 0
+9/occluder_offset = Vector2( 0, 0 )
+9/navigation_offset = Vector2( 0, 0 )
+9/shape_offset = Vector2( 0, 0 )
+9/shape_transform = Transform2D( 1, 0, 0, 1, 0, 0 )
+9/shape_one_way = false
+9/shape_one_way_margin = 0.0
+9/shapes = [  ]
+9/z_index = 0
+10/name = "floor2"
+10/texture = ExtResource( 1 )
+10/tex_offset = Vector2( 0, 0 )
+10/modulate = Color( 1, 1, 1, 1 )
+10/region = Rect2( 80, 0, 16, 16 )
+10/tile_mode = 0
+10/occluder_offset = Vector2( 0, 0 )
+10/navigation_offset = Vector2( 0, 0 )
+10/shape_offset = Vector2( 0, 0 )
+10/shape_transform = Transform2D( 1, 0, 0, 1, 0, 0 )
+10/shape_one_way = false
+10/shape_one_way_margin = 0.0
+10/shapes = [  ]
+10/z_index = 0
+11/name = "floor3"
+11/texture = ExtResource( 1 )
+11/tex_offset = Vector2( 0, 0 )
+11/modulate = Color( 1, 1, 1, 1 )
+11/region = Rect2( 96, 0, 16, 16 )
+11/tile_mode = 0
+11/occluder_offset = Vector2( 0, 0 )
+11/navigation_offset = Vector2( 0, 0 )
+11/shape_offset = Vector2( 0, 0 )
+11/shape_transform = Transform2D( 1, 0, 0, 1, 0, 0 )
+11/shape_one_way = false
+11/shape_one_way_margin = 0.0
+11/shapes = [  ]
+11/z_index = 0
+12/name = "empty"
+12/texture = ExtResource( 1 )
+12/tex_offset = Vector2( 0, 0 )
+12/modulate = Color( 1, 1, 1, 1 )
+12/region = Rect2( 112, 0, 16, 16 )
+12/tile_mode = 0
+12/occluder_offset = Vector2( 0, 0 )
+12/navigation_offset = Vector2( 0, 0 )
+12/shape_offset = Vector2( 0, 0 )
+12/shape_transform = Transform2D( 1, 0, 0, 1, 0, 0 )
+12/shape_one_way = false
+12/shape_one_way_margin = 0.0
+12/shapes = [  ]
+12/z_index = 0
+
+[sub_resource type="DynamicFontData" id=2]
+antialiased = false
+font_path = "res://m5x7.ttf"
+
+[sub_resource type="DynamicFont" id=3]
+font_data = SubResource( 2 )
 
 [node name="Game" type="Node2D"]
+script = ExtResource( 2 )
 
 [node name="TileMap" type="TileMap" parent="."]
 tile_set = SubResource( 1 )
 cell_size = Vector2( 16, 16 )
 format = 1
+tile_data = PoolIntArray( -327695, 2, 0, -327694, 1, 0, -327693, 1, 0, -327692, 2, 0, -327691, 1, 0, -327690, 1, 0, -327689, 3, 0, -327688, 3, 0, -327687, 1, 0, -327686, 1, 0, -327685, 1, 0, -262159, 1, 0, -262158, 7, 0, -262157, 7, 0, -262156, 7, 0, -262155, 7, 0, -262154, 7, 0, -262153, 7, 0, -262152, 7, 0, -262151, 7, 0, -262150, 7, 0, -262149, 1, 0, -196623, 1, 0, -196622, 7, 0, -196621, 12, 0, -196620, 12, 0, -196619, 12, 0, -196618, 12, 0, -196617, 12, 0, -196616, 12, 0, -196615, 12, 0, -196614, 7, 0, -196613, 2, 0, -131087, 1, 0, -131086, 7, 0, -131085, 12, 0, -131084, 12, 0, -131083, 12, 0, -131082, 12, 0, -131081, 12, 0, -131080, 12, 0, -131079, 12, 0, -131078, 7, 0, -131077, 2, 0, -65551, 2, 0, -65550, 7, 0, -65549, 12, 0, -65548, 12, 0, -65547, 12, 0, -65546, 12, 0, -65545, 6, 0, -65544, 8, 0, -65543, 12, 0, -65542, 7, 0, -65541, 3, 0, -15, 1, 0, -14, 7, 0, -13, 12, 0, -12, 12, 0, -11, 12, 0, -10, 12, 0, -9, 12, 0, -8, 12, 0, -7, 12, 0, -6, 7, 0, -5, 1, 0, 65521, 1, 0, 65522, 7, 0, 65523, 7, 0, 65524, 7, 0, 65525, 7, 0, 65526, 7, 0, 65527, 7, 0, 65528, 5, 0, 65529, 7, 0, 65530, 7, 0, 65531, 2, 0, 131057, 3, 0, 131058, 1, 0, 131059, 1, 0, 131060, 2, 0, 131061, 1, 0, 131062, 3, 0, 131063, 3, 0, 131064, 12, 0, 131065, 1, 0, 131066, 1, 0, 131067, 2, 0, 196599, 1, 0, 196600, 12, 0, 196601, 1, 0, 262135, 1, 0, 262136, 12, 0, 262137, 1, 0, 262138, 1, 0, 262139, 3, 0, 262140, 1, 0, 262141, 1, 0, 262142, 2, 0, 262143, 1, 0, 196608, 1, 0, 196609, 1, 0, 196610, 2, 0, 196611, 3, 0, 327671, 3, 0, 327672, 12, 0, 327673, 12, 0, 327674, 12, 0, 327675, 9, 0, 327676, 12, 0, 327677, 9, 0, 327678, 12, 0, 327679, 12, 0, 262144, 12, 0, 262145, 12, 0, 262146, 12, 0, 262147, 3, 0, 393207, 1, 0, 393208, 2, 0, 393209, 2, 0, 393210, 1, 0, 393211, 1, 0, 393212, 3, 0, 393213, 3, 0, 393214, 1, 0, 393215, 1, 0, 327680, 3, 0, 327681, 3, 0, 327682, 12, 0, 327683, 3, 0, 393217, 1, 0, 393218, 12, 0, 393219, 1, 0, 458753, 3, 0, 458754, 12, 0, 458755, 1, 0 )
+
+[node name="Camera2D" type="Camera2D" parent="."]
+current = true
+offset_v = 1.0
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+follow_viewport_enable = true
+
+[node name="ColorRect" type="ColorRect" parent="CanvasLayer"]
+margin_left = -320.0
+margin_top = -144.0
+margin_right = 320.0
+margin_bottom = -128.0
+color = Color( 0, 0, 0, 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="ColorRect2" type="ColorRect" parent="CanvasLayer"]
+margin_left = -320.0
+margin_top = 144.0
+margin_bottom = 208.0
+color = Color( 0, 0, 0, 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Health" type="Label" parent="CanvasLayer"]
+margin_left = -304.0
+margin_top = -144.0
+margin_right = -208.0
+margin_bottom = -128.0
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 1, 1, 1, 1 )
+text = "Health: 9"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Level" type="Label" parent="CanvasLayer"]
+margin_left = -208.0
+margin_top = -144.0
+margin_right = -112.0
+margin_bottom = -128.0
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 1, 1, 1, 1 )
+text = "Level: 2"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Score" type="Label" parent="CanvasLayer"]
+margin_left = -112.0
+margin_top = -144.0
+margin_right = -16.0
+margin_bottom = -128.0
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 1, 1, 1, 1 )
+text = "Score: 0"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Log" type="Label" parent="CanvasLayer"]
+margin_left = -304.0
+margin_top = 144.0
+margin_right = -136.0
+margin_bottom = 208.0
+custom_fonts/font = SubResource( 3 )
+custom_colors/font_color = Color( 1, 1, 1, 1 )
+text = "> HERO hits TROLL for 3 damage
+> TROLL hits HERO for 1 damage
+> HERO misses"
+__meta__ = {
+"_edit_use_anchors_": false
+}
