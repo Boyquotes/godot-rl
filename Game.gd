@@ -42,10 +42,13 @@ onready var sound_ladder = $Player/SoundLadder
 var game_state
 var player_tile
 var score = 0
+var window_scale = 1
+var screen_size = OS.get_screen_size()
+var window_size = OS.get_window_size()
 
 # Called when the node enters the scene tree for the first time ----------------
 func _ready():
-	OS.set_window_size(Vector2(400,300))
+	OS.set_window_size(Vector2(400 * window_scale,300 * window_scale))
 	game_state = "title"
 	$CanvasLayer/Title.visible = true
 	
@@ -54,26 +57,41 @@ func _input(event):
 	if !event.is_pressed():
 		return
 	
-	if event.is_action("Up"):
-		try_move(0, -1)
-	if event.is_action("Down"):
-		try_move(0, 1)
-	if event.is_action("Left"):
-		try_move(-1, 0)
-	if event.is_action("Right"):
-		try_move(1, 0)
-	if event.is_action("Quit"):
-		get_tree().quit()
-	if event.is_action("Start"):
-		## TODO: make this possible only during game over state
-		if game_state != "gameplay":
+	# gameplay-only inputs
+	if game_state == "gameplay":
+		if event.is_action("Up"):
+			try_move(0, -1)
+		if event.is_action("Down"):
+			try_move(0, 1)
+		if event.is_action("Left"):
+			try_move(-1, 0)
+		if event.is_action("Right"):
+			try_move(1, 0)
+	
+	# inputs outside of gameplay only
+	if game_state == "title" or "end":
+		if event.is_action("Start"):
 			initialize_game()
 	
+	# global inputs
+	if event.is_action("Quit"):
+		get_tree().quit()
 		
+	if event.is_action("Debug"):
+		$CanvasLayer/Debug.visible = !$CanvasLayer/Debug.visible
+	
+	if event.is_action("Zoom"):
+		if window_scale == 1:
+			window_scale = 2
+		else:
+			window_scale = 1
+		OS.set_window_size(Vector2(400 * window_scale,300 * window_scale))
+
 # function to initialize / restart the entire game -----------------------------
 
 func initialize_game():
 	game_state = "gameplay"
+
 	randomize()
 	level_num = 0
 	score = 0
@@ -96,20 +114,22 @@ func try_move(dx, dy):
 		# if floor, just update to go there
 		Tile.Floor:
 			player_tile = Vector2(x, y)
-			# TO DO: play walk sound
+			# play walk sound
 			sound_walk.play()
 		
 		# if door, turn it into floor to "open"
 		Tile.Door:
 			set_tile(x, y, Tile.Floor)
-			# TO DO: play door open sound
+			# play door open sound
 			sound_door.play()
 			
 		# if ladder, increase level count, add score, etc.
 		Tile.Ladder:
+			# play ladder sound
 			sound_ladder.play()
 			level_num += 1
 			score += 20
+			$CanvasLayer/Score.text = "Score: " + str(score)
 			if level_num < LEVEL_SIZES.size():
 				build_level()
 			else:
@@ -168,7 +188,7 @@ func build_level():
 	
 	# update ui
 	if level_num > 0:
-		$CanvasLayer/Level.text = "Basement Level" + str(level_num)
+		$CanvasLayer/Level.text = "Basement Level " + str(level_num)
 	else:
 		$CanvasLayer/Level.text = "Ground Floor"
 	
@@ -407,5 +427,5 @@ func set_tile(x, y, type):
 	
 	
 # Called every frame. 'delta' is the elapsed time since the previous frame.
-#func _process(delta):
-#	pass
+func _process(delta):
+	$CanvasLayer/Debug.text = str(game_state) + " * " + str(rooms.size()) + " rooms"

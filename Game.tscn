@@ -167,17 +167,17 @@ margin_left = 10.0
 margin_right = 90.0
 margin_bottom = 20.0
 rect_pivot_offset = Vector2( -80, 0 )
-text = "Health:"
+text = "Health: 999"
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
 [node name="Score" type="Label" parent="CanvasLayer"]
-margin_left = 90.0
-margin_right = 170.0
+margin_left = 110.0
+margin_right = 190.0
 margin_bottom = 20.0
 rect_pivot_offset = Vector2( -80, 0 )
-text = "Score:"
+text = "Score: 0"
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -246,9 +246,9 @@ __meta__ = {
 
 [node name="Label" type="Label" parent="CanvasLayer/Title"]
 margin_left = 80.0
-margin_top = 80.0
+margin_top = 70.0
 margin_right = 320.0
-margin_bottom = 100.0
+margin_bottom = 90.0
 text = "B A D   G O B L E T"
 align = 1
 
@@ -270,12 +270,28 @@ align = 1
 
 [node name="Label2" type="Label" parent="CanvasLayer/Title"]
 margin_left = 100.0
-margin_top = 120.0
+margin_top = 110.0
 margin_right = 320.0
-margin_bottom = 180.0
+margin_bottom = 192.0
 text = "* Move with arrows or WASD
 * Walk to fight / collect / use
+* ESC to exit
+* F to zoom window 2x
 * Have fun"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Debug" type="Label" parent="CanvasLayer"]
+visible = false
+margin_left = 10.0
+margin_top = 240.0
+margin_right = 160.0
+margin_bottom = 300.0
+rect_pivot_offset = Vector2( -80, 0 )
+custom_colors/font_color = Color( 1, 0, 0, 1 )
+text = "Game State"
+valign = 2
 __meta__ = {
 "_edit_use_anchors_": false
 }
