@@ -6,8 +6,10 @@ const TILE_SIZE = 10
 
 const LEVEL_SIZES = [
 	Vector2(40, 30),
-	Vector2(40, 40),
-	Vector2(50, 50),
+	Vector2(60, 45),
+	Vector2(80, 60),
+	Vector2(100, 75),
+	Vector2(120, 90)
 ]
 
 const LEVEL_ROOM_COUNT = [5, 7, 9, 12, 15]
@@ -29,6 +31,7 @@ var level_size
 
 onready var tile_map = $TileMap
 onready var player = $Player
+onready var soundeffects = $Player/SoundEffects
 
 # TODO: set up player object
 
@@ -40,8 +43,7 @@ var score = 0
 # Called when the node enters the scene tree for the first time ----------------
 func _ready():
 	OS.set_window_size(Vector2(400,300))
-	randomize()
-	build_level()
+	initialize_game()
 	
 # input event handler
 func _input(event):
@@ -56,6 +58,22 @@ func _input(event):
 		try_move(-1, 0)
 	if event.is_action("Right"):
 		try_move(1, 0)
+	if event.is_action("Quit"):
+		get_tree().quit()
+	if event.is_action("Restart"):
+		## TODO: make this possible only during game over state
+		initialize_game()
+	
+		
+# function to initialize / restart the entire game -----------------------------
+
+func initialize_game():
+	randomize()
+	level_num = 0
+	score = 0
+	$CanvasLayer/Win.visible = false;
+	$CanvasLayer/Lose.visible = false;
+	build_level()
 		
 func try_move(dx, dy):
 	var x = player_tile.x + dx
@@ -72,11 +90,23 @@ func try_move(dx, dy):
 		Tile.Floor:
 			player_tile = Vector2(x, y)
 			# TO DO: play walk sound
+			soundeffects.play()
 		
 		# if door, turn it into floor to "open"
 		Tile.Door:
 			set_tile(x, y, Tile.Floor)
 			# TO DO: play door open sound
+			
+		# if ladder, increase level count, add score, etc.
+		Tile.Ladder:
+			level_num += 1
+			score += 20
+			if level_num < LEVEL_SIZES.size():
+				build_level()
+			else:
+				# no more levels left, you win
+				score += 1000
+				$CanvasLayer/Win.visible = true
 			
 	update_visuals()
 
@@ -116,6 +146,16 @@ func build_level():
 	var player_y = start_room.position.y + 1 + randi() % int(start_room.size.y - 2)
 	player_tile = Vector2(player_x, player_y)
 	update_visuals()
+	
+	# place end ladder
+	
+	var end_room = rooms.back()
+	var ladder_x = end_room.position.x + 1 + randi() % int(end_room.size.x - 2)
+	var ladder_y = end_room.position.y + 1 + randi() % int(end_room.size.y - 2)
+	set_tile(ladder_x, ladder_y, Tile.Ladder)
+	
+	# update ui
+	$CanvasLayer/Level.text = "Level: " + str(level_num)
 	
 func update_visuals():
 	# convert tile coords into pixel coords
@@ -342,10 +382,8 @@ func set_tile(x, y, type):
 	map[x][y] = type
 	tile_map.set_cell(x,y,type)
 	
-	
-	
-	
-	
+# function to play various sound effects ---------------------------------------
+
 	
 	
 	
