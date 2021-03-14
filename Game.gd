@@ -6,15 +6,15 @@ const TILE_SIZE = 10
 
 const LEVEL_SIZES = [
 	Vector2(40, 30),
-	Vector2(60, 45),
-	Vector2(80, 60),
-	Vector2(100, 75),
-	Vector2(120, 90)
+	Vector2(50, 40),
+	Vector2(60, 50),
+	Vector2(70, 60),
+	Vector2(80, 70)
 ]
 
 const LEVEL_ROOM_COUNT = [5, 7, 9, 12, 15]
-const MIN_ROOM_DIMENSION = 6
-const MAX_ROOM_DIMENSION = 10
+const MIN_ROOM_DIMENSION = 5
+const MAX_ROOM_DIMENSION = 9
 
 # enum to get tiles by index ---------------------------------------------------
 enum Tile {Player, Stone, Floor, Ladder, Wall, Door}
@@ -30,20 +30,24 @@ var level_size
 # ref via scene node name, onready to reference only after setup
 
 onready var tile_map = $TileMap
+onready var visibility_map = $VisibilityMap
 onready var player = $Player
-onready var soundeffects = $Player/SoundEffects
+onready var sound_walk = $Player/SoundWalk
+onready var sound_door = $Player/SoundDoor
+onready var sound_ladder = $Player/SoundLadder
 
-# TODO: set up player object
 
 # game states ------------------------------------------------------------------
 
+var game_state
 var player_tile
 var score = 0
 
 # Called when the node enters the scene tree for the first time ----------------
 func _ready():
 	OS.set_window_size(Vector2(400,300))
-	initialize_game()
+	game_state = "title"
+	$CanvasLayer/Title.visible = true
 	
 # input event handler
 func _input(event):
@@ -60,19 +64,22 @@ func _input(event):
 		try_move(1, 0)
 	if event.is_action("Quit"):
 		get_tree().quit()
-	if event.is_action("Restart"):
+	if event.is_action("Start"):
 		## TODO: make this possible only during game over state
-		initialize_game()
+		if game_state != "gameplay":
+			initialize_game()
 	
 		
 # function to initialize / restart the entire game -----------------------------
 
 func initialize_game():
+	game_state = "gameplay"
 	randomize()
 	level_num = 0
 	score = 0
-	$CanvasLayer/Win.visible = false;
-	$CanvasLayer/Lose.visible = false;
+	$CanvasLayer/Win.visible = false
+	$CanvasLayer/Lose.visible = false
+	$CanvasLayer/Title.visible = false
 	build_level()
 		
 func try_move(dx, dy):
@@ -90,15 +97,17 @@ func try_move(dx, dy):
 		Tile.Floor:
 			player_tile = Vector2(x, y)
 			# TO DO: play walk sound
-			soundeffects.play()
+			sound_walk.play()
 		
 		# if door, turn it into floor to "open"
 		Tile.Door:
 			set_tile(x, y, Tile.Floor)
 			# TO DO: play door open sound
+			sound_door.play()
 			
 		# if ladder, increase level count, add score, etc.
 		Tile.Ladder:
+			sound_ladder.play()
 			level_num += 1
 			score += 20
 			if level_num < LEVEL_SIZES.size():
@@ -107,6 +116,7 @@ func try_move(dx, dy):
 				# no more levels left, you win
 				score += 1000
 				$CanvasLayer/Win.visible = true
+				game_state = "end"
 			
 	update_visuals()
 
@@ -127,6 +137,8 @@ func build_level():
 		for y in range(level_size.y):
 			map[x].append(Tile.Stone)
 			tile_map.set_cell(x, y, Tile.Stone)
+			visibility_map.set_cell(x, y, -1)
+			## TODO: set 'visited' tiles to semi dark
 			
 	# set region but keep one tile edge of stone
 	var free_regions = [Rect2(Vector2(2, 2), level_size - Vector2(4, 4))]
@@ -155,11 +167,17 @@ func build_level():
 	set_tile(ladder_x, ladder_y, Tile.Ladder)
 	
 	# update ui
-	$CanvasLayer/Level.text = "Level: " + str(level_num)
+	if level_num > 0:
+		$CanvasLayer/Level.text = "Basement Level" + str(level_num)
+	else:
+		$CanvasLayer/Level.text = "Ground Floor"
 	
 func update_visuals():
 	# convert tile coords into pixel coords
 	player.position = player_tile * TILE_SIZE
+	
+	# determine what player can see with raycast
+	
 
 # function to connect existing rooms -------------------------------------------
 

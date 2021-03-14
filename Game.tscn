@@ -1,8 +1,11 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=9 format=2]
 
 [ext_resource path="res://tileset.png" type="Texture" id=1]
 [ext_resource path="res://Game.gd" type="Script" id=2]
 [ext_resource path="res://sound/footstep1.wav" type="AudioStream" id=3]
+[ext_resource path="res://dark.png" type="Texture" id=4]
+[ext_resource path="res://sound/door1.wav" type="AudioStream" id=5]
+[ext_resource path="res://sound/ladder1.wav" type="AudioStream" id=6]
 
 [sub_resource type="TileSet" id=1]
 0/name = "player"
@@ -90,11 +93,35 @@
 5/shapes = [  ]
 5/z_index = 0
 
+[sub_resource type="TileSet" id=2]
+0/name = "dark.png 0"
+0/texture = ExtResource( 4 )
+0/tex_offset = Vector2( 0, 0 )
+0/modulate = Color( 1, 1, 1, 1 )
+0/region = Rect2( 0, 0, 10, 10 )
+0/tile_mode = 0
+0/occluder_offset = Vector2( 0, 0 )
+0/navigation_offset = Vector2( 0, 0 )
+0/shape_offset = Vector2( 0, 0 )
+0/shape_transform = Transform2D( 1, 0, 0, 1, 0, 0 )
+0/shape_one_way = false
+0/shape_one_way_margin = 0.0
+0/shapes = [  ]
+0/z_index = 0
+
 [node name="Game" type="Node2D"]
 script = ExtResource( 2 )
 
 [node name="TileMap" type="TileMap" parent="."]
 tile_set = SubResource( 1 )
+cell_size = Vector2( 10, 10 )
+cell_quadrant_size = 10
+cell_custom_transform = Transform2D( 1, 0, 0, 1, 0, 0 )
+format = 1
+tile_data = PoolIntArray( -327691, 2, 0 )
+
+[node name="VisibilityMap" type="TileMap" parent="."]
+tile_set = SubResource( 2 )
 cell_size = Vector2( 10, 10 )
 cell_quadrant_size = 10
 cell_custom_transform = Transform2D( 1, 0, 0, 1, 0, 0 )
@@ -116,21 +143,28 @@ drag_margin_top = 0.0
 drag_margin_right = 0.0
 drag_margin_bottom = 0.0
 
-[node name="SoundEffects" type="AudioStreamPlayer2D" parent="Player"]
+[node name="SoundWalk" type="AudioStreamPlayer2D" parent="Player"]
 stream = ExtResource( 3 )
+
+[node name="SoundDoor" type="AudioStreamPlayer2D" parent="Player"]
+stream = ExtResource( 5 )
+
+[node name="SoundLadder" type="AudioStreamPlayer2D" parent="Player"]
+stream = ExtResource( 6 )
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
 [node name="Top Bar" type="ColorRect" parent="CanvasLayer"]
 margin_right = 400.0
 margin_bottom = 20.0
-color = Color( 0.0666667, 0.0666667, 0.0666667, 1 )
+color = Color( 0, 0, 0, 1 )
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
 [node name="HP" type="Label" parent="CanvasLayer"]
-margin_right = 80.0
+margin_left = 10.0
+margin_right = 90.0
 margin_bottom = 20.0
 rect_pivot_offset = Vector2( -80, 0 )
 text = "Health:"
@@ -139,8 +173,8 @@ __meta__ = {
 }
 
 [node name="Score" type="Label" parent="CanvasLayer"]
-margin_left = 80.0
-margin_right = 160.0
+margin_left = 90.0
+margin_right = 170.0
 margin_bottom = 20.0
 rect_pivot_offset = Vector2( -80, 0 )
 text = "Score:"
@@ -149,11 +183,12 @@ __meta__ = {
 }
 
 [node name="Level" type="Label" parent="CanvasLayer"]
-margin_left = 160.0
-margin_right = 240.0
+margin_left = 240.0
+margin_right = 390.0
 margin_bottom = 20.0
 rect_pivot_offset = Vector2( -80, 0 )
 text = "Level:"
+align = 2
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -199,3 +234,48 @@ text = "You died!
 Press Enter to play again."
 align = 1
 autowrap = true
+
+[node name="Title" type="ColorRect" parent="CanvasLayer"]
+visible = false
+margin_right = 400.0
+margin_bottom = 300.0
+color = Color( 0.305882, 0, 0, 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Label" type="Label" parent="CanvasLayer/Title"]
+margin_left = 80.0
+margin_top = 80.0
+margin_right = 320.0
+margin_bottom = 100.0
+text = "B A D   G O B L E T"
+align = 1
+
+[node name="Label4" type="Label" parent="CanvasLayer/Title"]
+margin_top = 270.0
+margin_right = 400.0
+margin_bottom = 301.0
+text = "v0.0.0.0.0.0.1"
+align = 2
+valign = 2
+
+[node name="Label3" type="Label" parent="CanvasLayer/Title"]
+margin_left = 80.0
+margin_top = 220.0
+margin_right = 320.0
+margin_bottom = 240.0
+text = "- Press Enter -"
+align = 1
+
+[node name="Label2" type="Label" parent="CanvasLayer/Title"]
+margin_left = 100.0
+margin_top = 120.0
+margin_right = 320.0
+margin_bottom = 180.0
+text = "* Move with arrows or WASD
+* Walk to fight / collect / use
+* Have fun"
+__meta__ = {
+"_edit_use_anchors_": false
+}
