@@ -1,9 +1,10 @@
-[gd_scene load_steps=6 format=2]
+[gd_scene load_steps=4 format=2]
 
 [ext_resource path="res://tileset.png" type="Texture" id=1]
 [ext_resource path="res://Game.gd" type="Script" id=2]
 
 [sub_resource type="TileSet" id=1]
+resource_local_to_scene = true
 0/name = "player"
 0/texture = ExtResource( 1 )
 0/tex_offset = Vector2( 0, 0 )
@@ -46,13 +47,48 @@
 2/shape_one_way_margin = 0.0
 2/shapes = [  ]
 2/z_index = 0
-
-[sub_resource type="DynamicFontData" id=2]
-antialiased = false
-font_path = "res://m5x7.ttf"
-
-[sub_resource type="DynamicFont" id=3]
-font_data = SubResource( 2 )
+3/name = "ladder"
+3/texture = ExtResource( 1 )
+3/tex_offset = Vector2( 0, 0 )
+3/modulate = Color( 1, 1, 1, 1 )
+3/region = Rect2( 30, 0, 10, 10 )
+3/tile_mode = 0
+3/occluder_offset = Vector2( 0, 0 )
+3/navigation_offset = Vector2( 0, 0 )
+3/shape_offset = Vector2( 0, 0 )
+3/shape_transform = Transform2D( 1, 0, 0, 1, 0, 0 )
+3/shape_one_way = false
+3/shape_one_way_margin = 0.0
+3/shapes = [  ]
+3/z_index = 0
+4/name = "wall2"
+4/texture = ExtResource( 1 )
+4/tex_offset = Vector2( 0, 0 )
+4/modulate = Color( 1, 1, 1, 1 )
+4/region = Rect2( 40, 0, 10, 10 )
+4/tile_mode = 0
+4/occluder_offset = Vector2( 0, 0 )
+4/navigation_offset = Vector2( 0, 0 )
+4/shape_offset = Vector2( 0, 0 )
+4/shape_transform = Transform2D( 1, 0, 0, 1, 0, 0 )
+4/shape_one_way = false
+4/shape_one_way_margin = 0.0
+4/shapes = [  ]
+4/z_index = 0
+5/name = "door"
+5/texture = ExtResource( 1 )
+5/tex_offset = Vector2( 0, 0 )
+5/modulate = Color( 1, 1, 1, 1 )
+5/region = Rect2( 50, 0, 10, 10 )
+5/tile_mode = 0
+5/occluder_offset = Vector2( 0, 0 )
+5/navigation_offset = Vector2( 0, 0 )
+5/shape_offset = Vector2( 0, 0 )
+5/shape_transform = Transform2D( 1, 0, 0, 1, 0, 0 )
+5/shape_one_way = false
+5/shape_one_way_margin = 0.0
+5/shapes = [  ]
+5/z_index = 0
 
 [node name="Game" type="Node2D"]
 script = ExtResource( 2 )
@@ -61,82 +97,13 @@ script = ExtResource( 2 )
 tile_set = SubResource( 1 )
 cell_size = Vector2( 10, 10 )
 cell_quadrant_size = 10
+cell_custom_transform = Transform2D( 1, 0, 0, 1, 0, 0 )
 format = 1
-tile_data = PoolIntArray( -393233, 1, 0, -393232, 1, 0, -393231, 1, 0, -393230, 1, 0, -393229, 1, 0, -393228, 1, 0, -393227, 1, 0, -393226, 1, 0, -393225, 1, 0, -393224, 1, 0, -393223, 1, 0, -393222, 1, 0, -327697, 1, 0, -327696, 2, 0, -327695, 2, 0, -327694, 2, 0, -327693, 2, 0, -327692, 2, 0, -327691, 2, 0, -327690, 2, 0, -327689, 2, 0, -327688, 2, 0, -327687, 2, 0, -327686, 1, 0, -262161, 1, 0, -262160, 2, 0, -262159, 2, 0, -262158, 2, 0, -262157, 2, 0, -262156, 2, 0, -262155, 2, 0, -262154, 2, 0, -262153, 2, 0, -262152, 2, 0, -262151, 2, 0, -262150, 1, 0, -196625, 1, 0, -196624, 2, 0, -196623, 2, 0, -196622, 2, 0, -196621, 2, 0, -196620, 2, 0, -196619, 2, 0, -196618, 2, 0, -196617, 2, 0, -196616, 2, 0, -196615, 2, 0, -196614, 1, 0, -131089, 1, 0, -131088, 2, 0, -131087, 2, 0, -131086, 0, 0, -131085, 2, 0, -131084, 2, 0, -131083, 2, 0, -131082, 2, 0, -131081, 2, 0, -131080, 2, 0, -131079, 2, 0, -131078, 1, 0, -65553, 1, 0, -65552, 2, 0, -65551, 2, 0, -65550, 2, 0, -65549, 2, 0, -65548, 2, 0, -65547, 2, 0, -65546, 2, 0, -65545, 2, 0, -65544, 2, 0, -65543, 2, 0, -65542, 1, 0, -17, 1, 0, -16, 2, 0, -15, 2, 0, -14, 2, 0, -13, 2, 0, -12, 2, 0, -11, 2, 0, -10, 2, 0, -9, 2, 0, -8, 2, 0, -7, 2, 0, -6, 1, 0, 65519, 1, 0, 65520, 1, 0, 65521, 1, 0, 65522, 1, 0, 65523, 1, 0, 65524, 1, 0, 65525, 1, 0, 65526, 1, 0, 65527, 1, 0, 65528, 1, 0, 65529, 1, 0, 65530, 1, 0, 196611, 3, 0, 262146, 12, 0, 262147, 3, 0, 327683, 3, 0, 458753, 3, 0, 458754, 12, 0 )
+tile_data = PoolIntArray( -327691, 2, 0 )
 
-[node name="Camera2D" type="Camera2D" parent="."]
-current = true
-offset_v = 1.0
-
-[node name="CanvasLayer" type="CanvasLayer" parent="."]
-follow_viewport_enable = true
-
-[node name="ColorRect" type="ColorRect" parent="CanvasLayer"]
-margin_left = -200.0
-margin_top = -120.0
-margin_right = 440.0
-margin_bottom = -104.0
-color = Color( 0, 0, 0, 1 )
-__meta__ = {
-"_edit_use_anchors_": false
-}
-
-[node name="ColorRect2" type="ColorRect" parent="CanvasLayer"]
-margin_left = -200.0
-margin_top = 114.0
-margin_right = 120.0
-margin_bottom = 178.0
-color = Color( 0, 0, 0, 1 )
-__meta__ = {
-"_edit_use_anchors_": false
-}
-
-[node name="Health" type="Label" parent="CanvasLayer"]
-margin_left = -64.0
-margin_top = -150.0
-margin_right = 32.0
-margin_bottom = -134.0
-custom_fonts/font = SubResource( 3 )
-custom_colors/font_color = Color( 1, 1, 1, 1 )
-text = "Health: 9"
-__meta__ = {
-"_edit_use_anchors_": false
-}
-
-[node name="Level" type="Label" parent="CanvasLayer"]
-margin_left = 32.0
-margin_top = -150.0
-margin_right = 128.0
-margin_bottom = -134.0
-custom_fonts/font = SubResource( 3 )
-custom_colors/font_color = Color( 1, 1, 1, 1 )
-text = "Level: 2"
-__meta__ = {
-"_edit_use_anchors_": false
-}
-
-[node name="Score" type="Label" parent="CanvasLayer"]
-margin_left = 128.0
-margin_top = -150.0
-margin_right = 224.0
-margin_bottom = -134.0
-custom_fonts/font = SubResource( 3 )
-custom_colors/font_color = Color( 1, 1, 1, 1 )
-text = "Score: 0"
-__meta__ = {
-"_edit_use_anchors_": false
-}
-
-[node name="Log" type="Label" parent="CanvasLayer"]
-margin_left = -184.0
-margin_top = 114.0
-margin_right = -16.0
-margin_bottom = 178.0
-custom_fonts/font = SubResource( 3 )
-custom_colors/font_color = Color( 1, 1, 1, 1 )
-text = "> HERO hits TROLL for 3 damage
-> TROLL hits HERO for 1 damage
-> HERO misses"
-__meta__ = {
-"_edit_use_anchors_": false
-}
+[node name="Player" type="Sprite" parent="."]
+position = Vector2( 200, 150 )
+texture = ExtResource( 1 )
+centered = false
+region_enabled = true
+region_rect = Rect2( 0, 0, 10, 10 )
