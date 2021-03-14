@@ -16,7 +16,8 @@ const LEVEL_ROOM_COUNT = [5, 7, 9, 12, 15]
 const MIN_ROOM_DIMENSION = 5
 const MAX_ROOM_DIMENSION = 9
 
-const name_titles = ["The Warrior", "The Knight", "The Brave", "The Foolish", "The Forsaken", "The Idiot", "The Smelly", "The Sticky", "Smith"]
+var name_parts = "..bobabukekokixaxoxurirero"
+var name_titles = ["The Warrior", "The Knight", "The Brave", "The Foolish", "The Forsaken", "The Idiot", "The Smelly", "The Sticky", "Smith", "The Thief", "The Rogue", "The Unseen", "The Drifter", "The Dweller", "The Lurker", "The Small"]
 
 # enum to get tiles by index ---------------------------------------------------
 enum Tile {Player, Stone, Floor, Ladder, Wall, Door}
@@ -73,7 +74,8 @@ func _input(event):
 			try_move(1, 0)
 	
 	# inputs outside of gameplay only
-	if game_state == "title" or "end":
+	## TODO: if game_state == "title" or game_state == "end":
+	if true:
 		if event.is_action("Start"):
 			initialize_game()
 	
@@ -97,6 +99,7 @@ func initialize_game():
 	game_state = "gameplay"
 	
 	player_name = get_name() + " " + get_title()
+	$CanvasLayer/Name.text = player_name
 
 	randomize()
 	level_num = 0
@@ -430,11 +433,9 @@ func set_tile(x, y, type):
 
 # name generator ---------------------------------------------------------------
 
-var N = "..bobabukekokixaxoxurirero"
-
 func get_pair():
-	var r = randi()%N.length()/2
-	var pair = N[r]+N[r+1]
+	var r = randi()%name_parts.length()/2
+	var pair = name_parts[r]+name_parts[r+1]
 	return pair.replace('.','')
 
 func get_name(pairs=4):
@@ -449,4 +450,4 @@ func get_title():
 	
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
-	$CanvasLayer/Debug.text = str(game_state) + " * " + str(rooms.size()) + " rooms" + ". you are " + player_name
+	$CanvasLayer/Debug.text = str(game_state) + " * " + str(rooms.size()) + " rooms"
