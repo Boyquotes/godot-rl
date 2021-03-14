@@ -16,6 +16,8 @@ const LEVEL_ROOM_COUNT = [5, 7, 9, 12, 15]
 const MIN_ROOM_DIMENSION = 5
 const MAX_ROOM_DIMENSION = 9
 
+const name_titles = ["The Warrior", "The Knight", "The Brave", "The Foolish", "The Forsaken", "The Idiot", "The Smelly", "The Sticky", "Smith"]
+
 # enum to get tiles by index ---------------------------------------------------
 enum Tile {Player, Stone, Floor, Ladder, Wall, Door}
 
@@ -40,6 +42,7 @@ onready var sound_ladder = $Player/SoundLadder
 # game states ------------------------------------------------------------------
 
 var game_state
+var player_name
 var player_tile
 var score = 0
 var window_scale = 1
@@ -50,6 +53,7 @@ var window_size = OS.get_window_size()
 func _ready():
 	OS.set_window_size(Vector2(400 * window_scale,300 * window_scale))
 	game_state = "title"
+	player_name = "nobody"
 	$CanvasLayer/Title.visible = true
 	
 # input event handler
@@ -91,6 +95,8 @@ func _input(event):
 
 func initialize_game():
 	game_state = "gameplay"
+	
+	player_name = get_name() + " " + get_title()
 
 	randomize()
 	level_num = 0
@@ -422,10 +428,25 @@ func set_tile(x, y, type):
 	
 # function to play various sound effects ---------------------------------------
 
-	
-	
+# name generator ---------------------------------------------------------------
+
+var N = "..bobabukekokixaxoxurirero"
+
+func get_pair():
+	var r = randi()%N.length()/2
+	var pair = N[r]+N[r+1]
+	return pair.replace('.','')
+
+func get_name(pairs=4):
+	var name = ''
+	for i in range(pairs):
+		name += get_pair()
+	return name.capitalize()
+
+func get_title():
+	return name_titles[randi() % name_titles.size()]
 	
 	
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
-	$CanvasLayer/Debug.text = str(game_state) + " * " + str(rooms.size()) + " rooms"
+	$CanvasLayer/Debug.text = str(game_state) + " * " + str(rooms.size()) + " rooms" + ". you are " + player_name
