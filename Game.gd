@@ -42,6 +42,43 @@ func _ready():
 	OS.set_window_size(Vector2(400,300))
 	randomize()
 	build_level()
+	
+# input event handler
+func _input(event):
+	if !event.is_pressed():
+		return
+	
+	if event.is_action("Up"):
+		try_move(0, -1)
+	if event.is_action("Down"):
+		try_move(0, 1)
+	if event.is_action("Left"):
+		try_move(-1, 0)
+	if event.is_action("Right"):
+		try_move(1, 0)
+		
+func try_move(dx, dy):
+	var x = player_tile.x + dx
+	var y = player_tile.y + dy
+	
+	# assume first that everything is stone so we can't go
+	var tile_type = Tile.Stone
+	if x >= 0 && x < level_size.x && y >= 0 && y < level_size.y:
+		tile_type = map[x][y]
+	
+	# actions based on this type of tile
+	match tile_type:
+		# if floor, just update to go there
+		Tile.Floor:
+			player_tile = Vector2(x, y)
+			# TO DO: play walk sound
+		
+		# if door, turn it into floor to "open"
+		Tile.Door:
+			set_tile(x, y, Tile.Floor)
+			# TO DO: play door open sound
+			
+	update_visuals()
 
 # function to generate and build level -----------------------------------------
 
@@ -71,6 +108,18 @@ func build_level():
 			break
 			
 	connect_rooms()
+	
+	# place player
+	
+	var start_room = rooms.front()
+	var player_x = start_room.position.x + 1 + randi() % int(start_room.size.x - 2)
+	var player_y = start_room.position.y + 1 + randi() % int(start_room.size.y - 2)
+	player_tile = Vector2(player_x, player_y)
+	update_visuals()
+	
+func update_visuals():
+	# convert tile coords into pixel coords
+	player.position = player_tile * TILE_SIZE
 
 # function to connect existing rooms -------------------------------------------
 
