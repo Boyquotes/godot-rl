@@ -128,6 +128,7 @@ func try_move(dx, dy):
 		
 		# if door, turn it into floor to "open"
 		Tile.Door:
+
 			set_tile(x, y, Tile.Floor)
 			# play door open sound
 			play_sfx(sound_door, 0.9, 1)
@@ -146,7 +147,7 @@ func try_move(dx, dy):
 				score += 1000
 				$CanvasLayer/Win.visible = true
 				game_state = "end"
-			
+	
 	call_deferred("update_visuals")
 
 # function to generate and build level -----------------------------------------
@@ -187,6 +188,7 @@ func build_level():
 	var player_x = start_room.position.x + 1 + randi() % int(start_room.size.x - 2)
 	var player_y = start_room.position.y + 1 + randi() % int(start_room.size.y - 2)
 	player_tile = Vector2(player_x, player_y)
+	
 	call_deferred("update_visuals")
 	
 	# place end ladder
@@ -203,6 +205,9 @@ func build_level():
 		$CanvasLayer/Level.text = "Ground Floor"
 	
 func update_visuals():
+	# timer fix
+	yield(get_tree(), "idle_frame")
+	
 	# convert tile coords into pixel coords
 	player.position = player_tile * TILE_SIZE
 
@@ -218,7 +223,6 @@ func update_visuals():
 	# test with radius around player
 	
 	# timer fix
-	yield(get_tree(), "idle_frame")
 	
 	var player_center = tile_to_pixel_center(player_tile.x, player_tile.y)
 	var space_state = get_world_2d().direct_space_state
