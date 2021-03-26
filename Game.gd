@@ -147,7 +147,7 @@ func try_move(dx, dy):
 				$CanvasLayer/Win.visible = true
 				game_state = "end"
 			
-	update_visuals()
+	call_deferred("update_visuals")
 
 # function to generate and build level -----------------------------------------
 
@@ -167,7 +167,7 @@ func build_level():
 			map[x].append(Tile.Stone)
 			tile_map.set_cell(x, y, Tile.Stone)
 			
-			# TODO: set everything to dark
+			# set everything to dark visibility
 			visibility_map.set_cell(x, y, VisTile.Dark)
 			
 	# set region but keep one tile edge of stone
@@ -187,7 +187,7 @@ func build_level():
 	var player_x = start_room.position.x + 1 + randi() % int(start_room.size.x - 2)
 	var player_y = start_room.position.y + 1 + randi() % int(start_room.size.y - 2)
 	player_tile = Vector2(player_x, player_y)
-	update_visuals()
+	call_deferred("update_visuals")
 	
 	# place end ladder
 	
@@ -217,11 +217,14 @@ func update_visuals():
 	
 	# test with radius around player
 	
+	# timer fix
+	yield(get_tree(), "idle_frame")
+	
 	var player_center = tile_to_pixel_center(player_tile.x, player_tile.y)
 	var space_state = get_world_2d().direct_space_state
 	for x in range(level_size.x):
 		for y in range(level_size.y):
-			if visibility_map.get_cell(x, y) == 0:
+			if visibility_map.get_cell(x, y) ==0:
 				var x_dir = 1 if x < player_tile.x else -1
 				var y_dir = 1 if y < player_tile.y else -1
 				var test_point = tile_to_pixel_center(x, y) + Vector2(x_dir, y_dir) * TILE_SIZE / 2
