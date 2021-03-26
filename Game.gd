@@ -131,6 +131,7 @@ func try_move(dx, dy):
 				player.set_flip_h(true)
 			else:
 				player.set_flip_h(false)
+			player_anims.stop(true)
 			player_anims.play("PlayerWalk")
 		
 		# if door, turn it into floor to "open"
