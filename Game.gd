@@ -39,7 +39,6 @@ onready var sound_walk = $Player/SoundWalk
 onready var sound_door = $Player/SoundDoor
 onready var sound_ladder = $Player/SoundLadder
 
-
 # game states ------------------------------------------------------------------
 
 var game_state
@@ -124,18 +123,18 @@ func try_move(dx, dy):
 		Tile.Floor:
 			player_tile = Vector2(x, y)
 			# play walk sound
-			sound_walk.play()
+			play_sfx(sound_walk, 0.8, 1)
 		
 		# if door, turn it into floor to "open"
 		Tile.Door:
 			set_tile(x, y, Tile.Floor)
 			# play door open sound
-			sound_door.play()
+			play_sfx(sound_door, 0.9, 1)
 			
 		# if ladder, increase level count, add score, etc.
 		Tile.Ladder:
 			# play ladder sound
-			sound_ladder.play()
+			play_sfx(sound_ladder, 0.9, 1)
 			level_num += 1
 			score += 20
 			$CanvasLayer/Score.text = "Score: " + str(score)
@@ -447,7 +446,10 @@ func get_name(pairs=4):
 func get_title():
 	return name_titles[randi() % name_titles.size()]
 	
-	
+func play_sfx(mysound, rangelow, rangehigh):
+	mysound.set_pitch_scale(rand_range(rangelow, rangehigh))
+	mysound.play()
+
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
 	$CanvasLayer/Debug.text = str(game_state) + " * " + str(rooms.size()) + " rooms"
