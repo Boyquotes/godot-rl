@@ -21,6 +21,7 @@ var name_titles = ["The Warrior", "The Knight", "The Brave", "The Foolish", "The
 
 # enum to get tiles by index ---------------------------------------------------
 enum Tile {Player, Stone, Floor, Ladder, Wall, Door}
+enum VisTile { Dark, Explored }
 
 # current level data -----------------------------------------------------------
 
@@ -165,8 +166,9 @@ func build_level():
 		for y in range(level_size.y):
 			map[x].append(Tile.Stone)
 			tile_map.set_cell(x, y, Tile.Stone)
-			visibility_map.set_cell(x, y, -1)
-			## TODO: set 'visited' tiles to semi dark
+			
+			# TODO: set everything to dark
+			visibility_map.set_cell(x, y, VisTile.Dark)
 			
 	# set region but keep one tile edge of stone
 	var free_regions = [Rect2(Vector2(2, 2), level_size - Vector2(4, 4))]
@@ -203,9 +205,36 @@ func build_level():
 func update_visuals():
 	# convert tile coords into pixel coords
 	player.position = player_tile * TILE_SIZE
+
+	# visibility -------------------------------------------------------------------
 	
-	# determine what player can see with raycast
+	# additional tile map
+	# states: visible, explored, unexplored
 	
+	# visible is eiter a radius around the player, or a raycast solution
+	# explored is everything that was ever visible at any point
+	# unexplored is the default state, was never visible
+	
+	# test with radius around player
+	
+	var player_center = tile_to_pixel_center(player_tile.x, player_tile.y)
+	var space_state = get_world_2d().direct_space_state
+	for x in range(level_size.x):
+		for y in range(level_size.y):
+			if visibility_map.get_cell(x, y) == 0:
+				var x_dir = 1 if x < player_tile.x else -1
+				var y_dir = 1 if y < player_tile.y else -1
+				var test_point = tile_to_pixel_center(x, y) + Vector2(x_dir, y_dir) * TILE_SIZE / 2
+				
+				var occlusion = space_state.intersect_ray(player_center, test_point)
+				if !occlusion || (occlusion.position - test_point).length() < 1:
+					visibility_map.set_cell(x, y, -1)
+
+func tile_to_pixel_center(x, y):
+	return Vector2((x + 0.5) * TILE_SIZE, (y + 0.5) * TILE_SIZE)
+
+	
+		
 
 # function to connect existing rooms -------------------------------------------
 
@@ -427,10 +456,8 @@ func cut_regions(free_regions, region_to_remove):
 func set_tile(x, y, type):
 	map[x][y] = type
 	tile_map.set_cell(x,y,type)
-	
-# function to play various sound effects ---------------------------------------
 
-# name generator ---------------------------------------------------------------
+# name generators ---------------------------------------------------------------
 
 func get_pair():
 	var r = randi()%name_parts.length()/2
@@ -445,7 +472,9 @@ func get_name(pairs=4):
 
 func get_title():
 	return name_titles[randi() % name_titles.size()]
-	
+
+# function to play various sound effects ---------------------------------------
+
 func play_sfx(mysound, rangelow, rangehigh):
 	mysound.set_pitch_scale(rand_range(rangelow, rangehigh))
 	mysound.play()
