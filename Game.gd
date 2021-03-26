@@ -36,6 +36,7 @@ var level_size
 onready var tile_map = $TileMap
 onready var visibility_map = $VisibilityMap
 onready var player = $Player
+onready var player_anims = $Player/PlayerAnims
 onready var sound_walk = $Player/SoundWalk
 onready var sound_door = $Player/SoundDoor
 onready var sound_ladder = $Player/SoundLadder
@@ -125,13 +126,24 @@ func try_move(dx, dy):
 			player_tile = Vector2(x, y)
 			# play walk sound
 			play_sfx(sound_walk, 0.8, 1)
+			# anim
+			if dx < 0:
+				player.set_flip_h(true)
+			else:
+				player.set_flip_h(false)
+			player_anims.play("PlayerWalk")
 		
 		# if door, turn it into floor to "open"
 		Tile.Door:
-
 			set_tile(x, y, Tile.Floor)
 			# play door open sound
 			play_sfx(sound_door, 0.9, 1)
+			# anim
+			if dx < 0:
+				player.set_flip_h(true)
+			else:
+				player.set_flip_h(false)
+			player_anims.play("OpenDoor")
 			
 		# if ladder, increase level count, add score, etc.
 		Tile.Ladder:
