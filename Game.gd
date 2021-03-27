@@ -24,7 +24,7 @@ var name_titles = ["The Warrior", "The Knight", "The Brave", "The Foolish", "The
 
 # enum to get tiles by index ---------------------------------------------------
 enum Tile {Player, Stone, Floor, Ladder, Wall, Door, Bloody, Bones}
-enum VisTile { Dark, Shaded }
+enum VisTile { Dark, Shaded, Debug }
 enum ExplTile { Unexplored, Explored }
 
 # sound resources
@@ -361,7 +361,7 @@ func build_level():
 
 # TODO: test with radius around player
 
-func update_visuals():
+func update_visuals_bak():
 	# convert tile coords into pixel coords
 	player.position = player_tile * TILE_SIZE
 	yield(get_tree(), "idle_frame")
@@ -388,6 +388,49 @@ func update_visuals():
 				exploration_map.set_cell(x, y, ExplTile.Explored)
 				visibility_map.set_cell(x, y, -1)
 
+func update_visuals():
+	# convert tile coords into pixel coords
+	player.position = player_tile * TILE_SIZE
+	yield(get_tree(), "idle_frame")
+
+	
+
+	# if we're not inside a room
+	for x in range(level_size.x):
+		for y in range(level_size.y):
+			# raycast to check what we're currently seeing
+			
+			# go dark
+			visibility_map.set_cell(x, y, VisTile.Dark)
+			
+			# explored
+			if exploration_map.get_cell(x, y) == ExplTile.Explored:
+				visibility_map.set_cell(x, y, VisTile.Shaded)
+			
+			# if player is there, see and explore
+			for vx in range(player_tile.x - 1, player_tile.x + 2):
+				for vy in range(player_tile.y - 1, player_tile.y + 2):
+					visibility_map.set_cell(vx, vy, -1)
+					exploration_map.set_cell(vx, vy, ExplTile.Explored)
+						
+	# if we're inside a room
+	# figure out which room it is
+	# light up that room
+	
+	var i = 0
+	while i < rooms.size():
+		for rx in range(rooms[i].position.x, rooms[i].position.x + rooms[i].size.x):
+			for ry in range(rooms[i].position.y, rooms[i].position.y + rooms[i].size.y):
+				if rx == player_tile.x && ry == player_tile.y:
+					visit_room(rooms[i])
+		i += 1
+
+func visit_room(room):
+	print("lighting room")
+	for rx in range(room.position.x, room.position.x + room.size.x):
+			for ry in range(room.position.y, room.position.y + room.size.y):
+				visibility_map.set_cell(rx, ry, -1)
+				exploration_map.set_cell(rx, ry, ExplTile.Explored)
 
 func tile_to_pixel_center(x, y):
 	return Vector2((x + 0.5) * TILE_SIZE, (y + 0.5) * TILE_SIZE)
