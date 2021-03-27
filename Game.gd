@@ -5,19 +5,19 @@ extends Node2D
 const TILE_SIZE = 10
 
 const LEVEL_SIZES = [
+	Vector2(30, 20),
+	Vector2(35, 25),
 	Vector2(40, 30),
-	Vector2(50, 40),
-	Vector2(60, 50),
-	Vector2(70, 60),
-	Vector2(80, 70)
+	Vector2(45, 35),
+	Vector2(50, 40)
 ]
 
-const LEVEL_ROOM_COUNT = [5, 7, 9, 12, 15]
+const LEVEL_ROOM_COUNT = [4, 5, 7, 9, 11]
 const MIN_ROOM_DIMENSION = 5
 const MAX_ROOM_DIMENSION = 9
 
-var name_parts = "..bobabukekokixaxoxurirero"
-var name_titles = ["The Warrior", "The Knight", "The Brave", "The Foolish", "The Forsaken", "The Idiot", "The Smelly", "The Sticky", "Smith", "The Thief", "The Rogue", "The Unseen", "The Drifter", "The Dweller", "The Lurker", "The Small"]
+var name_parts = "..bobabukekogixaxoxurirero"
+var name_titles = ["The Warrior", "The Knight", "The Brave", "The Foolish", "The Forsaken", "The Idiot", "The Smelly", "The Sticky", "Smith", "The Thief", "The Rogue", "The Unseen", "The Drifter", "The Dweller", "The Lurker", "The Small", "The Unforgiven", "The Crestfallen", "The Hungry", "The Second Oldest", "The Younger", "The Original"]
 
 # enum to get tiles by index ---------------------------------------------------
 enum Tile {Player, Stone, Floor, Ladder, Wall, Door}
@@ -137,6 +137,7 @@ func try_move(dx, dy):
 		# if door, turn it into floor to "open"
 		Tile.Door:
 			set_tile(x, y, Tile.Floor)
+			yield(get_tree(), "idle_frame")
 			# play door open sound
 			play_sfx(sound_door, 0.9, 1)
 			# anim
@@ -149,6 +150,7 @@ func try_move(dx, dy):
 		# if ladder, increase level count, add score, etc.
 		Tile.Ladder:
 			# play ladder sound
+			
 			play_sfx(sound_ladder, 0.9, 1)
 			level_num += 1
 			score += 20
@@ -201,7 +203,6 @@ func build_level():
 	var player_x = start_room.position.x + 1 + randi() % int(start_room.size.x - 2)
 	var player_y = start_room.position.y + 1 + randi() % int(start_room.size.y - 2)
 	player_tile = Vector2(player_x, player_y)
-	
 	call_deferred("update_visuals")
 	
 	# place end ladder
@@ -216,45 +217,43 @@ func build_level():
 		$CanvasLayer/Level.text = "Basement Level " + str(level_num)
 	else:
 		$CanvasLayer/Level.text = "Ground Floor"
-	
+
+# visibility -------------------------------------------------------------------
+
+# additional tile map
+# states: visible, explored, unexplored
+
+# visible is eiter a radius around the player, or a raycast solution
+# explored is everything that was ever visible at any point
+# unexplored is the default state, was never visible
+
+# TODO: test with radius around player
+
 func update_visuals():
-	# timer fix
-	yield(get_tree(), "idle_frame")
-	
 	# convert tile coords into pixel coords
 	player.position = player_tile * TILE_SIZE
-
-	# visibility -------------------------------------------------------------------
-	
-	# additional tile map
-	# states: visible, explored, unexplored
-	
-	# visible is eiter a radius around the player, or a raycast solution
-	# explored is everything that was ever visible at any point
-	# unexplored is the default state, was never visible
-	
-	# test with radius around player
-	
-	# timer fix
-	
+	yield(get_tree(), "idle_frame")
 	var player_center = tile_to_pixel_center(player_tile.x, player_tile.y)
 	var space_state = get_world_2d().direct_space_state
 	for x in range(level_size.x):
 		for y in range(level_size.y):
-			if visibility_map.get_cell(x, y) ==0:
-				var x_dir = 1 if x < player_tile.x else -1
-				var y_dir = 1 if y < player_tile.y else -1
-				var test_point = tile_to_pixel_center(x, y) + Vector2(x_dir, y_dir) * TILE_SIZE / 2
-				
-				var occlusion = space_state.intersect_ray(player_center, test_point)
-				if !occlusion || (occlusion.position - test_point).length() < 1:
+			# raycast to check what we're currently seeing
+			
+			var x_dir = 1 if x < player_tile.x else -1
+			var y_dir = 1 if y < player_tile.y else -1
+			var test_point = tile_to_pixel_center(x, y) + Vector2(x_dir, y_dir) * TILE_SIZE / 2
+			
+			var occlusion = space_state.intersect_ray(player_center, test_point)
+			if !occlusion || (occlusion.position - test_point).length() < 1:
+				# mark as explored if previous unexplored
+				if visibility_map.get_cell(x, y) != VisTile.Explored:
+					visibility_map.set_cell(x, y, VisTile.Explored)
+				else:
 					visibility_map.set_cell(x, y, -1)
 
 func tile_to_pixel_center(x, y):
 	return Vector2((x + 0.5) * TILE_SIZE, (y + 0.5) * TILE_SIZE)
 
-	
-		
 
 # function to connect existing rooms -------------------------------------------
 
@@ -312,30 +311,32 @@ func is_everything_connected(graph):
 	
 func add_random_connection(stone_graph, room_graph):
 	# pick rooms to connect
-	
+
 	var start_room_id = get_least_connected_point(room_graph)
 	var end_room_id = get_nearest_unconnected_point(room_graph, start_room_id)
 	
 	# pick door locations
+	
 	var start_position = pick_random_door_location(rooms[start_room_id])
 	var end_position = pick_random_door_location(rooms[end_room_id])
-
+	
 	# find a path to connect the doors to each other
+	
 	var closest_start_point = stone_graph.get_closest_point(start_position)
 	var closest_end_point = stone_graph.get_closest_point(end_position)
 	
 	var path = stone_graph.get_point_path(closest_start_point, closest_end_point)
 	assert(path)
 	
-	# add path to the map
+	# add path to map
 	
 	set_tile(start_position.x, start_position.y, Tile.Door)
 	set_tile(end_position.x, end_position.y, Tile.Door)
 	
 	for position in path:
 		set_tile(position.x, position.y, Tile.Floor)
-		
-	room_graph.connect_points(start_room_id, end_room_id)
+	
+	room_graph.connect_points(start_room_id, end_room_id)	
 	
 # helper functions for above ---------------------------------------------------
 
@@ -354,7 +355,7 @@ func get_least_connected_point(graph):
 			tied_for_least = [point]
 		elif count == least:
 			tied_for_least.append(point)
-		
+			
 	return tied_for_least[randi() % tied_for_least.size()]
 	
 func get_nearest_unconnected_point(graph, target_point):
@@ -371,7 +372,7 @@ func get_nearest_unconnected_point(graph, target_point):
 		var path = graph.get_point_path(point, target_point)
 		if path:
 			continue
-		
+			
 		var dist = (graph.get_point_position(point) - target_position).length()
 		if !nearest || dist < nearest:
 			nearest = dist
@@ -384,20 +385,18 @@ func get_nearest_unconnected_point(graph, target_point):
 func pick_random_door_location(room):
 	var options = []
 	
-	# door can be put on any wall
-	
 	# top and bottom walls
+	
 	for x in range(room.position.x + 1, room.end.x - 2):
 		options.append(Vector3(x, room.position.y, 0))
 		options.append(Vector3(x, room.end.y - 1, 0))
-	
+
 	# left and right walls
+	
 	for y in range(room.position.y + 1, room.end.y - 2):
 		options.append(Vector3(room.position.x, y, 0))
 		options.append(Vector3(room.end.x - 1, y, 0))
-		
-	# TODO: make sure two doors can't spawn adjacent
-	
+
 	return options[randi() % options.size()]
 
 # function to add a room within free regions -----------------------------------
@@ -455,7 +454,6 @@ func cut_regions(free_regions, region_to_remove):
 			var leftover_above = region_to_remove.position.y - region.position.y - 1
 			var leftover_below = region.end.y - region_to_remove.end.y - 1
 			
-		
 			if leftover_left >= MIN_ROOM_DIMENSION:
 				addition_queue.append(Rect2(region.position, Vector2(leftover_left, region.size.y)))
 			if leftover_right >= MIN_ROOM_DIMENSION:
@@ -500,5 +498,6 @@ func play_sfx(mysound, rangelow, rangehigh):
 	mysound.play()
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta):
-	$CanvasLayer/Debug.text = str(game_state) + " * " + str(rooms.size()) + " rooms"
+# func _process(delta):
+	# $CanvasLayer/Debug.text = str(game_state) + " * " + str(rooms.size()) + " rooms"
+#	pass
