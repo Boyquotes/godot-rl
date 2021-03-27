@@ -12,8 +12,8 @@ const LEVEL_SIZES = [
 	Vector2(50, 40)
 ]
 
-const LEVEL_ROOM_COUNT = [4, 5, 7, 9, 11]
-const LEVEL_ENEMY_COUNT = [1, 4, 8, 11, 15]
+const LEVEL_ROOM_COUNT = [4, 7, 9, 13, 15]
+const LEVEL_ENEMY_COUNT = [2, 5, 9, 11, 15]
 const MIN_ROOM_DIMENSION = 5
 const MAX_ROOM_DIMENSION = 9
 
@@ -39,6 +39,8 @@ const snd_ladder = preload("res://sound/ladder1.wav")
 const snd_enemy_hurt = preload("res://sound/enemy-hurt.wav")
 const snd_enemy_death = preload("res://sound/enemy-death.wav")
 const snd_music1 = preload("res://sound/music1.wav")
+
+var snd_walk = [snd_walk1, snd_walk2, snd_walk3]
 
 # enemy class ------------------------------------------------------------------
 
@@ -119,13 +121,13 @@ func _input(event):
 	
 	# gameplay-only inputs
 	if game_state == "gameplay":
-		if event.is_action("Up"):
+		if event.is_action_pressed("Up"):
 			try_move(0, -1)
-		if event.is_action("Down"):
+		if event.is_action_pressed("Down"):
 			try_move(0, 1)
-		if event.is_action("Left"):
+		if event.is_action_pressed("Left"):
 			try_move(-1, 0)
-		if event.is_action("Right"):
+		if event.is_action_pressed("Right"):
 			try_move(1, 0)
 	
 	# inputs outside of gameplay only
@@ -213,7 +215,8 @@ func try_move(dx, dy):
 			if !blocked:
 				player_tile = Vector2(x, y)
 				# play walk sound
-				play_sfx(player_sound, snd_walk1, 0.8, 1)
+				var r = snd_walk[randi() % snd_walk.size()]
+				play_sfx(player_sound, r, 0.8, 1)
 				# anim
 				if dx < 0:
 					player.set_flip_h(true)
@@ -255,6 +258,7 @@ func try_move(dx, dy):
 			play_sfx(level_sound, snd_ladder, 0.9, 1)
 			level_num += 1
 			score += 20
+			print("level completed")
 			$CanvasLayer/Score.text = "Score: " + str(score)
 			if level_num < LEVEL_SIZES.size():
 				build_level()
@@ -389,7 +393,6 @@ func update_visuals_bak():
 				visibility_map.set_cell(x, y, -1)
 
 func update_visuals():
-	print("updating visuals")
 	# convert tile coords into pixel coords
 	player.position = player_tile * TILE_SIZE
 	yield(get_tree(), "idle_frame")
@@ -423,7 +426,6 @@ func update_visuals():
 		i += 1
 
 func visit_room(room):
-	print("visiting room")
 	for rx in range(room.position.x, room.position.x + room.size.x):
 			for ry in range(room.position.y, room.position.y + room.size.y):
 				visibility_map.set_cell(rx, ry, -1)

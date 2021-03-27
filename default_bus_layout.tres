@@ -1,13 +1,33 @@
-[gd_resource type="AudioBusLayout" load_steps=2 format=2]
+[gd_resource type="AudioBusLayout" load_steps=5 format=2]
+
+[sub_resource type="AudioEffectLimiter" id=2]
+resource_name = "Limiter"
 
 [sub_resource type="AudioEffectReverb" id=1]
 resource_name = "Reverb"
 room_size = 0.4
-spread = 0.5
+damping = 0.8
+spread = 0.3
 hipass = 0.3
-wet = 0.4
+wet = 0.2
+
+[sub_resource type="AudioEffectCompressor" id=4]
+resource_name = "Compressor"
+threshold = -8.5
+ratio = 15.2
+gain = 4.1
+
+[sub_resource type="AudioEffectEQ6" id=3]
+resource_name = "EQ6"
+band_db/32_hz = -60.0
+band_db/100_hz = -30.0
+band_db/1000_hz = -20.0
+band_db/3200_hz = -40.0
+band_db/10000_hz = -60.0
 
 [resource]
+bus/0/effect/0/effect = SubResource( 2 )
+bus/0/effect/0/enabled = true
 bus/1/name = "Reverb"
 bus/1/solo = false
 bus/1/mute = false
@@ -16,3 +36,7 @@ bus/1/volume_db = 0.0
 bus/1/send = "Master"
 bus/1/effect/0/effect = SubResource( 1 )
 bus/1/effect/0/enabled = true
+bus/1/effect/1/effect = SubResource( 4 )
+bus/1/effect/1/enabled = true
+bus/1/effect/2/effect = SubResource( 3 )
+bus/1/effect/2/enabled = true
