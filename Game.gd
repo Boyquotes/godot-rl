@@ -27,6 +27,18 @@ enum Tile {Player, Stone, Floor, Ladder, Wall, Door, Bloody, Bones}
 enum VisTile { Dark, Shaded }
 enum ExplTile { Unexplored, Explored }
 
+# sound resources
+
+const snd_menu_amb = preload("res://sound/menu-ambience.wav")
+const snd_walk1 = preload("res://sound/footstep1.wav")
+const snd_walk2 = preload("res://sound/footstep2.wav")
+const snd_walk3 = preload("res://sound/footstep3.wav")
+const snd_walk_blood = preload("res://sound/footstep-blood1.wav")
+const snd_door_open = preload("res://sound/door1.wav")
+const snd_ladder = preload("res://sound/ladder1.wav")
+const snd_enemy_hurt = preload("res://sound/enemy-hurt.wav")
+const snd_enemy_death = preload("res://sound/enemy-death.wav")
+
 # enemy class ------------------------------------------------------------------
 
 class Enemy extends Reference:
@@ -75,11 +87,9 @@ onready var visibility_map = $VisibilityMap
 onready var exploration_map = $ExplorationMap
 onready var player = $Player
 onready var player_anims = $Player/PlayerAnims
-onready var sound_walk = $Player/SoundWalk
-onready var sound_walk_blood = $Player/SoundWalkBlood
-onready var sound_enemy_hurt = $Player/SoundEnemy
-onready var sound_door = $Player/SoundDoor
-onready var sound_ladder = $Player/SoundLadder
+onready var player_sound = $Player/SoundPlayer
+onready var level_sound = $Player/SoundLevel
+onready var music_sound = $Player/SoundMusic
 
 # game states ------------------------------------------------------------------
 
@@ -97,6 +107,9 @@ func _ready():
 	game_state = "title"
 	player_name = "nobody"
 	$CanvasLayer/Title.visible = true
+	
+	# play menu ambience
+	play_music(music_sound, snd_menu_amb)
 	
 # input event handler
 func _input(event):
@@ -118,6 +131,8 @@ func _input(event):
 	## TODO: if game_state == "title" or game_state == "end":
 	if true:
 		if event.is_action("Start"):
+			# stop menu music
+			stop_sound(music_sound)
 			initialize_game()
 	
 	# global inputs
@@ -170,7 +185,7 @@ func try_move(dx, dy):
 				if enemy.tile.x == x && enemy.tile.y == y:
 					enemy.take_damage(self, 1)
 					# sfx
-					play_sfx(sound_enemy_hurt, 0.8, 1)
+					play_sfx(player_sound, snd_enemy_hurt, 0.8, 1)
 					# anim
 					if dx < 0:
 						player.set_flip_h(true)
@@ -179,6 +194,7 @@ func try_move(dx, dy):
 					player_anims.stop(true)
 					player_anims.play("Attack")
 					if enemy.dead:
+						play_sfx(player_sound, snd_enemy_death, 0.8, 1)
 						enemy.remove()
 						enemies.erase(enemy)
 						# bleed on the floor
@@ -193,7 +209,7 @@ func try_move(dx, dy):
 			if !blocked:
 				player_tile = Vector2(x, y)
 				# play walk sound
-				play_sfx(sound_walk, 0.8, 1)
+				play_sfx(player_sound, snd_walk1, 0.8, 1)
 				# anim
 				if dx < 0:
 					player.set_flip_h(true)
@@ -207,19 +223,20 @@ func try_move(dx, dy):
 			player_tile = Vector2(x, y)
 			player_anims.play("PlayerWalk")
 			# play squishy sound
-			play_sfx(sound_walk_blood, 0.8, 1)
+			play_sfx(player_sound, snd_walk_blood, 0.8, 1)
 		Tile.Bones:
 			player_tile = Vector2(x, y)
 			player_anims.play("PlayerWalk")
 			# play squishy sound
-			play_sfx(sound_walk_blood, 0.8, 1)
+			play_sfx(player_sound, snd_walk_blood, 0.8, 1)
+			# BUG: blood can unblock enemy?
 		
 		# if door, turn it into floor to "open"
 		Tile.Door:
 			set_tile(x, y, Tile.Floor)
 			yield(get_tree(), "idle_frame")
 			# play door open sound
-			play_sfx(sound_door, 0.9, 1)
+			play_sfx(level_sound, snd_door_open, 0.9, 1)
 			# anim
 			if dx < 0:
 				player.set_flip_h(true)
@@ -231,7 +248,7 @@ func try_move(dx, dy):
 		Tile.Ladder:
 			# play ladder sound
 			
-			play_sfx(sound_ladder, 0.9, 1)
+			play_sfx(level_sound, snd_ladder, 0.9, 1)
 			level_num += 1
 			score += 20
 			$CanvasLayer/Score.text = "Score: " + str(score)
@@ -605,9 +622,17 @@ func get_title():
 
 # function to play various sound effects ---------------------------------------
 
-func play_sfx(mysound, rangelow, rangehigh):
-	mysound.set_pitch_scale(rand_range(rangelow, rangehigh))
-	mysound.play()
+func play_sfx(myplayer, mysound, rangelow, rangehigh):
+	myplayer.set_stream(mysound)
+	myplayer.set_pitch_scale(rand_range(rangelow, rangehigh))
+	myplayer.play()
+	
+func play_music(myplayer, mysound):
+	myplayer.set_stream(mysound)
+	myplayer.play()
+	
+func stop_sound(myplayer):
+	myplayer.stop()
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 # func _process(delta):
