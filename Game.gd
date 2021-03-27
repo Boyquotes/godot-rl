@@ -20,7 +20,7 @@ const MAX_ROOM_DIMENSION = 9
 const EnemyScene = preload("res://Enemy.tscn")
 
 var name_parts = "..bobabukekogixaxoxurirero"
-var name_titles = ["The Warrior", "The Knight", "The Brave", "The Foolish", "The Forsaken", "The Idiot", "The Smelly", "The Sticky", "Smith", "The Thief", "The Rogue", "The Unseen", "The Drifter", "The Dweller", "The Lurker", "The Small", "The Unforgiven", "The Crestfallen", "The Hungry", "The Second Oldest", "The Younger", "The Original"]
+var name_titles = ["of The Valley", "of The Woodlands", "The Unknowable", "The Warrior", "The Knight", "The Brave", "The Foolish", "The Forsaken", "The Idiot", "The Smelly", "The Sticky", "Smith", "The Thief", "The Rogue", "The Unseen", "The Drifter", "The Dweller", "The Lurker", "The Small", "The Unforgiven", "The Crestfallen", "The Hungry", "The Second Oldest", "The Younger", "The Original"]
 
 # enum to get tiles by index ---------------------------------------------------
 enum Tile {Player, Stone, Floor, Ladder, Wall, Door, Bloody, Bones}
@@ -389,20 +389,19 @@ func update_visuals_bak():
 				visibility_map.set_cell(x, y, -1)
 
 func update_visuals():
+	print("updating visuals")
 	# convert tile coords into pixel coords
 	player.position = player_tile * TILE_SIZE
 	yield(get_tree(), "idle_frame")
 
-	
-
-	# if we're not inside a room
+	# assuming we're not inside a room
 	for x in range(level_size.x):
 		for y in range(level_size.y):
 			# raycast to check what we're currently seeing
 			
 			# go dark
 			visibility_map.set_cell(x, y, VisTile.Dark)
-			
+
 			# explored
 			if exploration_map.get_cell(x, y) == ExplTile.Explored:
 				visibility_map.set_cell(x, y, VisTile.Shaded)
@@ -413,20 +412,18 @@ func update_visuals():
 					visibility_map.set_cell(vx, vy, -1)
 					exploration_map.set_cell(vx, vy, ExplTile.Explored)
 						
-	# if we're inside a room
-	# figure out which room it is
-	# light up that room
-	
+	# find what room the player is in
 	var i = 0
 	while i < rooms.size():
 		for rx in range(rooms[i].position.x, rooms[i].position.x + rooms[i].size.x):
 			for ry in range(rooms[i].position.y, rooms[i].position.y + rooms[i].size.y):
 				if rx == player_tile.x && ry == player_tile.y:
+					# light up that room
 					visit_room(rooms[i])
 		i += 1
 
 func visit_room(room):
-	print("lighting room")
+	print("visiting room")
 	for rx in range(room.position.x, room.position.x + room.size.x):
 			for ry in range(room.position.y, room.position.y + room.size.y):
 				visibility_map.set_cell(rx, ry, -1)

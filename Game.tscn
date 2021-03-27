@@ -286,7 +286,6 @@ cell_size = Vector2( 10, 10 )
 cell_quadrant_size = 10
 cell_custom_transform = Transform2D( 1, 0, 0, 1, 0, 0 )
 format = 1
-tile_data = PoolIntArray( -327691, 2, 0 )
 
 [node name="VisibilityMap" type="TileMap" parent="."]
 tile_set = SubResource( 5 )
@@ -294,7 +293,6 @@ cell_size = Vector2( 10, 10 )
 cell_quadrant_size = 10
 cell_custom_transform = Transform2D( 1, 0, 0, 1, 0, 0 )
 format = 1
-tile_data = PoolIntArray( -327691, 2, 0 )
 
 [node name="ExplorationMap" type="TileMap" parent="."]
 tile_set = SubResource( 6 )
