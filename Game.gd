@@ -23,7 +23,7 @@ var name_parts = "..bobabukekogixaxoxurirero"
 var name_titles = ["The Warrior", "The Knight", "The Brave", "The Foolish", "The Forsaken", "The Idiot", "The Smelly", "The Sticky", "Smith", "The Thief", "The Rogue", "The Unseen", "The Drifter", "The Dweller", "The Lurker", "The Small", "The Unforgiven", "The Crestfallen", "The Hungry", "The Second Oldest", "The Younger", "The Original"]
 
 # enum to get tiles by index ---------------------------------------------------
-enum Tile {Player, Stone, Floor, Ladder, Wall, Door, Bloody}
+enum Tile {Player, Stone, Floor, Ladder, Wall, Door, Bloody, Bones}
 enum VisTile { Dark, Shaded }
 enum ExplTile { Unexplored, Explored }
 
@@ -37,7 +37,7 @@ class Enemy extends Reference:
 	var dead = false
 
 	func _init(game, enemy_level, x, y):
-		full_hp = 1 + enemy_level * 2
+		full_hp = 5 + enemy_level * 2
 		hp = full_hp
 		tile = Vector2(x, y)
 		sprite_node = EnemyScene.instance()
@@ -76,6 +76,8 @@ onready var exploration_map = $ExplorationMap
 onready var player = $Player
 onready var player_anims = $Player/PlayerAnims
 onready var sound_walk = $Player/SoundWalk
+onready var sound_walk_blood = $Player/SoundWalkBlood
+onready var sound_enemy_hurt = $Player/SoundEnemy
 onready var sound_door = $Player/SoundDoor
 onready var sound_ladder = $Player/SoundLadder
 
@@ -167,34 +169,50 @@ func try_move(dx, dy):
 			for enemy in enemies:
 				if enemy.tile.x == x && enemy.tile.y == y:
 					enemy.take_damage(self, 1)
+					# sfx
+					play_sfx(sound_enemy_hurt, 0.8, 1)
+					# anim
+					if dx < 0:
+						player.set_flip_h(true)
+					else:
+						player.set_flip_h(false)
+					player_anims.stop(true)
+					player_anims.play("Attack")
 					if enemy.dead:
 						enemy.remove()
 						enemies.erase(enemy)
 						# bleed on the floor
 						for bx in range(x-1, x+2):
 							for by in range(y-1, y+2):
-								set_tile(bx, by, Tile.Bloody)
+								if tile_map.get_cell(bx, by) == Tile.Floor:
+									set_tile(bx, by, Tile.Bloody)
+						set_tile(x, y, Tile.Bones)
 					blocked = true
 					break
 					
 			if !blocked:
 				player_tile = Vector2(x, y)
-				
-			# play walk sound
-			play_sfx(sound_walk, 0.8, 1)
-			# anim
-			if dx < 0:
-				player.set_flip_h(true)
-			else:
-				player.set_flip_h(false)
-			player_anims.stop(true)
-			player_anims.play("PlayerWalk")
-		
+				# play walk sound
+				play_sfx(sound_walk, 0.8, 1)
+				# anim
+				if dx < 0:
+					player.set_flip_h(true)
+				else:
+					player.set_flip_h(false)
+				player_anims.stop(true)
+				player_anims.play("PlayerWalk")
+
+
 		Tile.Bloody:
 			player_tile = Vector2(x, y)
 			player_anims.play("PlayerWalk")
 			# play squishy sound
-			play_sfx(sound_walk, 0.3, 0.4)
+			play_sfx(sound_walk_blood, 0.8, 1)
+		Tile.Bones:
+			player_tile = Vector2(x, y)
+			player_anims.play("PlayerWalk")
+			# play squishy sound
+			play_sfx(sound_walk_blood, 0.8, 1)
 		
 		# if door, turn it into floor to "open"
 		Tile.Door:
@@ -271,6 +289,8 @@ func build_level():
 	var player_x = start_room.position.x + 1 + randi() % int(start_room.size.x - 2)
 	var player_y = start_room.position.y + 1 + randi() % int(start_room.size.y - 2)
 	player_tile = Vector2(player_x, player_y)
+	
+	yield(get_tree(), "idle_frame")
 	call_deferred("update_visuals")
 	
 	# place enemies

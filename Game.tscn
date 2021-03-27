@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=2]
+[gd_scene load_steps=19 format=2]
 
 [ext_resource path="res://img/tileset.png" type="Texture" id=1]
 [ext_resource path="res://Game.gd" type="Script" id=2]
@@ -7,6 +7,8 @@
 [ext_resource path="res://sound/door1.wav" type="AudioStream" id=5]
 [ext_resource path="res://sound/ladder1.wav" type="AudioStream" id=6]
 [ext_resource path="res://explore.png" type="Texture" id=7]
+[ext_resource path="res://sound/footstep-blood1.wav" type="AudioStream" id=8]
+[ext_resource path="res://sound/enemy-hurt.wav" type="AudioStream" id=9]
 
 [sub_resource type="ConvexPolygonShape2D" id=1]
 points = PoolVector2Array( 10, 10, 0, 10, 0, 0, 10, 0 )
@@ -137,6 +139,20 @@ points = PoolVector2Array( 10, 10, 0, 10, 0, 0, 10, 0 )
 6/shape_one_way_margin = 0.0
 6/shapes = [  ]
 6/z_index = 0
+7/name = "bones"
+7/texture = ExtResource( 1 )
+7/tex_offset = Vector2( 0, 0 )
+7/modulate = Color( 1, 1, 1, 1 )
+7/region = Rect2( 70, 0, 10, 10 )
+7/tile_mode = 0
+7/occluder_offset = Vector2( 0, 0 )
+7/navigation_offset = Vector2( 0, 0 )
+7/shape_offset = Vector2( 0, 0 )
+7/shape_transform = Transform2D( 1, 0, 0, 1, 0, 0 )
+7/shape_one_way = false
+7/shape_one_way_margin = 0.0
+7/shapes = [  ]
+7/z_index = 0
 
 [sub_resource type="TileSet" id=5]
 0/name = "dark.png 0"
@@ -168,7 +184,7 @@ points = PoolVector2Array( 10, 10, 0, 10, 0, 0, 10, 0 )
 1/shapes = [  ]
 1/z_index = 0
 
-[sub_resource type="TileSet" id=8]
+[sub_resource type="TileSet" id=6]
 0/name = "explore.png 0"
 0/texture = ExtResource( 7 )
 0/tex_offset = Vector2( 0, 0 )
@@ -198,8 +214,22 @@ points = PoolVector2Array( 10, 10, 0, 10, 0, 0, 10, 0 )
 1/shapes = [  ]
 1/z_index = 0
 
-[sub_resource type="Animation" id=6]
-resource_name = "OpenDoor"
+[sub_resource type="Animation" id=9]
+resource_name = "Attack"
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:region_rect")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.1, 0.2 ),
+"transitions": PoolRealArray( 1, 1, 1 ),
+"update": 1,
+"values": [ Rect2( 60, 50, 10, 10 ), Rect2( 70, 50, 10, 10 ), Rect2( 0, 50, 10, 10 ) ]
+}
+
+[sub_resource type="Animation" id=7]
 tracks/0/type = "value"
 tracks/0/path = NodePath(".:region_rect")
 tracks/0/interp = 1
@@ -213,7 +243,7 @@ tracks/0/keys = {
 "values": [ Rect2( 40, 50, 10, 10 ), Rect2( 50, 50, 10, 10 ), Rect2( 0, 50, 10, 10 ) ]
 }
 
-[sub_resource type="Animation" id=7]
+[sub_resource type="Animation" id=8]
 length = 0.2
 step = 0.02
 tracks/0/type = "value"
@@ -249,7 +279,7 @@ format = 1
 tile_data = PoolIntArray( -327691, 2, 0 )
 
 [node name="ExplorationMap" type="TileMap" parent="."]
-tile_set = SubResource( 8 )
+tile_set = SubResource( 6 )
 cell_size = Vector2( 10, 10 )
 cell_quadrant_size = 10
 cell_custom_transform = Transform2D( 1, 0, 0, 1, 0, 0 )
@@ -273,6 +303,12 @@ drag_margin_bottom = 0.0
 [node name="SoundWalk" type="AudioStreamPlayer2D" parent="Player"]
 stream = ExtResource( 3 )
 
+[node name="SoundWalkBlood" type="AudioStreamPlayer2D" parent="Player"]
+stream = ExtResource( 8 )
+
+[node name="SoundEnemy" type="AudioStreamPlayer2D" parent="Player"]
+stream = ExtResource( 9 )
+
 [node name="SoundDoor" type="AudioStreamPlayer2D" parent="Player"]
 stream = ExtResource( 5 )
 
@@ -280,8 +316,9 @@ stream = ExtResource( 5 )
 stream = ExtResource( 6 )
 
 [node name="PlayerAnims" type="AnimationPlayer" parent="Player"]
-anims/OpenDoor = SubResource( 6 )
-anims/PlayerWalk = SubResource( 7 )
+anims/Attack = SubResource( 9 )
+anims/OpenDoor = SubResource( 7 )
+anims/PlayerWalk = SubResource( 8 )
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
