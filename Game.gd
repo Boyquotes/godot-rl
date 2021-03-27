@@ -21,7 +21,8 @@ var name_titles = ["The Warrior", "The Knight", "The Brave", "The Foolish", "The
 
 # enum to get tiles by index ---------------------------------------------------
 enum Tile {Player, Stone, Floor, Ladder, Wall, Door}
-enum VisTile { Dark, Explored }
+enum VisTile { Dark, Shaded }
+enum ExplTile { Unexplored, Explored }
 
 # current level data -----------------------------------------------------------
 
@@ -35,6 +36,7 @@ var level_size
 
 onready var tile_map = $TileMap
 onready var visibility_map = $VisibilityMap
+onready var exploration_map = $ExplorationMap
 onready var player = $Player
 onready var player_anims = $Player/PlayerAnims
 onready var sound_walk = $Player/SoundWalk
@@ -183,8 +185,9 @@ func build_level():
 			map[x].append(Tile.Stone)
 			tile_map.set_cell(x, y, Tile.Stone)
 			
-			# set everything to dark visibility
+			# set everything to dark visibility and unexplored
 			visibility_map.set_cell(x, y, VisTile.Dark)
+			exploration_map.set_cell(x, y, ExplTile.Unexplored)
 			
 	# set region but keep one tile edge of stone
 	var free_regions = [Rect2(Vector2(2, 2), level_size - Vector2(4, 4))]
@@ -239,6 +242,13 @@ func update_visuals():
 		for y in range(level_size.y):
 			# raycast to check what we're currently seeing
 			
+			# go dark
+			visibility_map.set_cell(x, y, VisTile.Dark)
+			
+			# explored
+			if exploration_map.get_cell(x, y) == ExplTile.Explored:
+				visibility_map.set_cell(x, y, VisTile.Shaded)
+			
 			var x_dir = 1 if x < player_tile.x else -1
 			var y_dir = 1 if y < player_tile.y else -1
 			var test_point = tile_to_pixel_center(x, y) + Vector2(x_dir, y_dir) * TILE_SIZE / 2
@@ -246,10 +256,9 @@ func update_visuals():
 			var occlusion = space_state.intersect_ray(player_center, test_point)
 			if !occlusion || (occlusion.position - test_point).length() < 1:
 				# mark as explored if previous unexplored
-				if visibility_map.get_cell(x, y) != VisTile.Explored:
-					visibility_map.set_cell(x, y, VisTile.Explored)
-				else:
-					visibility_map.set_cell(x, y, -1)
+				exploration_map.set_cell(x, y, ExplTile.Explored)
+				visibility_map.set_cell(x, y, -1)
+
 
 func tile_to_pixel_center(x, y):
 	return Vector2((x + 0.5) * TILE_SIZE, (y + 0.5) * TILE_SIZE)
