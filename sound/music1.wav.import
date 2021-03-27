@@ -2,12 +2,12 @@
 
 importer="wav"
 type="AudioStreamSample"
-path="res://.import/menu-ambience.wav-8708c24772a33a2ebdd622447747faa4.sample"
+path="res://.import/music1.wav-73cc219e7de09e9b78bcb7b75f0f0428.sample"
 
 [deps]
 
-source_file="res://sound/menu-ambience.wav"
-dest_files=[ "res://.import/menu-ambience.wav-8708c24772a33a2ebdd622447747faa4.sample" ]
+source_file="res://sound/music1.wav"
+dest_files=[ "res://.import/music1.wav-73cc219e7de09e9b78bcb7b75f0f0428.sample" ]
 
 [params]
 

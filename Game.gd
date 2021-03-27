@@ -38,6 +38,7 @@ const snd_door_open = preload("res://sound/door1.wav")
 const snd_ladder = preload("res://sound/ladder1.wav")
 const snd_enemy_hurt = preload("res://sound/enemy-hurt.wav")
 const snd_enemy_death = preload("res://sound/enemy-death.wav")
+const snd_music1 = preload("res://sound/music1.wav")
 
 # enemy class ------------------------------------------------------------------
 
@@ -132,7 +133,6 @@ func _input(event):
 	if true:
 		if event.is_action("Start"):
 			# stop menu music
-			stop_sound(music_sound)
 			initialize_game()
 	
 	# global inputs
@@ -153,6 +153,9 @@ func _input(event):
 
 func initialize_game():
 	game_state = "gameplay"
+	
+	stop_sound(music_sound)
+	play_music(music_sound, snd_music1)
 	
 	player_name = get_name() + " " + get_title()
 	$CanvasLayer/Name.text = player_name
@@ -198,10 +201,11 @@ func try_move(dx, dy):
 						enemy.remove()
 						enemies.erase(enemy)
 						# bleed on the floor
-						for bx in range(x-1, x+2):
-							for by in range(y-1, y+2):
-								if tile_map.get_cell(bx, by) == Tile.Floor:
-									set_tile(bx, by, Tile.Bloody)
+						# for bx in range(x-1, x+2):
+						#	for by in range(y-1, y+2):
+						#		if tile_map.get_cell(bx, by) == Tile.Floor:
+						#			set_tile(bx, by, Tile.Bloody)
+						# BUG
 						set_tile(x, y, Tile.Bones)
 					blocked = true
 					break
@@ -312,20 +316,25 @@ func build_level():
 	
 	# place enemies
 	
+	# BUG: make sure enemies can't ever be on top of ladders
+	
 	var num_enemies = LEVEL_ENEMY_COUNT[level_num]
 	for i in range(num_enemies):
 		var room = rooms[1 + randi() % (rooms.size() - 1)]
-		var x = room.position.x + 1 + randi() % int(room.size.x - 2)
-		var y = room.position.y + 1 + randi() % int(room.size.y - 2)
+		var enemy_x = room.position.x + 1 + randi() % int(room.size.x - 2)
+		var enemy_y = room.position.y + 1 + randi() % int(room.size.y - 2)
 		
 		var blocked = false
 		for enemy in enemies:
-			if enemy.tile.x == x && enemy.tile.y == y:
+			if enemy.tile.x == enemy_x && enemy.tile.y == enemy_y:
+				blocked = true
+				break
+			if tile_map.get_cell(enemy_x, enemy_y) == Tile.Ladder:
 				blocked = true
 				break
 			
 		if !blocked:
-			var enemy = Enemy.new(self, randi() % 2, x, y)
+			var enemy = Enemy.new(self, randi() % 2, enemy_x, enemy_y)
 			enemies.append(enemy)
 	
 	# place end ladder
