@@ -13,22 +13,58 @@ const LEVEL_SIZES = [
 ]
 
 const LEVEL_ROOM_COUNT = [4, 5, 7, 9, 11]
+const LEVEL_ENEMY_COUNT = [1, 4, 8, 11, 15]
 const MIN_ROOM_DIMENSION = 5
 const MAX_ROOM_DIMENSION = 9
+
+const EnemyScene = preload("res://Enemy.tscn")
 
 var name_parts = "..bobabukekogixaxoxurirero"
 var name_titles = ["The Warrior", "The Knight", "The Brave", "The Foolish", "The Forsaken", "The Idiot", "The Smelly", "The Sticky", "Smith", "The Thief", "The Rogue", "The Unseen", "The Drifter", "The Dweller", "The Lurker", "The Small", "The Unforgiven", "The Crestfallen", "The Hungry", "The Second Oldest", "The Younger", "The Original"]
 
 # enum to get tiles by index ---------------------------------------------------
-enum Tile {Player, Stone, Floor, Ladder, Wall, Door}
+enum Tile {Player, Stone, Floor, Ladder, Wall, Door, Bloody}
 enum VisTile { Dark, Shaded }
 enum ExplTile { Unexplored, Explored }
+
+# enemy class ------------------------------------------------------------------
+
+class Enemy extends Reference:
+	var sprite_node
+	var tile
+	var full_hp
+	var hp
+	var dead = false
+
+	func _init(game, enemy_level, x, y):
+		full_hp = 1 + enemy_level * 2
+		hp = full_hp
+		tile = Vector2(x, y)
+		sprite_node = EnemyScene.instance()
+		# sprite_node.frame = enemy_level
+		sprite_node.position = tile * TILE_SIZE
+		game.add_child(sprite_node)
+
+	func remove():
+		sprite_node.queue_free()
+		
+	func take_damage(game, dmg):
+		if dead:
+			return
+			
+		hp = max(0, hp - dmg)
+		sprite_node.get_node("HP").rect_size.x = TILE_SIZE * hp / full_hp
+		
+		if hp == 0:
+			dead = true
+			game.score += 10 * full_hp
 
 # current level data -----------------------------------------------------------
 
 var level_num = 0
 var map = []
 var rooms = []
+var enemies = []
 var level_size
 
 # references to commonly used nodes --------------------------------------------
@@ -123,9 +159,27 @@ func try_move(dx, dy):
 	
 	# actions based on this type of tile
 	match tile_type:
-		# if floor, just update to go there
+		# if floor
 		Tile.Floor:
-			player_tile = Vector2(x, y)
+			
+			# maybe an enemy interaction
+			var blocked = false
+			for enemy in enemies:
+				if enemy.tile.x == x && enemy.tile.y == y:
+					enemy.take_damage(self, 1)
+					if enemy.dead:
+						enemy.remove()
+						enemies.erase(enemy)
+						# bleed on the floor
+						for bx in range(x-1, x+2):
+							for by in range(y-1, y+2):
+								set_tile(bx, by, Tile.Bloody)
+					blocked = true
+					break
+					
+			if !blocked:
+				player_tile = Vector2(x, y)
+				
 			# play walk sound
 			play_sfx(sound_walk, 0.8, 1)
 			# anim
@@ -135,6 +189,12 @@ func try_move(dx, dy):
 				player.set_flip_h(false)
 			player_anims.stop(true)
 			player_anims.play("PlayerWalk")
+		
+		Tile.Bloody:
+			player_tile = Vector2(x, y)
+			player_anims.play("PlayerWalk")
+			# play squishy sound
+			play_sfx(sound_walk, 0.3, 0.4)
 		
 		# if door, turn it into floor to "open"
 		Tile.Door:
@@ -175,6 +235,11 @@ func build_level():
 	map.clear()
 	tile_map.clear()
 	
+	# remove enemies
+	for enemy in enemies:
+		enemy.remove()
+	enemies.clear()
+	
 	# look up size of this level
 	level_size = LEVEL_SIZES[level_num]
 	
@@ -207,6 +272,24 @@ func build_level():
 	var player_y = start_room.position.y + 1 + randi() % int(start_room.size.y - 2)
 	player_tile = Vector2(player_x, player_y)
 	call_deferred("update_visuals")
+	
+	# place enemies
+	
+	var num_enemies = LEVEL_ENEMY_COUNT[level_num]
+	for i in range(num_enemies):
+		var room = rooms[1 + randi() % (rooms.size() - 1)]
+		var x = room.position.x + 1 + randi() % int(room.size.x - 2)
+		var y = room.position.y + 1 + randi() % int(room.size.y - 2)
+		
+		var blocked = false
+		for enemy in enemies:
+			if enemy.tile.x == x && enemy.tile.y == y:
+				blocked = true
+				break
+			
+		if !blocked:
+			var enemy = Enemy.new(self, randi() % 2, x, y)
+			enemies.append(enemy)
 	
 	# place end ladder
 	
