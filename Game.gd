@@ -108,7 +108,7 @@ var window_size = OS.get_window_size()
 
 var move_timer
 var can_move = true
-var move_delay = 0.13
+var move_delay = 0.2
 
 # Called when the node enters the scene tree for the first time ----------------
 func _ready():
@@ -136,17 +136,6 @@ func on_walk_timeout_complete():
 func _input(event):
 	if !event.is_pressed():
 		return
-	
-	# gameplay-only inputs
-	if game_state == "gameplay" && can_move:
-		if event.is_action("Up"):
-			try_move(0, -1)
-		if event.is_action("Down"):
-			try_move(0, 1)
-		if event.is_action("Left"):
-			try_move(-1, 0)
-		if event.is_action("Right"):
-			try_move(1, 0)
 	
 	# inputs outside of gameplay only
 	## TODO: if game_state == "title" or game_state == "end":
@@ -189,6 +178,13 @@ func initialize_game():
 	build_level()
 		
 func try_move(dx, dy):
+	
+	# disable walking until timer complete
+	can_move = false
+	
+	# start timer
+	move_timer.start()
+	
 	var x = player_tile.x + dx
 	var y = player_tile.y + dy
 	
@@ -285,12 +281,7 @@ func try_move(dx, dy):
 				score += 1000
 				$CanvasLayer/Win.visible = true
 				game_state = "end"
-				
-	# disable walking until timer complete
-	can_move = false
-	
-	# start timer
-	move_timer.start()
+
 	
 	call_deferred("update_visuals")
 
@@ -713,3 +704,19 @@ func stop_sound(myplayer):
 # func _process(delta):
 	# $CanvasLayer/Debug.text = str(game_state) + " * " + str(rooms.size()) + " rooms"
 #	pass
+
+func _process(delta):
+	# gameplay-only inputs
+	if game_state == "gameplay" && can_move:
+		if Input.is_action_pressed("Up"):
+			yield(get_tree(), "idle_frame")
+			try_move(0, -1)
+		if Input.is_action_pressed("Down"):
+			yield(get_tree(), "idle_frame")
+			try_move(0, 1)
+		if Input.is_action_pressed("Left"):
+			yield(get_tree(), "idle_frame")
+			try_move(-1, 0)
+		if Input.is_action_pressed("Right"):
+			yield(get_tree(), "idle_frame")
+			try_move(1, 0)
