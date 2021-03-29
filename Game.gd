@@ -104,6 +104,12 @@ var window_scale = 1
 var screen_size = OS.get_screen_size()
 var window_size = OS.get_window_size()
 
+# movement delay ---------------------------------------------------------------
+
+var move_timer
+var can_move = true
+var move_delay = 0.13
+
 # Called when the node enters the scene tree for the first time ----------------
 func _ready():
 	OS.set_window_size(Vector2(400 * window_scale,300 * window_scale))
@@ -111,8 +117,20 @@ func _ready():
 	player_name = "nobody"
 	$CanvasLayer/Title.visible = true
 	
+	# move create move delay timer
+	
+	move_timer = Timer.new()
+	move_timer.set_one_shot(true)
+	move_timer.set_wait_time(move_delay)
+	move_timer.connect("timeout", self, "on_walk_timeout_complete")
+	add_child(move_timer)
+	
 	# play menu ambience
 	play_music(music_sound, snd_menu_amb)
+
+# fires when walk timer has timed out
+func on_walk_timeout_complete():
+	can_move = true
 	
 # input event handler
 func _input(event):
@@ -120,14 +138,14 @@ func _input(event):
 		return
 	
 	# gameplay-only inputs
-	if game_state == "gameplay":
-		if event.is_action_pressed("Up"):
+	if game_state == "gameplay" && can_move:
+		if event.is_action("Up"):
 			try_move(0, -1)
-		if event.is_action_pressed("Down"):
+		if event.is_action("Down"):
 			try_move(0, 1)
-		if event.is_action_pressed("Left"):
+		if event.is_action("Left"):
 			try_move(-1, 0)
-		if event.is_action_pressed("Right"):
+		if event.is_action("Right"):
 			try_move(1, 0)
 	
 	# inputs outside of gameplay only
@@ -267,6 +285,12 @@ func try_move(dx, dy):
 				score += 1000
 				$CanvasLayer/Win.visible = true
 				game_state = "end"
+				
+	# disable walking until timer complete
+	can_move = false
+	
+	# start timer
+	move_timer.start()
 	
 	call_deferred("update_visuals")
 
