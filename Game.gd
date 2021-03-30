@@ -39,6 +39,9 @@ const snd_ladder = preload("res://sound/ladder1.wav")
 const snd_enemy_hurt = preload("res://sound/enemy-hurt.wav")
 const snd_enemy_death = preload("res://sound/enemy-death.wav")
 const snd_music1 = preload("res://sound/music1.wav")
+const snd_ui_select = preload("res://sound/ui-select.wav")
+const snd_ui_back = preload("res://sound/ui-back.wav")
+const snd_ui_set = preload("res://sound/ui-set.wav")
 
 var snd_walk = [snd_walk1, snd_walk2, snd_walk3]
 
@@ -162,12 +165,14 @@ func _input(event):
 		
 	# view credits
 	if game_state == "title" && event.is_action("Credits"):
+		play_sfx(level_sound, snd_ui_select, 0.9, 1)
 		game_state = "credits"
 		credits_screen.visible = true
 		return
 		
 	# view settings
 	if game_state == "title" && event.is_action("Settings"):
+		play_sfx(level_sound, snd_ui_select, 0.9, 1)
 		game_state = "settings"
 		# print current settings
 		$CanvasLayer/Settings/Info.text = "Music is " + music_status + "\n"
@@ -181,6 +186,7 @@ func _input(event):
 	
 	# open pause menu
 	if game_state == "gameplay" && event.is_action("Escape"):
+		play_sfx(level_sound, snd_ui_set, 0.9, 1)
 		game_state = "pause"
 		AudioServer.set_bus_bypass_effects(1, false)
 		# print current settings
@@ -195,6 +201,7 @@ func _input(event):
 	# things we can do from the pause screen
 	
 	if game_state == "pause" && event.is_action("Escape"):
+		play_sfx(level_sound, snd_ui_back, 0.9, 1)
 		# resume the game
 		game_state = "gameplay"
 		pause_screen.visible = false
@@ -205,6 +212,7 @@ func _input(event):
 		# re-initialize game
 		return
 	if game_state == "pause" && event.is_action("Toggle Music"):
+		
 		toggle_setting("music")
 		return
 	if game_state == "pause" && event.is_action("Toggle SFX"):
@@ -220,6 +228,7 @@ func _input(event):
 	
 	# go back to title
 	if game_state == "settings" && event.is_action("Escape"):
+		play_sfx(level_sound, snd_ui_back, 0.9, 1)
 		# resume the game
 		game_state = "title"
 		settings_screen.visible = false
@@ -237,6 +246,7 @@ func _input(event):
 	# things we can do from the settings screen
 	
 	if game_state == "credits" && event.is_action("Escape"):
+		play_sfx(level_sound, snd_ui_back, 0.9, 1)
 		# back to title
 		game_state = "title"
 		credits_screen.visible = false
@@ -818,6 +828,8 @@ func log_random(type):
 		return
 		
 func toggle_setting(setting):
+	
+	play_sfx(level_sound, snd_ui_set, 0.85, 1.05)
 	
 	if setting == "music":
 		# music to full or no volume
