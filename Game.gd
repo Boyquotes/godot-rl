@@ -42,6 +42,12 @@ const snd_music1 = preload("res://sound/music1.wav")
 
 var snd_walk = [snd_walk1, snd_walk2, snd_walk3]
 
+var lowpass = AudioServer.get_bus_effect(1, 0)
+
+var music_status = "ON"
+var sfx_status = "ON"
+var log_status = "ON"
+
 # enemy class ------------------------------------------------------------------
 
 class Enemy extends Reference:
@@ -93,6 +99,9 @@ onready var player_anims = $Player/PlayerAnims
 onready var player_sound = $Player/SoundPlayer
 onready var level_sound = $Player/SoundLevel
 onready var music_sound = $Player/SoundMusic
+onready var message_log = $CanvasLayer/MessageLog
+onready var settings_screen = $CanvasLayer/Settings
+onready var pause_screen = $CanvasLayer/Pause
 
 # game states ------------------------------------------------------------------
 
@@ -108,7 +117,7 @@ var window_size = OS.get_window_size()
 
 var move_timer
 var can_move = true
-var move_delay = 0.2
+var move_delay = 0.15
 
 # Called when the node enters the scene tree for the first time ----------------
 func _ready():
@@ -139,14 +148,70 @@ func _input(event):
 	
 	# inputs outside of gameplay only
 	## TODO: if game_state == "title" or game_state == "end":
-	if true:
-		if event.is_action("Start"):
-			# stop menu music
-			initialize_game()
+	
+	# things we can do in title screen
+	
+	# start the game
+	if game_state == "title" && event.is_action("Start"):
+		initialize_game()
+		
+	# quit from main menu
+	if game_state == "title" && event.is_action("Quit"):
+		get_tree().quit()
+		
+	# view credits
+	if game_state == "title" && event.is_action("Credits"):
+		print("going to credits")
+		# TODO: display credits screen
+		return
+		
+	# view settings
+	if game_state == "title" && event.is_action("Settings"):
+		print("going to settings")
+		# TODO: display settings screen
+		return
+			
+	# things we can do during gameplay
+	
+	# open pause menu
+	if game_state == "gameplay" && event.is_action("Escape"):
+		game_state = "pause"
+		AudioServer.set_bus_bypass_effects(1, false)
+		# print current settings
+		$CanvasLayer/Pause/Info.text = "Resume Game\n\n"
+		$CanvasLayer/Pause/Info.text += "Music is " + music_status + "\n"
+		$CanvasLayer/Pause/Info.text += "SFX are " + sfx_status + "\n"
+		$CanvasLayer/Pause/Info.text += "Message Log is " + log_status + "\n\n"
+		$CanvasLayer/Pause/Info.text += "Restart\nQuit to Desktop"
+		pause_screen.visible = true
+		return
+		
+	# things we can do from the pause screen
+	
+	# resume the game
+	if game_state == "pause" && event.is_action("Escape"):
+		game_state = "gameplay"
+		pause_screen.visible = false
+		AudioServer.set_bus_bypass_effects(1, true)
+		return
+	if game_state == "pause" && event.is_action("Restart"):
+		# begin the game again
+		# re-initialize game
+		return
+	if game_state == "pause" && event.is_action("Toggle Music"):
+		toggle_setting("music")
+		return
+	if game_state == "pause" && event.is_action("Toggle SFX"):
+		toggle_setting("sfx")
+		return
+	if game_state == "pause" && event.is_action("Toggle Log"):
+		toggle_setting("log")
+		return
+	if game_state == "pause" && event.is_action("Quit"):
+		get_tree().quit()
+
 	
 	# global inputs
-	if event.is_action("Quit"):
-		get_tree().quit()
 		
 	if event.is_action("Debug"):
 		$CanvasLayer/Debug.visible = !$CanvasLayer/Debug.visible
@@ -178,7 +243,6 @@ func initialize_game():
 	build_level()
 		
 func try_move(dx, dy):
-	
 	# disable walking until timer complete
 	can_move = false
 	
@@ -212,6 +276,9 @@ func try_move(dx, dy):
 						player.set_flip_h(false)
 					player_anims.stop(true)
 					player_anims.play("Attack")
+					
+					log_random("attack")
+					
 					if enemy.dead:
 						play_sfx(player_sound, snd_enemy_death, 0.8, 1)
 						enemy.remove()
@@ -223,6 +290,8 @@ func try_move(dx, dy):
 						#			set_tile(bx, by, Tile.Bloody)
 						# BUG
 						set_tile(x, y, Tile.Bones)
+						
+						message_log.add_message("You defeat the monstrosity")
 					blocked = true
 					break
 					
@@ -366,8 +435,10 @@ func build_level():
 	# update ui
 	if level_num > 0:
 		$CanvasLayer/Level.text = "Basement Level " + str(level_num)
+		message_log.add_message("You enter level " + str(level_num) + " of the dungeon.")
 	else:
 		$CanvasLayer/Level.text = "Ground Floor"
+		message_log.add_message("You enter the ground floor.")
 
 # visibility -------------------------------------------------------------------
 
@@ -704,6 +775,49 @@ func stop_sound(myplayer):
 # func _process(delta):
 	# $CanvasLayer/Debug.text = str(game_state) + " * " + str(rooms.size()) + " rooms"
 #	pass
+
+func log_random(type):
+	if type == "attack":
+		var r = randi() % 3
+		if r == 0:
+			message_log.add_message("You attack the beast.")
+		if r == 1:
+			message_log.add_message("You kick at the monster mercilessly.")
+		if r == 2:
+			message_log.add_message("You attack this foul creature.")
+		return
+		
+func toggle_setting(setting):
+	
+	if setting == "music":
+		# music to full or no volume
+		if music_status == "ON":
+			AudioServer.set_bus_mute(3, true)
+			music_status = "OFF"
+		else:
+			AudioServer.set_bus_mute(3, false)
+			music_status = "ON"
+	if setting == "sfx":
+		# sfx to full or no volume
+		if sfx_status == "ON":
+			AudioServer.set_bus_mute(4, true)
+			sfx_status = "OFF"
+		else:
+			AudioServer.set_bus_mute(4, false)
+			sfx_status = "ON"
+	if setting == "log":
+		message_log.visible = !message_log.visible
+		if message_log.visible:
+			log_status = "ON"
+		else:
+			log_status = "OFF"
+		
+	# print current settings
+	$CanvasLayer/Pause/Info.text = "Resume Game\n\n"
+	$CanvasLayer/Pause/Info.text += "Music is " + music_status + "\n"
+	$CanvasLayer/Pause/Info.text += "SFX are " + sfx_status + "\n"
+	$CanvasLayer/Pause/Info.text += "Message Log is " + log_status + "\n\n"
+	$CanvasLayer/Pause/Info.text += "Restart\nQuit to Desktop"
 
 func _process(delta):
 	# gameplay-only inputs

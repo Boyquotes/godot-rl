@@ -1,8 +1,10 @@
-[gd_scene load_steps=15 format=2]
+[gd_scene load_steps=17 format=2]
 
 [ext_resource path="res://img/tileset.png" type="Texture" id=1]
 [ext_resource path="res://Game.gd" type="Script" id=2]
+[ext_resource path="res://font/bg_dynamicfont1.tres" type="DynamicFont" id=3]
 [ext_resource path="res://dark.png" type="Texture" id=4]
+[ext_resource path="res://MessageLog.gd" type="Script" id=5]
 [ext_resource path="res://explore.png" type="Texture" id=7]
 
 [sub_resource type="ConvexPolygonShape2D" id=1]
@@ -321,12 +323,13 @@ anims/OpenDoor = SubResource( 9 )
 anims/PlayerWalk = SubResource( 10 )
 
 [node name="SoundPlayer" type="AudioStreamPlayer2D" parent="Player"]
-bus = "Reverb"
+bus = "SFX"
 
 [node name="SoundLevel" type="AudioStreamPlayer2D" parent="Player"]
-bus = "Reverb"
+bus = "SFX"
 
 [node name="SoundMusic" type="AudioStreamPlayer2D" parent="Player"]
+bus = "Music"
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
@@ -345,6 +348,7 @@ margin_top = 20.0
 margin_right = 90.0
 margin_bottom = 34.0
 rect_pivot_offset = Vector2( -80, 0 )
+custom_fonts/font = ExtResource( 3 )
 text = "Health: 999"
 __meta__ = {
 "_edit_use_anchors_": false
@@ -355,7 +359,25 @@ margin_left = 10.0
 margin_right = 90.0
 margin_bottom = 14.0
 rect_pivot_offset = Vector2( -80, 0 )
+custom_fonts/font = ExtResource( 3 )
 text = "Name"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="MessageLog" type="Label" parent="CanvasLayer"]
+margin_left = 10.0
+margin_top = 190.0
+margin_right = 320.0
+margin_bottom = 290.0
+rect_pivot_offset = Vector2( -80, 0 )
+custom_fonts/font = ExtResource( 3 )
+custom_colors/font_color = Color( 0.584314, 0.584314, 0.584314, 1 )
+text = "> You spot a Globbon
+> Globbon hits you (3 damage)
+> You kick Globbon's face (2 damage)"
+valign = 2
+script = ExtResource( 5 )
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -366,6 +388,7 @@ margin_top = 20.0
 margin_right = 190.0
 margin_bottom = 34.0
 rect_pivot_offset = Vector2( -80, 0 )
+custom_fonts/font = ExtResource( 3 )
 text = "Score: 0"
 __meta__ = {
 "_edit_use_anchors_": false
@@ -376,6 +399,7 @@ margin_left = 240.0
 margin_right = 390.0
 margin_bottom = 20.0
 rect_pivot_offset = Vector2( -80, 0 )
+custom_fonts/font = ExtResource( 3 )
 text = "Level"
 align = 2
 __meta__ = {
@@ -433,40 +457,269 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Label" type="Label" parent="CanvasLayer/Title"]
+[node name="Title" type="Label" parent="CanvasLayer/Title"]
 margin_left = 80.0
 margin_top = 70.0
 margin_right = 320.0
 margin_bottom = 90.0
+custom_fonts/font = ExtResource( 3 )
 text = "B A D   G O B L E T"
 align = 1
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
-[node name="Label4" type="Label" parent="CanvasLayer/Title"]
-margin_top = 270.0
-margin_right = 400.0
-margin_bottom = 301.0
+[node name="Hotkeys" type="Label" parent="CanvasLayer/Title"]
+margin_left = 120.0
+margin_top = 120.0
+margin_right = 170.0
+margin_bottom = 252.0
+rect_pivot_offset = Vector2( 40, 30 )
+custom_fonts/font = ExtResource( 3 )
+text = "[ Enter ]
+
+[ S ]
+[ C ]
+
+[ Q ]
+"
+align = 2
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Info" type="Label" parent="CanvasLayer/Title"]
+margin_left = 180.0
+margin_top = 120.0
+margin_right = 278.0
+margin_bottom = 250.0
+rect_pivot_offset = Vector2( 40, 30 )
+custom_fonts/font = ExtResource( 3 )
+text = "Start
+
+Settings
+Credits
+
+Quit to Desktop"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Version" type="Label" parent="CanvasLayer/Title"]
+margin_top = 260.0
+margin_right = 390.0
+margin_bottom = 291.0
+custom_fonts/font = ExtResource( 3 )
 text = "v0.0.0.0.0.0.1"
 align = 2
 valign = 2
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
-[node name="Label3" type="Label" parent="CanvasLayer/Title"]
+[node name="Credits" type="ColorRect" parent="CanvasLayer"]
+visible = false
+margin_right = 400.0
+margin_bottom = 300.0
+color = Color( 0.305882, 0, 0, 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Title" type="Label" parent="CanvasLayer/Credits"]
 margin_left = 80.0
-margin_top = 220.0
+margin_top = 70.0
 margin_right = 320.0
-margin_bottom = 240.0
-text = "- Press Enter -"
+margin_bottom = 90.0
+custom_fonts/font = ExtResource( 3 )
+text = "B A D   G O B L E T"
 align = 1
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
-[node name="Label2" type="Label" parent="CanvasLayer/Title"]
-margin_left = 100.0
+[node name="Credits" type="Label" parent="CanvasLayer/Credits"]
+margin_left = 30.0
 margin_top = 110.0
+margin_right = 200.0
+margin_bottom = 160.0
+custom_fonts/font = ExtResource( 3 )
+text = "Design, art, and code by
+Music by
+
+Special thanks to"
+align = 2
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Names" type="Label" parent="CanvasLayer/Credits"]
+margin_left = 210.0
+margin_top = 110.0
+margin_right = 291.0
+margin_bottom = 210.0
+custom_fonts/font = ExtResource( 3 )
+text = "dominik johann
+0999
+
+Silker
+Bram
+The Poppenkast"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Hotkeys" type="Label" parent="CanvasLayer/Credits"]
+margin_left = 160.0
+margin_top = 230.0
+margin_right = 200.0
+margin_bottom = 260.0
+rect_pivot_offset = Vector2( 40, 30 )
+custom_fonts/font = ExtResource( 3 )
+text = "[ Esc ]"
+align = 2
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Info" type="Label" parent="CanvasLayer/Credits"]
+margin_left = 210.0
+margin_top = 230.0
+margin_right = 250.0
+margin_bottom = 260.0
+rect_pivot_offset = Vector2( 40, 30 )
+custom_fonts/font = ExtResource( 3 )
+text = "Back"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Version" type="Label" parent="CanvasLayer/Credits"]
+margin_top = 260.0
+margin_right = 390.0
+margin_bottom = 291.0
+custom_fonts/font = ExtResource( 3 )
+text = "v0.0.0.0.0.0.1"
+align = 2
+valign = 2
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Pause" type="ColorRect" parent="CanvasLayer"]
+visible = false
+margin_right = 400.0
+margin_bottom = 300.0
+color = Color( 0, 0, 0, 0.823529 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Title" type="Label" parent="CanvasLayer/Pause"]
+margin_left = 80.0
+margin_top = 70.0
 margin_right = 320.0
-margin_bottom = 192.0
-text = "* Move with arrows or WASD
-* Walk to fight / collect / use
-* ESC to exit
-* F to zoom window 2x
-* Have fun"
+margin_bottom = 90.0
+rect_pivot_offset = Vector2( 110, 10 )
+custom_fonts/font = ExtResource( 3 )
+text = "P A U S E D"
+align = 1
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Hotkeys" type="Label" parent="CanvasLayer/Pause"]
+margin_left = 110.0
+margin_top = 120.0
+margin_right = 160.0
+margin_bottom = 252.0
+rect_pivot_offset = Vector2( 40, 30 )
+custom_fonts/font = ExtResource( 3 )
+text = "[ Esc ]
+
+[ M ]	
+[ S ]
+[ L ]
+
+[ R ]
+[ Q ]
+"
+align = 2
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Info" type="Label" parent="CanvasLayer/Pause"]
+margin_left = 170.0
+margin_top = 120.0
+margin_right = 268.0
+margin_bottom = 250.0
+rect_pivot_offset = Vector2( 40, 30 )
+custom_fonts/font = ExtResource( 3 )
+text = "Resume Game
+
+Music is ON
+SFX are ON
+Message Log is ON
+
+Restart
+Quit to Desktop"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Settings" type="ColorRect" parent="CanvasLayer"]
+visible = false
+margin_right = 400.0
+margin_bottom = 300.0
+color = Color( 0.305882, 0, 0, 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Title" type="Label" parent="CanvasLayer/Settings"]
+margin_left = 80.0
+margin_top = 70.0
+margin_right = 320.0
+margin_bottom = 90.0
+rect_pivot_offset = Vector2( 110, 10 )
+custom_fonts/font = ExtResource( 3 )
+text = "S E T T I N G S"
+align = 1
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Hotkeys" type="Label" parent="CanvasLayer/Settings"]
+margin_left = 110.0
+margin_top = 120.0
+margin_right = 160.0
+margin_bottom = 210.0
+rect_pivot_offset = Vector2( 40, 30 )
+custom_fonts/font = ExtResource( 3 )
+text = "[ M ]	
+[ S ]
+[ L ]
+
+[ Esc ]
+"
+align = 2
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Info" type="Label" parent="CanvasLayer/Settings"]
+margin_left = 170.0
+margin_top = 120.0
+margin_right = 268.0
+margin_bottom = 210.0
+rect_pivot_offset = Vector2( 40, 30 )
+custom_fonts/font = ExtResource( 3 )
+text = "Music is ON
+SFX are ON
+Message Log is ON
+
+Back"
 __meta__ = {
 "_edit_use_anchors_": false
 }
