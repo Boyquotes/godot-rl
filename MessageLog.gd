@@ -20,3 +20,5 @@ func add_message(text):
 		# newline unless lowest message
 		if t < (messages.size() - 1):
 			self.text += "\n"
+
+# TODO: clear old messages after a while

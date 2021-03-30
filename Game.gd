@@ -126,6 +126,10 @@ var move_delay = 0.15
 # Called when the node enters the scene tree for the first time ----------------
 func _ready():
 	OS.set_window_size(Vector2(400 * window_scale,300 * window_scale))
+	
+	title_setup()
+
+func title_setup():
 	game_state = "title"
 	player_name = "nobody"
 	$CanvasLayer/Title.visible = true
@@ -208,8 +212,9 @@ func _input(event):
 		AudioServer.set_bus_bypass_effects(1, true)
 		return
 	if game_state == "pause" && event.is_action("Restart"):
-		# begin the game again
-		# re-initialize game
+		play_sfx(level_sound, snd_ui_select, 0.3, 0.4)
+		pause_screen.visible = false
+		title_setup()
 		return
 	if game_state == "pause" && event.is_action("Toggle Music"):
 		
@@ -267,6 +272,9 @@ func _input(event):
 
 func initialize_game():
 	game_state = "gameplay"
+	
+	# clear message log
+	message_log.messages.clear()
 	
 	stop_sound(music_sound)
 	play_music(music_sound, snd_music1)
@@ -373,6 +381,7 @@ func try_move(dx, dy):
 			else:
 				player.set_flip_h(false)
 			player_anims.play("OpenDoor")
+			message_log.add_message("The door opens without a key.")
 			
 		# if ladder, increase level count, add score, etc.
 		Tile.Ladder:
