@@ -168,7 +168,13 @@ func _input(event):
 	# view settings
 	if game_state == "title" && event.is_action("Settings"):
 		print("going to settings")
-		# TODO: display settings screen
+		game_state = "settings"
+		# print current settings
+		$CanvasLayer/Settings/Info.text = "Music is " + music_status + "\n"
+		$CanvasLayer/Settings/Info.text += "SFX are " + sfx_status + "\n"
+		$CanvasLayer/Settings/Info.text += "Message Log is " + log_status + "\n\n"
+		$CanvasLayer/Settings/Info.text += "Back"
+		settings_screen.visible = true
 		return
 			
 	# things we can do during gameplay
@@ -188,8 +194,8 @@ func _input(event):
 		
 	# things we can do from the pause screen
 	
-	# resume the game
 	if game_state == "pause" && event.is_action("Escape"):
+		# resume the game
 		game_state = "gameplay"
 		pause_screen.visible = false
 		AudioServer.set_bus_bypass_effects(1, true)
@@ -210,6 +216,23 @@ func _input(event):
 	if game_state == "pause" && event.is_action("Quit"):
 		get_tree().quit()
 
+	# things we can do from the settings screen
+	
+	# go back to title
+	if game_state == "settings" && event.is_action("Escape"):
+		# resume the game
+		game_state = "title"
+		settings_screen.visible = false
+		return
+	if game_state == "settings" && event.is_action("Toggle Music"):
+		toggle_setting("music")
+		return
+	if game_state == "settings" && event.is_action("Toggle SFX"):
+		toggle_setting("sfx")
+		return
+	if game_state == "settings" && event.is_action("Toggle Log"):
+		toggle_setting("log")
+		return
 	
 	# global inputs
 		
@@ -818,6 +841,12 @@ func toggle_setting(setting):
 	$CanvasLayer/Pause/Info.text += "SFX are " + sfx_status + "\n"
 	$CanvasLayer/Pause/Info.text += "Message Log is " + log_status + "\n\n"
 	$CanvasLayer/Pause/Info.text += "Restart\nQuit to Desktop"
+	
+	# print current settings
+	$CanvasLayer/Settings/Info.text = "Music is " + music_status + "\n"
+	$CanvasLayer/Settings/Info.text += "SFX are " + sfx_status + "\n"
+	$CanvasLayer/Settings/Info.text += "Message Log is " + log_status + "\n\n"
+	$CanvasLayer/Settings/Info.text += "Back"
 
 func _process(delta):
 	# gameplay-only inputs
