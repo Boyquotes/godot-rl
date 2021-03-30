@@ -102,6 +102,7 @@ onready var music_sound = $Player/SoundMusic
 onready var message_log = $CanvasLayer/MessageLog
 onready var settings_screen = $CanvasLayer/Settings
 onready var pause_screen = $CanvasLayer/Pause
+onready var credits_screen = $CanvasLayer/Credits
 
 # game states ------------------------------------------------------------------
 
@@ -161,13 +162,12 @@ func _input(event):
 		
 	# view credits
 	if game_state == "title" && event.is_action("Credits"):
-		print("going to credits")
-		# TODO: display credits screen
+		game_state = "credits"
+		credits_screen.visible = true
 		return
 		
 	# view settings
 	if game_state == "title" && event.is_action("Settings"):
-		print("going to settings")
 		game_state = "settings"
 		# print current settings
 		$CanvasLayer/Settings/Info.text = "Music is " + music_status + "\n"
@@ -233,6 +233,13 @@ func _input(event):
 	if game_state == "settings" && event.is_action("Toggle Log"):
 		toggle_setting("log")
 		return
+		
+	# things we can do from the settings screen
+	
+	if game_state == "credits" && event.is_action("Escape"):
+		# back to title
+		game_state = "title"
+		credits_screen.visible = false
 	
 	# global inputs
 		
