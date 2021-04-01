@@ -16,6 +16,7 @@ const LEVEL_ROOM_COUNT = [4, 7, 9, 13, 15]
 const LEVEL_ENEMY_COUNT = [2, 5, 9, 11, 15]
 const MIN_ROOM_DIMENSION = 5
 const MAX_ROOM_DIMENSION = 9
+const PLAYER_START_HP = 15
 
 const EnemyScene = preload("res://Enemy.tscn")
 
@@ -49,7 +50,7 @@ var snd_walk = [snd_walk1, snd_walk2, snd_walk3]
 
 var lowpass = AudioServer.get_bus_effect(1, 0)
 
-var music_status = "OFF"
+var music_status = "ON"
 var sfx_status = "ON"
 var log_status = "ON"
 
@@ -84,6 +85,29 @@ class Enemy extends Reference:
 		if hp == 0:
 			dead = true
 			game.score += 10 * full_hp
+			
+	func act(game):
+		if !sprite_node.visible:
+			return
+	
+		var my_point = game.enemy_pathfinding.get_closest_point(Vector3(tile.x, tile.y, 0))
+		var player_point = game.enemy_pathfinding.get_closest_point(Vector3(game.player_tile.x, game.player_tile.y, 0))
+		var path = game.enemy_pathfinding.get_point_path(my_point, player_point)
+		if path:
+			assert(path.size() > 1)
+			var move_tile = Vector2(path[1].x, path[1].y)
+			
+			if move_tile == game.player_tile:
+				game.damage_player(1)
+			else:
+				var blocked = false
+				for enemy in game.enemies:
+					if enemy.tile == move_tile:
+						blocked = true
+						break
+				
+				if !blocked:
+					tile = move_tile
 
 # current level data -----------------------------------------------------------
 
@@ -110,17 +134,17 @@ onready var pause_screen = $CanvasLayer/Pause
 onready var credits_screen = $CanvasLayer/Credits
 
 # game states ------------------------------------------------------------------
-
 var game_state
 var player_name
 var player_tile
 var score = 0
+var player_hp = PLAYER_START_HP
+var enemy_pathfinding
 var window_scale = 1
 var screen_size = OS.get_screen_size()
 var window_size = OS.get_window_size()
 
 # movement delay ---------------------------------------------------------------
-
 var move_timer
 var can_move = true
 var move_delay = 0.15
@@ -130,16 +154,16 @@ func _ready():
 	OS.set_window_size(Vector2(400 * window_scale,300 * window_scale))
 	get_tree().set_auto_accept_quit(false)
 	
+	# load settings
 	load_data()
 	
-	# apply saved settings
-	
+	# apply loaded settings from save or defaults
 	if music_status == "ON":
 		AudioServer.set_bus_mute(3, false)
 	else:
 		AudioServer.set_bus_mute(3, true)
 		
-	if music_status == "ON":
+	if sfx_status == "ON":
 		AudioServer.set_bus_mute(4, false)
 	else:
 		AudioServer.set_bus_mute(4, true)
@@ -149,7 +173,7 @@ func _ready():
 	else:
 		message_log.visible = false
 	
-	
+	# launch into title screen
 	title_setup()
 
 func title_setup():
@@ -157,8 +181,7 @@ func title_setup():
 	player_name = "nobody"
 	$CanvasLayer/Title.visible = true
 	
-	# move create move delay timer
-	
+	# create move delay timer
 	move_timer = Timer.new()
 	move_timer.set_one_shot(true)
 	move_timer.set_wait_time(move_delay)
@@ -295,6 +318,8 @@ func _input(event):
 # function to initialize / restart the entire game -----------------------------
 
 func initialize_game():
+	player_hp = PLAYER_START_HP
+	
 	game_state = "gameplay"
 	
 	# clear message log
@@ -309,9 +334,11 @@ func initialize_game():
 	randomize()
 	level_num = 0
 	score = 0
+
 	$CanvasLayer/Win.visible = false
 	$CanvasLayer/Lose.visible = false
 	$CanvasLayer/Title.visible = false
+	
 	build_level()
 		
 func try_move(dx, dy):
@@ -361,8 +388,9 @@ func try_move(dx, dy):
 						#		if tile_map.get_cell(bx, by) == Tile.Floor:
 						#			set_tile(bx, by, Tile.Bloody)
 						# BUG
-						set_tile(x, y, Tile.Bones)
+						# set_tile(x, y, Tile.Bones)
 						
+						$CanvasLayer/Score.text = "Score: " + str(score)
 						message_log.add_message("You defeat the monstrosity")
 					blocked = true
 					break
@@ -423,8 +451,11 @@ func try_move(dx, dy):
 				score += 1000
 				$CanvasLayer/Win.visible = true
 				game_state = "end"
+				
+	# every enemy tries to move
+	for enemy in enemies:
+		enemy.act(self)
 
-	
 	call_deferred("update_visuals")
 
 # function to generate and build level -----------------------------------------
@@ -439,6 +470,9 @@ func build_level():
 	for enemy in enemies:
 		enemy.remove()
 	enemies.clear()
+	
+	# set up enemy pathfinding
+	enemy_pathfinding = AStar.new()
 	
 	# look up size of this level
 	level_size = LEVEL_SIZES[level_num]
@@ -583,6 +617,37 @@ func update_visuals():
 					# light up that room
 					visit_room(rooms[i])
 		i += 1
+	
+	# update enemy sprite positions
+	for enemy in enemies:
+		enemy.sprite_node.position = enemy.tile * TILE_SIZE
+		# if enemy isn't already visible
+		if !enemy.sprite_node.visible:
+			var occlusion = true
+			if visibility_map.get_cell(enemy.tile.x, enemy.tile.y) == -1:
+				occlusion = false
+			if !occlusion:
+				enemy.sprite_node.visible = true
+				
+	$CanvasLayer/HP.text = "HP: " + str(player_hp)
+	$CanvasLayer/Score.text = "Score: " + str(score)
+
+func clear_path(tile):
+	var new_point = enemy_pathfinding.get_available_point_id()
+	enemy_pathfinding.add_point(new_point, Vector3(tile.x, tile.y, 0))
+	var points_to_connect = []
+	
+	if tile.x > 0 && map[tile.x - 1][tile.y] == Tile.Floor:
+		points_to_connect.append(enemy_pathfinding.get_closest_point(Vector3(tile.x - 1, tile.y, 0)))
+	if tile.y > 0 && map[tile.x][tile.y - 1] == Tile.Floor:
+		points_to_connect.append(enemy_pathfinding.get_closest_point(Vector3(tile.x, tile.y - 1, 0)))
+	if tile.x < level_size.x - 1 && map[tile.x + 1][tile.y] == Tile.Floor:
+		points_to_connect.append(enemy_pathfinding.get_closest_point(Vector3(tile.x + 1, tile.y, 0)))
+	if tile.y < level_size.y - 1 && map[tile.x][tile.y + 1] == Tile.Floor:
+		points_to_connect.append(enemy_pathfinding.get_closest_point(Vector3(tile.x, tile.y + 1, 0)))
+		
+	for point in points_to_connect:
+		enemy_pathfinding.connect_points(point, new_point)
 
 func visit_room(room):
 	for rx in range(room.position.x, room.position.x + room.size.x):
@@ -809,12 +874,22 @@ func cut_regions(free_regions, region_to_remove):
 		free_regions.append(region)
 
 # function to set tiles --------------------------------------------------------
-
 func set_tile(x, y, type):
 	map[x][y] = type
 	tile_map.set_cell(x,y,type)
+	
+	# clear path for pathfinding if we're changing to floor
+	if type == Tile.Floor:
+		clear_path(Vector2(x, y))
 
-# name generators ---------------------------------------------------------------
+# player taking damage= --------------------------------------------------------
+func damage_player(dmg):
+	player_hp = max(0, player_hp - dmg)
+	if player_hp == 0:
+		$CanvasLayer/Lose.visible = true
+		# TODO: prevent input on lose, etc.
+
+# name generators --------------------------------------------------------------
 
 func get_pair():
 	var r = randi()%name_parts.length()/2
