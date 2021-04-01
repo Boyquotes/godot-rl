@@ -209,6 +209,7 @@ func _input(event):
 	
 	# start the game
 	if game_state == "title" && event.is_action("Start"):
+		play_sfx(level_sound, snd_ui_select, 0.2, 0.4)
 		initialize_game()
 		
 	# quit from main menu
@@ -263,7 +264,7 @@ func _input(event):
 		$CanvasLayer/Pause/Info.text += "Music is " + music_status + "\n"
 		$CanvasLayer/Pause/Info.text += "SFX are " + sfx_status + "\n"
 		$CanvasLayer/Pause/Info.text += "Message Log is " + log_status + "\n\n"
-		$CanvasLayer/Pause/Info.text += "Restart\nQuit to Desktop"
+		$CanvasLayer/Pause/Info.text += "Restart\nQuit to Title"
 		pause_screen.visible = true
 		return
 		
