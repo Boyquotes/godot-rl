@@ -132,6 +132,8 @@ onready var message_log = $CanvasLayer/MessageLog
 onready var settings_screen = $CanvasLayer/Settings
 onready var pause_screen = $CanvasLayer/Pause
 onready var credits_screen = $CanvasLayer/Credits
+onready var lose_screen = $CanvasLayer/Lose
+onready var win_screen = $CanvasLayer/Win
 
 # game states ------------------------------------------------------------------
 var game_state
@@ -232,6 +234,22 @@ func _input(event):
 		$CanvasLayer/Settings/Info.text += "Back"
 		settings_screen.visible = true
 		return
+		
+	# things we can do on game over
+	
+	# restart immediately
+	if game_state == "lose" && event.is_action("Restart"):
+		play_sfx(level_sound, snd_ui_select, 0.3, 0.4)
+		lose_screen.visible = false
+		initialize_game()
+		return
+	
+	# back to title
+	if game_state == "lose" && event.is_action("Escape"):
+		play_sfx(level_sound, snd_ui_select, 0.3, 0.4)
+		lose_screen.visible = false
+		title_setup()
+		return
 			
 	# things we can do during gameplay
 	
@@ -261,7 +279,7 @@ func _input(event):
 	if game_state == "pause" && event.is_action("Restart"):
 		play_sfx(level_sound, snd_ui_select, 0.3, 0.4)
 		pause_screen.visible = false
-		title_setup()
+		initialize_game()
 		return
 	if game_state == "pause" && event.is_action("Toggle Music"):
 		
@@ -274,7 +292,10 @@ func _input(event):
 		toggle_setting("log")
 		return
 	if game_state == "pause" && event.is_action("Quit"):
-		get_tree().quit()
+		play_sfx(level_sound, snd_ui_select, 0.3, 0.4)
+		pause_screen.visible = false
+		title_setup()
+		return
 
 	# things we can do from the settings screen
 	
@@ -391,7 +412,7 @@ func try_move(dx, dy):
 						# set_tile(x, y, Tile.Bones)
 						
 						$CanvasLayer/Score.text = "Score: " + str(score)
-						message_log.add_message("You defeat the monstrosity")
+						message_log.add_message("You defeat the monstrosity.")
 					blocked = true
 					break
 					
@@ -619,6 +640,8 @@ func update_visuals():
 		i += 1
 	
 	# update enemy sprite positions
+	var enemies_spotted = 0
+	
 	for enemy in enemies:
 		enemy.sprite_node.position = enemy.tile * TILE_SIZE
 		# if enemy isn't already visible
@@ -627,7 +650,16 @@ func update_visuals():
 			if visibility_map.get_cell(enemy.tile.x, enemy.tile.y) == -1:
 				occlusion = false
 			if !occlusion:
+				# turn node visibility on
 				enemy.sprite_node.visible = true
+				# add to count of enemies that spotted you
+				enemies_spotted += 1
+				
+	if enemies_spotted > 0:
+		if enemies_spotted == 1:
+			message_log.add_message("A monster spots you.")
+		else:
+			message_log.add_message(str(enemies_spotted) + " monsters spot you!")
 				
 	$CanvasLayer/HP.text = "HP: " + str(player_hp)
 	$CanvasLayer/Score.text = "Score: " + str(score)
@@ -885,9 +917,18 @@ func set_tile(x, y, type):
 # player taking damage= --------------------------------------------------------
 func damage_player(dmg):
 	player_hp = max(0, player_hp - dmg)
+	message_log.add_message("Monster attacks you for " + str(dmg) + " damage!")
 	if player_hp == 0:
-		$CanvasLayer/Lose.visible = true
-		# TODO: prevent input on lose, etc.
+		lose_screen.visible = true
+		var death_area = ""
+		if (level_num) == 0:
+			death_area = "the ground floor"
+		else:
+			death_area = "level " + str(level_num)
+			
+		$CanvasLayer/Lose/DeathMsg.text = "You were slain by a monster in\n"
+		$CanvasLayer/Lose/DeathMsg.text += death_area + " of the terrible basement."
+		game_state = "lose"
 
 # name generators --------------------------------------------------------------
 
