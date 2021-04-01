@@ -17,6 +17,8 @@ _global_script_class_icons={
 
 config/name="BAD GOBLET"
 run/main_scene="res://Game.tscn"
+config/use_custom_user_dir=true
+config/custom_user_dir_name="BAD GOBLET"
 boot_splash/image="res://img/splash.png"
 boot_splash/bg_color=Color( 0, 0, 0, 1 )
 config/icon="res://img/icon.png"

@@ -22,6 +22,8 @@ const EnemyScene = preload("res://Enemy.tscn")
 var name_parts = "..bobabukekogixaxoxurirero"
 var name_titles = ["of The Valley", "of The Woodlands", "The Unknowable", "The Warrior", "The Knight", "The Brave", "The Foolish", "The Forsaken", "The Idiot", "The Smelly", "The Sticky", "Smith", "The Thief", "The Rogue", "The Unseen", "The Drifter", "The Dweller", "The Lurker", "The Small", "The Unforgiven", "The Crestfallen", "The Hungry", "The Second Oldest", "The Younger", "The Original"]
 
+var save_path = "user://save.dat"
+
 # enum to get tiles by index ---------------------------------------------------
 enum Tile {Player, Stone, Floor, Ladder, Wall, Door, Bloody, Bones}
 enum VisTile { Dark, Shaded, Debug }
@@ -47,7 +49,7 @@ var snd_walk = [snd_walk1, snd_walk2, snd_walk3]
 
 var lowpass = AudioServer.get_bus_effect(1, 0)
 
-var music_status = "ON"
+var music_status = "OFF"
 var sfx_status = "ON"
 var log_status = "ON"
 
@@ -126,6 +128,27 @@ var move_delay = 0.15
 # Called when the node enters the scene tree for the first time ----------------
 func _ready():
 	OS.set_window_size(Vector2(400 * window_scale,300 * window_scale))
+	get_tree().set_auto_accept_quit(false)
+	
+	load_data()
+	
+	# apply saved settings
+	
+	if music_status == "ON":
+		AudioServer.set_bus_mute(3, false)
+	else:
+		AudioServer.set_bus_mute(3, true)
+		
+	if music_status == "ON":
+		AudioServer.set_bus_mute(4, false)
+	else:
+		AudioServer.set_bus_mute(4, true)
+		
+	if log_status == "ON":
+		message_log.visible = true
+	else:
+		message_log.visible = false
+	
 	
 	title_setup()
 
@@ -165,6 +188,7 @@ func _input(event):
 		
 	# quit from main menu
 	if game_state == "title" && event.is_action("Quit"):
+		save_data()
 		get_tree().quit()
 		
 	# view credits
@@ -875,6 +899,49 @@ func toggle_setting(setting):
 	$CanvasLayer/Settings/Info.text += "SFX are " + sfx_status + "\n"
 	$CanvasLayer/Settings/Info.text += "Message Log is " + log_status + "\n\n"
 	$CanvasLayer/Settings/Info.text += "Back"
+	
+func save_data():
+	# save dictionary of settings
+	
+	var data = {
+		"setting_music": music_status,
+		"setting_sfx": sfx_status,
+		"setting_log": log_status,
+	}
+	
+	var file = File.new()
+	var error = file.open(save_path, File.WRITE)
+	if error == OK:
+		file.store_var(data)
+		file.close()
+		print("saved data")
+	else:
+		print("error occured on save... sorry...")
+		
+func load_data():
+	# load settings from save data
+	
+	var file = File.new()
+	
+	if file.file_exists(save_path):
+		var error = file.open(save_path, File.READ)
+		if error == OK:
+			var player_data = file.get_var()
+			file.close()
+			print("loaded data")
+			
+			music_status = player_data.setting_music
+			sfx_status = player_data.setting_sfx
+			log_status = player_data.setting_log
+		else:
+			print("error occured on load... oopsie...")
+	
+
+# on quit request
+func _notification(what):
+	if what == MainLoop.NOTIFICATION_WM_QUIT_REQUEST:
+		save_data()
+		get_tree().quit()
 
 func _process(delta):
 	# gameplay-only inputs
