@@ -30,7 +30,7 @@ const STATUS_EFFECTS = ["heal_once", "heal_over_time", "poison"]
 
 const EnemyScene = preload("res://Enemy.tscn")
 const ItemScene = preload("res://Item.tscn")
-const DamageScene = preload("res://DamageLabel.tscn")
+const FloatLabelScene = preload("res://FloatLabel.tscn")
 
 var name_parts = "..bobabukekogixaxoxurirero"
 var name_titles = ["of The Valley", "of The Woodlands", "The Unknowable", "The Warrior", "The Knight", "The Brave", "The Foolish", "The Forsaken", "The Idiot", "The Smelly", "The Sticky", "Smith", "The Thief", "The Rogue", "The Unseen", "The Drifter", "The Dweller", "The Lurker", "The Small", "The Unforgiven", "The Crestfallen", "The Hungry", "The Second Oldest", "The Younger", "The Original"]
@@ -487,10 +487,13 @@ func try_move(dx, dy):
 				player_anims.play("PlayerWalk")
 				pickup_items()
 				
-				var damage_label = DamageScene.instance()
-				damage_label.text = "ye ye"
-				damage_label.rect_position = player_tile * TILE_SIZE - Vector2(16, 30)
+				
+				# TODO: helper function to spawn label, with text and color custom
+				var damage_label = FloatLabelScene.instance()
 				add_child(damage_label)
+				damage_label.label.text = "ye ye"
+				damage_label.position = player_tile * TILE_SIZE
+				
 
 
 		Tile.Bloody:
