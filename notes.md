@@ -14,6 +14,7 @@
 - walking less janky
 - make enemy invisible again once in shadow?
 - low pass persists when quitting from pause
+- enemies rendering under items
 
 ## ideas
 

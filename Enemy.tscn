@@ -5,6 +5,7 @@
 [node name="Enemy" type="Sprite"]
 visible = false
 position = Vector2( 530, 260 )
+z_index = 1
 texture = ExtResource( 1 )
 centered = false
 vframes = 16

@@ -125,16 +125,17 @@ class Enemy extends Reference:
 			# 5 hp: 10%
 			# nothing: rest
 			
-			if r >= 95:
-				# drop a potion
-				game.items.append(Item.new(game, tile.x, tile.y, 17))
-			elif r >= 85:
-				# drop a heart
-				game.items.append(Item.new(game, tile.x, tile.y, 16))
-			elif r >= 45:
-				# drop a coin
-				game.items.append(Item.new(game, tile.x, tile.y, 18))
+#			if r >= 95:
+#				# drop a potion
+#				game.items.append(Item.new(game, tile.x, tile.y, 17))
+#			elif r >= 85:
+#				# drop a heart
+#				game.items.append(Item.new(game, tile.x, tile.y, 16))
+#			elif r >= 45:
+#				# drop a coin
+#				game.items.append(Item.new(game, tile.x, tile.y, 18))
 		
+			game.items.append(Item.new(game, tile.x, tile.y, 18))
 			
 	func act(game):
 		if !sprite_node.visible:
@@ -408,6 +409,7 @@ func initialize_game():
 	randomize()
 	level_num = 0
 	score = 0
+	coins = 0
 
 	$CanvasLayer/Win.visible = false
 	$CanvasLayer/Lose.visible = false
@@ -556,6 +558,7 @@ func pickup_items():
 				coins += coin_value
 				score += coin_score
 				play_sfx(level_sound, snd_item_coin, 0.8, 1)
+				$CanvasLayer/Coins.text = "Coins: " + str(coins)
 				message_log.add_message("You find a coin! Riches increased by " + str(coin_value) + " to " + str(coins))
 			else:
 				# generic item sound
@@ -676,26 +679,24 @@ func build_level():
 
 func update_visuals():
 	# convert tile coords into pixel coords
-	player.position = player_tile * TILE_SIZE
 	yield(get_tree(), "idle_frame")
+	player.position = player_tile * TILE_SIZE
 
 	# assuming we're not inside a room
 	for x in range(level_size.x):
 		for y in range(level_size.y):
-			# raycast to check what we're currently seeing
-			
-			# go dark
-			visibility_map.set_cell(x, y, VisTile.Dark)
-
 			# explored
 			if exploration_map.get_cell(x, y) == ExplTile.Explored:
 				visibility_map.set_cell(x, y, VisTile.Shaded)
+			else:
+				visibility_map.set_cell(x, y, VisTile.Dark)
 			
 			# if player is there, see and explore
 			for vx in range(player_tile.x - 1, player_tile.x + 2):
 				for vy in range(player_tile.y - 1, player_tile.y + 2):
 					visibility_map.set_cell(vx, vy, -1)
 					exploration_map.set_cell(vx, vy, ExplTile.Explored)
+
 						
 	# find what room the player is in
 	var i = 0
