@@ -30,6 +30,7 @@ const STATUS_EFFECTS = ["heal_once", "heal_over_time", "poison"]
 
 const EnemyScene = preload("res://Enemy.tscn")
 const ItemScene = preload("res://Item.tscn")
+const DamageScene = preload("res://DamageLabel.tscn")
 
 var name_parts = "..bobabukekogixaxoxurirero"
 var name_titles = ["of The Valley", "of The Woodlands", "The Unknowable", "The Warrior", "The Knight", "The Brave", "The Foolish", "The Forsaken", "The Idiot", "The Smelly", "The Sticky", "Smith", "The Thief", "The Rogue", "The Unseen", "The Drifter", "The Dweller", "The Lurker", "The Small", "The Unforgiven", "The Crestfallen", "The Hungry", "The Second Oldest", "The Younger", "The Original"]
@@ -107,6 +108,7 @@ class Enemy extends Reference:
 		sprite_node.queue_free()
 		
 	func take_damage(game, dmg):
+		
 		if dead:
 			return
 			
@@ -484,6 +486,11 @@ func try_move(dx, dy):
 				player_anims.stop(true)
 				player_anims.play("PlayerWalk")
 				pickup_items()
+				
+				var damage_label = DamageScene.instance()
+				damage_label.text = "ye ye"
+				damage_label.rect_position = player_tile * TILE_SIZE - Vector2(16, 30)
+				add_child(damage_label)
 
 
 		Tile.Bloody:
@@ -530,11 +537,22 @@ func try_move(dx, dy):
 				game_state = "end"
 				
 	# every enemy tries to move
+	
+	# TODO: add action phase
+	# disable player input
+	# run enemy animations, effects, etc.
+	# after a timer, allow player input again
+	
 	for enemy in enemies:
 		enemy.act(self)
 
 	call_deferred("update_visuals")
-	
+
+# action phase -----------------------------------------------------------------
+
+func action_phase ():
+	return
+
 # item pickup ------------------------------------------------------------------
 
 func pickup_items():
@@ -628,6 +646,13 @@ func build_level():
 	yield(get_tree(), "idle_frame")
 	call_deferred("update_visuals")
 	
+	# place end ladder
+	
+	var end_room = rooms.back()
+	var ladder_x = end_room.position.x + 1 + randi() % int(end_room.size.x - 2)
+	var ladder_y = end_room.position.y + 1 + randi() % int(end_room.size.y - 2)
+	set_tile(ladder_x, ladder_y, Tile.Ladder)
+	
 	# place enemies
 	
 	# BUG: make sure enemies can't ever be on top of ladders
@@ -645,6 +670,7 @@ func build_level():
 				break
 			if tile_map.get_cell(enemy_x, enemy_y) == Tile.Ladder:
 				blocked = true
+				print("enemy tried to spawn on ladder")
 				break
 			
 		if !blocked:
@@ -665,13 +691,7 @@ func build_level():
 			items.append(Item.new(self, x, y, 18))
 	
 	call_deferred("update_visuals")
-	
-	# place end ladder
-	
-	var end_room = rooms.back()
-	var ladder_x = end_room.position.x + 1 + randi() % int(end_room.size.x - 2)
-	var ladder_y = end_room.position.y + 1 + randi() % int(end_room.size.y - 2)
-	set_tile(ladder_x, ladder_y, Tile.Ladder)
+
 	
 	# update ui
 	if level_num > 0:
