@@ -14,6 +14,7 @@ const LEVEL_SIZES = [
 
 const LEVEL_ROOM_COUNT = [4, 7, 9, 13, 15]
 const LEVEL_ENEMY_COUNT = [2, 5, 9, 11, 15]
+const LEVEL_ITEM_COUNT = [1, 3, 5, 5, 5]
 const MIN_ROOM_DIMENSION = 5
 const MAX_ROOM_DIMENSION = 9
 const PLAYER_START_HP = 15
@@ -125,17 +126,16 @@ class Enemy extends Reference:
 			# 5 hp: 10%
 			# nothing: rest
 			
-#			if r >= 95:
-#				# drop a potion
-#				game.items.append(Item.new(game, tile.x, tile.y, 17))
-#			elif r >= 85:
-#				# drop a heart
-#				game.items.append(Item.new(game, tile.x, tile.y, 16))
-#			elif r >= 45:
-#				# drop a coin
-#				game.items.append(Item.new(game, tile.x, tile.y, 18))
-		
-			game.items.append(Item.new(game, tile.x, tile.y, 18))
+			if r >= 95:
+				# drop a potion
+				game.items.append(Item.new(game, tile.x, tile.y, 17))
+			elif r >= 85:
+				# drop a heart
+				game.items.append(Item.new(game, tile.x, tile.y, 16))
+			elif r >= 45:
+				# drop a coin
+				game.items.append(Item.new(game, tile.x, tile.y, 18))
+	
 			
 	func act(game):
 		if !sprite_node.visible:
@@ -559,7 +559,7 @@ func pickup_items():
 				score += coin_score
 				play_sfx(level_sound, snd_item_coin, 0.8, 1)
 				$CanvasLayer/Coins.text = "Coins: " + str(coins)
-				message_log.add_message("You find a coin! Riches increased by " + str(coin_value) + " to " + str(coins))
+				message_log.add_message("You find a coin! Riches increased by " + str(coin_value) + ".")
 			else:
 				# generic item sound
 				play_sfx(level_sound, snd_ui_set, 0.8, 1)
@@ -650,6 +650,21 @@ func build_level():
 		if !blocked:
 			var enemy = Enemy.new(self, randi() % 2, enemy_x, enemy_y)
 			enemies.append(enemy)
+			
+	# place items
+	
+	var num_items = LEVEL_ITEM_COUNT[level_num]
+	for i in range(num_items):
+		var room = rooms[randi() % (rooms.size())]
+		var x = room.position.x + 1 + randi() % int(room.size.x - 2)
+		var y = room.position.y + 1 + randi() % int(room.size.y - 2)
+		var r = randi() % 100
+		if r >= 70:
+			items.append(Item.new(self, x, y, 16))
+		else:
+			items.append(Item.new(self, x, y, 18))
+	
+	call_deferred("update_visuals")
 	
 	# place end ladder
 	
@@ -668,14 +683,9 @@ func build_level():
 
 # visibility -------------------------------------------------------------------
 
-# additional tile map
 # states: visible, explored, unexplored
-
-# visible is eiter a radius around the player, or a raycast solution
 # explored is everything that was ever visible at any point
 # unexplored is the default state, was never visible
-
-# TODO: test with radius around player
 
 func update_visuals():
 	# convert tile coords into pixel coords
@@ -729,6 +739,20 @@ func update_visuals():
 			message_log.add_message("A monster spots you.")
 		else:
 			message_log.add_message(str(enemies_spotted) + " monsters spot you!")
+			
+	# show and hide items
+	
+	for item in items:
+		item.sprite_node.position = item.tile * TILE_SIZE
+		# it item isn't already visible
+		var occlusion = true
+		if visibility_map.get_cell(item.tile.x, item.tile.y) == -1:
+			occlusion = false
+		if !occlusion:
+			# turn node visibility on
+			item.sprite_node.visible = true
+		else:
+			item.sprite_node.visible = false
 				
 	$CanvasLayer/HP.text = "HP: " + str(player_hp)
 	$CanvasLayer/Score.text = "Score: " + str(score)
