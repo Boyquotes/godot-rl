@@ -18,7 +18,17 @@ const MIN_ROOM_DIMENSION = 5
 const MAX_ROOM_DIMENSION = 9
 const PLAYER_START_HP = 15
 
+# item values
+var coin_value = 1
+var coin_score = 10
+var heart_health = 5
+var heart_score = 10
+var potion_score = 20
+
+const STATUS_EFFECTS = ["heal_once", "heal_over_time", "poison"]
+
 const EnemyScene = preload("res://Enemy.tscn")
+const ItemScene = preload("res://Item.tscn")
 
 var name_parts = "..bobabukekogixaxoxurirero"
 var name_titles = ["of The Valley", "of The Woodlands", "The Unknowable", "The Warrior", "The Knight", "The Brave", "The Foolish", "The Forsaken", "The Idiot", "The Smelly", "The Sticky", "Smith", "The Thief", "The Rogue", "The Unseen", "The Drifter", "The Dweller", "The Lurker", "The Small", "The Unforgiven", "The Crestfallen", "The Hungry", "The Second Oldest", "The Younger", "The Original"]
@@ -45,6 +55,9 @@ const snd_music1 = preload("res://sound/music1.wav")
 const snd_ui_select = preload("res://sound/ui-select.wav")
 const snd_ui_back = preload("res://sound/ui-back.wav")
 const snd_ui_set = preload("res://sound/ui-set.wav")
+const snd_item_coin = preload("res://sound/item-coin.wav")
+const snd_item_potion = preload("res://sound/item-potion.wav")
+const snd_item_heart = preload("res://sound/item-heart.wav")
 
 var snd_walk = [snd_walk1, snd_walk2, snd_walk3]
 
@@ -53,6 +66,23 @@ var lowpass = AudioServer.get_bus_effect(1, 0)
 var music_status = "ON"
 var sfx_status = "ON"
 var log_status = "ON"
+
+# item class -------------------------------------------------------------------
+
+class Item extends Reference:
+	var sprite_node
+	var tile
+	var this_drop
+
+	func _init(game, x, y, this_drop):
+		tile = Vector2(x, y)
+		sprite_node = ItemScene.instance()
+		sprite_node.position = tile * TILE_SIZE
+		sprite_node.frame = this_drop
+		game.add_child(sprite_node)
+
+	func remove():
+		sprite_node.queue_free()
 
 # enemy class ------------------------------------------------------------------
 
@@ -86,6 +116,26 @@ class Enemy extends Reference:
 			dead = true
 			game.score += 10 * full_hp
 			
+			# drop item
+			
+			var r = randi() % 100
+			
+			# coins: 40% 
+			# full hp: 5%
+			# 5 hp: 10%
+			# nothing: rest
+			
+			if r >= 95:
+				# drop a potion
+				game.items.append(Item.new(game, tile.x, tile.y, 17))
+			elif r >= 85:
+				# drop a heart
+				game.items.append(Item.new(game, tile.x, tile.y, 16))
+			elif r >= 45:
+				# drop a coin
+				game.items.append(Item.new(game, tile.x, tile.y, 18))
+		
+			
 	func act(game):
 		if !sprite_node.visible:
 			return
@@ -115,6 +165,7 @@ var level_num = 0
 var map = []
 var rooms = []
 var enemies = []
+var items = []
 var level_size
 
 # references to commonly used nodes --------------------------------------------
@@ -140,6 +191,7 @@ var game_state
 var player_name
 var player_tile
 var score = 0
+var coins = 0
 var player_hp = PLAYER_START_HP
 var enemy_pathfinding
 var window_scale = 1
@@ -429,6 +481,7 @@ func try_move(dx, dy):
 					player.set_flip_h(false)
 				player_anims.stop(true)
 				player_anims.play("PlayerWalk")
+				pickup_items()
 
 
 		Tile.Bloody:
@@ -479,6 +532,42 @@ func try_move(dx, dy):
 		enemy.act(self)
 
 	call_deferred("update_visuals")
+	
+# item pickup ------------------------------------------------------------------
+
+func pickup_items():
+	var remove_queue = []
+	for item in items:
+		if item.tile == player_tile:
+			if item.sprite_node.frame == 16:
+				# heart pickup
+				play_sfx(level_sound, snd_item_heart, 0.8, 1)
+				player_hp += heart_health
+				score += heart_score
+				message_log.add_message("You find a heart! " + str(heart_health) + " health points healed.")
+			elif item.sprite_node.frame == 17:
+				# potion pickup
+				play_sfx(level_sound, snd_item_potion, 0.8, 1)
+				player_hp = PLAYER_START_HP
+				score += potion_score
+				message_log.add_message("You find a potion and restore your full health.")
+			elif item.sprite_node.frame == 18:
+				# coin pickup
+				coins += coin_value
+				score += coin_score
+				play_sfx(level_sound, snd_item_coin, 0.8, 1)
+				message_log.add_message("You find a coin! Riches increased by " + str(coin_value) + " to " + str(coins))
+			else:
+				# generic item sound
+				play_sfx(level_sound, snd_ui_set, 0.8, 1)
+				message_log.add_message("Something unknown collected...")
+			
+			item.remove()
+			remove_queue.append(item)
+		
+	for item in remove_queue:
+		items.erase(item)
+	
 
 # function to generate and build level -----------------------------------------
 
@@ -492,6 +581,11 @@ func build_level():
 	for enemy in enemies:
 		enemy.remove()
 	enemies.clear()
+	
+	# remove items
+	for item in items:
+		item.remove()
+	items.clear()
 	
 	# set up enemy pathfinding
 	enemy_pathfinding = AStar.new()
@@ -579,33 +673,6 @@ func build_level():
 # unexplored is the default state, was never visible
 
 # TODO: test with radius around player
-
-func update_visuals_bak():
-	# convert tile coords into pixel coords
-	player.position = player_tile * TILE_SIZE
-	yield(get_tree(), "idle_frame")
-	var player_center = tile_to_pixel_center(player_tile.x, player_tile.y)
-	var space_state = get_world_2d().direct_space_state
-	for x in range(level_size.x):
-		for y in range(level_size.y):
-			# raycast to check what we're currently seeing
-			
-			# go dark
-			visibility_map.set_cell(x, y, VisTile.Dark)
-			
-			# explored
-			if exploration_map.get_cell(x, y) == ExplTile.Explored:
-				visibility_map.set_cell(x, y, VisTile.Shaded)
-			
-			var x_dir = 1 if x < player_tile.x else -1
-			var y_dir = 1 if y < player_tile.y else -1
-			var test_point = tile_to_pixel_center(x, y) + Vector2(x_dir, y_dir) * TILE_SIZE / 2
-			
-			var occlusion = space_state.intersect_ray(player_center, test_point)
-			if !occlusion || (occlusion.position - test_point).length() < 1:
-				# mark as explored if previous unexplored
-				exploration_map.set_cell(x, y, ExplTile.Explored)
-				visibility_map.set_cell(x, y, -1)
 
 func update_visuals():
 	# convert tile coords into pixel coords
