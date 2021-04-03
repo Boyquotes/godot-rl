@@ -5,6 +5,7 @@
 
 [sub_resource type="Animation" id=1]
 resource_name = "Float Up"
+length = 2.0
 tracks/0/type = "value"
 tracks/0/path = NodePath("Label:margin_top")
 tracks/0/interp = 1
@@ -12,10 +13,10 @@ tracks/0/loop_wrap = true
 tracks/0/imported = false
 tracks/0/enabled = true
 tracks/0/keys = {
-"times": PoolRealArray( 0, 1 ),
+"times": PoolRealArray( 0, 2 ),
 "transitions": PoolRealArray( 1, 1 ),
 "update": 0,
-"values": [ -20.0, -60.0 ]
+"values": [ -20.0, -80.0 ]
 }
 
 [node name="FloatLabel" type="Sprite"]
@@ -24,7 +25,7 @@ script = ExtResource( 2 )
 
 [node name="Label" type="Label" parent="."]
 margin_left = -20.0
-margin_top = -20.0
+margin_top = -80.0
 margin_right = 20.0
 margin_bottom = -6.0
 custom_fonts/font = ExtResource( 1 )

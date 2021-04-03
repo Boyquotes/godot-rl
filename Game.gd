@@ -96,7 +96,7 @@ class Enemy extends Reference:
 	var dead = false
 
 	func _init(game, enemy_level, x, y):
-		full_hp = 5 + enemy_level * 2
+		full_hp = 1 + enemy_level * 2
 		hp = full_hp
 		tile = Vector2(x, y)
 		sprite_node = EnemyScene.instance()
@@ -114,6 +114,9 @@ class Enemy extends Reference:
 			
 		hp = max(0, hp - dmg)
 		sprite_node.get_node("HP").rect_size.x = TILE_SIZE * hp / full_hp
+		
+		var pos = sprite_node.position
+		game.spawn_label("-" + str(dmg), 0, pos)
 		
 		if hp == 0:
 			dead = true
@@ -152,6 +155,8 @@ class Enemy extends Reference:
 			
 			if move_tile == game.player_tile:
 				game.damage_player(1)
+				var pos = sprite_node.position
+				game.spawn_label("-1", 3, pos + Vector2(12, 12))
 			else:
 				var blocked = false
 				for enemy in game.enemies:
@@ -444,6 +449,7 @@ func try_move(dx, dy):
 			for enemy in enemies:
 				if enemy.tile.x == x && enemy.tile.y == y:
 					enemy.take_damage(self, 1)
+					print("enemy now at " + str(enemy.hp) + " hp")
 					# sfx
 					play_sfx(player_sound, snd_enemy_hurt, 0.8, 1)
 					# anim
@@ -485,16 +491,7 @@ func try_move(dx, dy):
 					player.set_flip_h(false)
 				player_anims.stop(true)
 				player_anims.play("PlayerWalk")
-				pickup_items()
-				
-				
-				# TODO: helper function to spawn label, with text and color custom
-				var damage_label = FloatLabelScene.instance()
-				add_child(damage_label)
-				damage_label.label.text = "ye ye"
-				damage_label.position = player_tile * TILE_SIZE
-				
-
+				pickup_items()				
 
 		Tile.Bloody:
 			player_tile = Vector2(x, y)
@@ -533,6 +530,9 @@ func try_move(dx, dy):
 			$CanvasLayer/Score.text = "Score: " + str(score)
 			if level_num < LEVEL_SIZES.size():
 				build_level()
+				
+				var pos = player_tile * TILE_SIZE
+				spawn_label("level completed", 0, pos)
 			else:
 				# no more levels left, you win
 				score += 1000
@@ -562,18 +562,23 @@ func pickup_items():
 	var remove_queue = []
 	for item in items:
 		if item.tile == player_tile:
+			var pos = player_tile * TILE_SIZE
+			
 			if item.sprite_node.frame == 16:
 				# heart pickup
 				play_sfx(level_sound, snd_item_heart, 0.8, 1)
 				player_hp += heart_health
 				score += heart_score
 				message_log.add_message("You find a heart! " + str(heart_health) + " health points healed.")
+				spawn_label("+" + str(heart_health), 2, pos)
 			elif item.sprite_node.frame == 17:
 				# potion pickup
 				play_sfx(level_sound, snd_item_potion, 0.8, 1)
 				player_hp = PLAYER_START_HP
 				score += potion_score
 				message_log.add_message("You find a potion and restore your full health.")
+				# spawn info text
+				spawn_label("healed", 2, pos)
 			elif item.sprite_node.frame == 18:
 				# coin pickup
 				coins += coin_value
@@ -581,6 +586,8 @@ func pickup_items():
 				play_sfx(level_sound, snd_item_coin, 0.8, 1)
 				$CanvasLayer/Coins.text = "Coins: " + str(coins)
 				message_log.add_message("You find a coin! Riches increased by " + str(coin_value) + ".")
+				# spawn info text
+				spawn_label("+" + str(coin_value), 4, pos)
 			else:
 				# generic item sound
 				play_sfx(level_sound, snd_ui_set, 0.8, 1)
@@ -677,7 +684,7 @@ func build_level():
 				break
 			
 		if !blocked:
-			var enemy = Enemy.new(self, randi() % 2, enemy_x, enemy_y)
+			var enemy = Enemy.new(self, randi() % (level_num + 1), enemy_x, enemy_y)
 			enemies.append(enemy)
 			
 	# place items
@@ -1045,6 +1052,14 @@ func damage_player(dmg):
 		$CanvasLayer/Lose/DeathMsg.text = "You were slain by a monster in\n"
 		$CanvasLayer/Lose/DeathMsg.text += death_area + " of the terrible basement."
 		game_state = "lose"
+		
+# floating label spawner -------------------------------------------------------
+
+func spawn_label(text, color, pos):
+	var label = FloatLabelScene.instance()
+	add_child(label)
+	label.set_label_text(text, color)
+	label.position = pos + Vector2(randi() % 5, randi() % 5)
 
 # name generators --------------------------------------------------------------
 
