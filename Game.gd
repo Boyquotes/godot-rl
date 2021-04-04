@@ -15,6 +15,7 @@ const LEVEL_SIZES = [
 const LEVEL_ROOM_COUNT = [4, 7, 9, 13, 15]
 const LEVEL_ENEMY_COUNT = [2, 5, 9, 11, 15]
 const LEVEL_ITEM_COUNT = [1, 3, 5, 5, 5]
+const LEVEL_POWERUP_COUNT = [0, 1, 1, 1, 1]
 const MIN_ROOM_DIMENSION = 5
 const MAX_ROOM_DIMENSION = 9
 const PLAYER_START_HP = 15
@@ -201,9 +202,11 @@ onready var win_screen = $CanvasLayer/Win
 var game_state
 var player_name
 var player_tile
+var player_dmg = 1
 var score = 0
 var coins = 0
 var player_hp = PLAYER_START_HP
+var max_hp = PLAYER_START_HP
 var enemy_pathfinding
 var window_scale = 1
 var screen_size = OS.get_screen_size()
@@ -440,6 +443,7 @@ func initialize_game():
 	level_num = 0
 	score = 0
 	coins = 0
+	player_dmg = 1
 
 	$CanvasLayer/Win.visible = false
 	$CanvasLayer/Lose.visible = false
@@ -471,7 +475,7 @@ func try_move(dx, dy):
 			var blocked = false
 			for enemy in enemies:
 				if enemy.tile.x == x && enemy.tile.y == y:
-					enemy.take_damage(self, 1)
+					enemy.take_damage(self, player_dmg)
 					# sfx
 					play_sfx(player_sound, snd_enemy_hurt, 0.8, 1)
 					# anim
@@ -563,6 +567,7 @@ func try_move(dx, dy):
 				$CanvasLayer/Win/Score.text = "Score: " + str(score)
 				$CanvasLayer/Win.visible = true
 				game_state = "end"
+			return
 				
 	# every enemy tries to move
 	
@@ -592,15 +597,27 @@ func pickup_items():
 			if item.sprite_node.frame == 16:
 				# heart pickup
 				play_sfx(level_sound, snd_item_heart, 0.8, 1)
-				player_hp += heart_health
+				
+				# heal until max_hp
+				var heal_amount = 0
+
+				if player_hp < max_hp:
+					# heal by difference
+					heal_amount = min(max_hp - player_hp, heart_health)
+					player_hp += heal_amount
+					message_log.add_message("You find a heart! " + str(heal_amount) + " health restored.")
+					spawn_label("+" + str(heal_amount), 2, pos)
+				else:
+					message_log.add_message("You find a heart! Nothing happens.")
+					spawn_label("no effect", 1, pos)
+				
 				score += heart_score
-				message_log.add_message("You find a heart! " + str(heart_health) + " health points healed.")
-				spawn_label("+" + str(heart_health), 2, pos)
+
 			elif item.sprite_node.frame == 17:
 				# potion pickup
 				play_sfx(level_sound, snd_item_potion, 0.8, 1)
-				if player_hp < PLAYER_START_HP:
-					player_hp = PLAYER_START_HP
+				if player_hp < max_hp:
+					player_hp = max_hp
 					message_log.add_message("You drink a potion and restore your full health.")
 					# spawn info text
 					spawn_label("healed", 2, pos)
@@ -609,17 +626,36 @@ func pickup_items():
 					# spawn info text
 					spawn_label("no effect", 1, pos)
 				score += potion_score
-				
-				
 			elif item.sprite_node.frame == 18:
 				# coin pickup
 				coins += coin_value
 				score += coin_score
 				play_sfx(level_sound, snd_item_coin, 0.8, 1)
 				$CanvasLayer/Coins.text = "Coins: " + str(coins)
-				message_log.add_message("You find a coin! Riches increased by " + str(coin_value) + ".")
+				message_log.add_message("You find a coin!")
 				# spawn info text
 				spawn_label("+" + str(coin_value), 4, pos)
+			elif item.sprite_node.frame == 20:
+				# health upgrade
+				
+				# increase max health
+				max_hp += 10
+				if player_hp < max_hp:
+					player_hp = max_hp
+				
+				# TODO: sfx
+				play_sfx(level_sound, snd_ui_set, 0.8, 1)
+				$CanvasLayer/HP.text = "HP: " + str(player_hp) + " / " + str(max_hp)
+				message_log.add_message("You drink from the goblet. Max health +10!")
+				# spawn info text
+				spawn_label("max +10", 2, pos)
+			elif item.sprite_node.frame == 21:
+				# power upgrade
+				player_dmg += 1
+				# TODO: sfx
+				play_sfx(level_sound, snd_ui_set, 0.8, 1)
+				spawn_label("strength +1", 0, pos)
+				message_log.add_message("You find a bracelet! Strength +1!")
 			else:
 				# generic item sound
 				play_sfx(level_sound, snd_ui_set, 0.8, 1)
@@ -635,6 +671,7 @@ func pickup_items():
 # function to generate and build level -----------------------------------------
 
 func build_level():
+	
 	# start with blank map
 	rooms.clear()
 	map.clear()
@@ -732,6 +769,20 @@ func build_level():
 		else:
 			items.append(Item.new(self, x, y, 18))
 	
+	randomize()
+	
+	var num_powers = LEVEL_POWERUP_COUNT[level_num]
+	if num_powers > 0:
+		for i in range(num_powers):
+			var room = rooms[1 + randi() % (rooms.size() - 1)]
+			var x = room.position.x + 1 + randi() % int(room.size.x - 2)
+			var y = room.position.y + 1 + randi() % int(room.size.y - 2)
+			var r = randi() % 100
+			if r >= 50:
+				items.append(Item.new(self, x, y, 20))
+			else:
+				items.append(Item.new(self, x, y, 21))
+	
 	call_deferred("update_visuals")
 
 	
@@ -816,7 +867,7 @@ func update_visuals():
 		else:
 			item.sprite_node.visible = false
 				
-	$CanvasLayer/HP.text = "HP: " + str(player_hp)
+	$CanvasLayer/HP.text = "HP: " + str(player_hp) + " / " + str(max_hp)
 	$CanvasLayer/Score.text = "Score: " + str(score)
 
 func clear_path(tile):

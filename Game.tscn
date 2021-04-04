@@ -489,6 +489,7 @@ __meta__ = {
 }
 
 [node name="Lose" type="ColorRect" parent="CanvasLayer"]
+visible = false
 margin_right = 400.0
 margin_bottom = 300.0
 color = Color( 0, 0, 0, 0.784314 )
@@ -563,7 +564,7 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Title2" type="RichTextLabel" parent="CanvasLayer/Lose"]
+[node name="You Died" type="RichTextLabel" parent="CanvasLayer/Lose"]
 margin_left = 80.0
 margin_top = 50.0
 margin_right = 320.0
@@ -571,7 +572,7 @@ margin_bottom = 90.0
 rect_clip_content = false
 custom_fonts/normal_font = ExtResource( 3 )
 bbcode_enabled = true
-bbcode_text = "[center][wave amp=30 freq=4]Y O U   D I E D[/wave]"
+bbcode_text = "[color=red][center][wave amp=30 freq=4]Y O U   D I E D[/wave]"
 text = "Y O U   D I E D"
 
 [node name="Title" type="ColorRect" parent="CanvasLayer"]
@@ -848,6 +849,27 @@ rect_pivot_offset = Vector2( -80, 0 )
 custom_colors/font_color = Color( 1, 0, 0, 1 )
 text = "Game State"
 valign = 2
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Generating" type="ColorRect" parent="CanvasLayer"]
+visible = false
+margin_right = 400.0
+margin_bottom = 300.0
+color = Color( 0, 0, 0, 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Title2" type="Label" parent="CanvasLayer/Generating"]
+margin_left = 80.0
+margin_top = 140.0
+margin_right = 320.0
+margin_bottom = 160.0
+custom_fonts/font = ExtResource( 3 )
+text = "Generating ..."
+align = 1
 __meta__ = {
 "_edit_use_anchors_": false
 }
