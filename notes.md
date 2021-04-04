@@ -4,9 +4,8 @@
 
 - death effect / animation / sfx
 - get hurt sfx
-- item drops (coin?)
-- healing items
 - end screens
+- add the goblet
 
 ## bugs / improvements
 
