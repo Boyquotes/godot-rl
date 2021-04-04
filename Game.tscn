@@ -424,19 +424,71 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Label" type="Label" parent="CanvasLayer/Win"]
-margin_left = 80.0
-margin_top = 100.0
-margin_right = 320.0
-margin_bottom = 165.0
-text = "You win!
+[node name="Info3" type="Label" parent="CanvasLayer/Win"]
+margin_left = 180.0
+margin_top = 200.0
+margin_right = 278.0
+margin_bottom = 270.0
+rect_pivot_offset = Vector2( 40, 30 )
+custom_fonts/font = ExtResource( 3 )
+text = "Back to Title"
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
-Press Enter to play again."
+[node name="Hotkeys3" type="Label" parent="CanvasLayer/Win"]
+margin_left = 120.0
+margin_top = 200.0
+margin_right = 170.0
+margin_bottom = 270.0
+rect_pivot_offset = Vector2( 40, 30 )
+custom_fonts/font = ExtResource( 3 )
+text = "[ Esc ]
+
+"
+align = 2
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Title3" type="Label" parent="CanvasLayer/Win"]
+margin_left = 80.0
+margin_top = 50.0
+margin_right = 320.0
+margin_bottom = 70.0
+custom_fonts/font = ExtResource( 3 )
+text = "Y O U   W I N ! ! !"
 align = 1
-autowrap = true
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="DeathMsg2" type="Label" parent="CanvasLayer/Win"]
+margin_left = 80.0
+margin_top = 90.0
+margin_right = 320.0
+margin_bottom = 117.0
+custom_fonts/font = ExtResource( 3 )
+text = "You did it.
+Good job. You really did it."
+align = 1
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Score" type="Label" parent="CanvasLayer/Win"]
+margin_left = 80.0
+margin_top = 140.0
+margin_right = 320.0
+margin_bottom = 167.0
+custom_fonts/font = ExtResource( 3 )
+text = "Score: 999"
+align = 1
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
 [node name="Lose" type="ColorRect" parent="CanvasLayer"]
-visible = false
 margin_right = 400.0
 margin_bottom = 300.0
 color = Color( 0, 0, 0, 0.784314 )
@@ -446,9 +498,9 @@ __meta__ = {
 
 [node name="Info2" type="Label" parent="CanvasLayer/Lose"]
 margin_left = 180.0
-margin_top = 150.0
+margin_top = 200.0
 margin_right = 278.0
-margin_bottom = 280.0
+margin_bottom = 290.0
 rect_pivot_offset = Vector2( 40, 30 )
 custom_fonts/font = ExtResource( 3 )
 text = "Restart
@@ -459,9 +511,9 @@ __meta__ = {
 
 [node name="Hotkeys2" type="Label" parent="CanvasLayer/Lose"]
 margin_left = 120.0
-margin_top = 150.0
+margin_top = 200.0
 margin_right = 170.0
-margin_bottom = 282.0
+margin_bottom = 290.0
 rect_pivot_offset = Vector2( 40, 30 )
 custom_fonts/font = ExtResource( 3 )
 text = "[ R ]
@@ -474,6 +526,7 @@ __meta__ = {
 }
 
 [node name="Title" type="Label" parent="CanvasLayer/Lose"]
+visible = false
 margin_left = 80.0
 margin_top = 50.0
 margin_right = 320.0
@@ -497,6 +550,29 @@ align = 1
 __meta__ = {
 "_edit_use_anchors_": false
 }
+
+[node name="Score" type="Label" parent="CanvasLayer/Lose"]
+margin_left = 80.0
+margin_top = 140.0
+margin_right = 320.0
+margin_bottom = 167.0
+custom_fonts/font = ExtResource( 3 )
+text = "Score: 999"
+align = 1
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Title2" type="RichTextLabel" parent="CanvasLayer/Lose"]
+margin_left = 80.0
+margin_top = 50.0
+margin_right = 320.0
+margin_bottom = 90.0
+rect_clip_content = false
+custom_fonts/normal_font = ExtResource( 3 )
+bbcode_enabled = true
+bbcode_text = "[center][wave amp=30 freq=4]Y O U   D I E D[/wave]"
+text = "Y O U   D I E D"
 
 [node name="Title" type="ColorRect" parent="CanvasLayer"]
 visible = false

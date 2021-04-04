@@ -89,6 +89,7 @@ class Item extends Reference:
 # enemy class ------------------------------------------------------------------
 
 class Enemy extends Reference:
+	var enemy_name
 	var sprite_node
 	var tile
 	var full_hp
@@ -101,6 +102,8 @@ class Enemy extends Reference:
 		tile = Vector2(x, y)
 		sprite_node = EnemyScene.instance()
 		# sprite_node.frame = enemy_level
+		# assign enemy names and levels
+		enemy_name = "Boblin"
 		sprite_node.position = tile * TILE_SIZE
 		game.add_child(sprite_node)
 
@@ -239,6 +242,8 @@ func _ready():
 	title_setup()
 
 func title_setup():
+	AudioServer.set_bus_bypass_effects(1, true)
+	
 	game_state = "title"
 	player_name = "nobody"
 	$CanvasLayer/Title.visible = true
@@ -311,7 +316,24 @@ func _input(event):
 		lose_screen.visible = false
 		title_setup()
 		return
+	
+	# things we can do on win
+	
+	# restart immediately
+	if game_state == "win" && event.is_action("Restart"):
+		play_sfx(level_sound, snd_ui_select, 0.3, 0.4)
+		win_screen.visible = false
+		initialize_game()
+		return
+	
+	# back to title
+	if game_state == "win" && event.is_action("Escape"):
+		play_sfx(level_sound, snd_ui_select, 0.3, 0.4)
+		win_screen.visible = false
+		title_setup()
+		return
 			
+	
 	# things we can do during gameplay
 	
 	# open pause menu
@@ -400,6 +422,7 @@ func _input(event):
 # function to initialize / restart the entire game -----------------------------
 
 func initialize_game():
+	AudioServer.set_bus_bypass_effects(1, true)
 	player_hp = PLAYER_START_HP
 	
 	game_state = "gameplay"
@@ -449,7 +472,6 @@ func try_move(dx, dy):
 			for enemy in enemies:
 				if enemy.tile.x == x && enemy.tile.y == y:
 					enemy.take_damage(self, 1)
-					print("enemy now at " + str(enemy.hp) + " hp")
 					# sfx
 					play_sfx(player_sound, snd_enemy_hurt, 0.8, 1)
 					# anim
@@ -460,10 +482,11 @@ func try_move(dx, dy):
 					player_anims.stop(true)
 					player_anims.play("Attack")
 					
-					log_random("attack")
+					# log_random("attack")
 					
 					if enemy.dead:
 						play_sfx(player_sound, snd_enemy_death, 0.8, 1)
+						message_log.add_message("You defeat the " + enemy.enemy_name + ".")
 						enemy.remove()
 						enemies.erase(enemy)
 						# bleed on the floor
@@ -473,9 +496,10 @@ func try_move(dx, dy):
 						#			set_tile(bx, by, Tile.Bloody)
 						# BUG
 						# set_tile(x, y, Tile.Bones)
+					else:
+						message_log.add_message("You attack the " + enemy.enemy_name + ".")
 						
 						$CanvasLayer/Score.text = "Score: " + str(score)
-						message_log.add_message("You defeat the monstrosity.")
 					blocked = true
 					break
 					
@@ -536,6 +560,7 @@ func try_move(dx, dy):
 			else:
 				# no more levels left, you win
 				score += 1000
+				$CanvasLayer/Win/Score.text = "Score: " + str(score)
 				$CanvasLayer/Win.visible = true
 				game_state = "end"
 				
@@ -574,11 +599,18 @@ func pickup_items():
 			elif item.sprite_node.frame == 17:
 				# potion pickup
 				play_sfx(level_sound, snd_item_potion, 0.8, 1)
-				player_hp = PLAYER_START_HP
+				if player_hp < PLAYER_START_HP:
+					player_hp = PLAYER_START_HP
+					message_log.add_message("You drink a potion and restore your full health.")
+					# spawn info text
+					spawn_label("healed", 2, pos)
+				else:
+					message_log.add_message("You drink a potion. Nothing happens.")
+					# spawn info text
+					spawn_label("no effect", 1, pos)
 				score += potion_score
-				message_log.add_message("You find a potion and restore your full health.")
-				# spawn info text
-				spawn_label("healed", 2, pos)
+				
+				
 			elif item.sprite_node.frame == 18:
 				# coin pickup
 				coins += coin_value
@@ -766,9 +798,9 @@ func update_visuals():
 				
 	if enemies_spotted > 0:
 		if enemies_spotted == 1:
-			message_log.add_message("A monster spots you.")
+			message_log.add_message("A Boblin spots you.")
 		else:
-			message_log.add_message(str(enemies_spotted) + " monsters spot you!")
+			message_log.add_message(str(enemies_spotted) + " Boblins spot you!")
 			
 	# show and hide items
 	
@@ -1048,7 +1080,8 @@ func damage_player(dmg):
 			death_area = "the ground floor"
 		else:
 			death_area = "level " + str(level_num)
-			
+		
+		$CanvasLayer/Lose/Score.text = "Score: " + str(score)
 		$CanvasLayer/Lose/DeathMsg.text = "You were slain by a monster in\n"
 		$CanvasLayer/Lose/DeathMsg.text += death_area + " of the terrible basement."
 		game_state = "lose"
