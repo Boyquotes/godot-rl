@@ -12,8 +12,8 @@ const LEVEL_SIZES = [
 	Vector2(50, 40)
 ]
 
-const LEVEL_ROOM_COUNT = [4, 7, 9, 13, 15]
-const LEVEL_ENEMY_COUNT = [2, 5, 9, 11, 15]
+const LEVEL_ROOM_COUNT = [4, 5, 9, 11, 13]
+const LEVEL_ENEMY_COUNT = [3, 5, 7, 9, 11]
 const LEVEL_ITEM_COUNT = [1, 3, 5, 5, 5]
 const LEVEL_POWERUP_COUNT = [0, 1, 1, 1, 1]
 const MIN_ROOM_DIMENSION = 5
@@ -90,6 +90,7 @@ class Item extends Reference:
 # enemy class ------------------------------------------------------------------
 
 class Enemy extends Reference:
+	var possible_types = ["Boblin", "Gogonim", "Gogant", "Sepekter", "Ancient Sepekter", "Old One"]
 	var enemy_name
 	var sprite_node
 	var tile
@@ -102,9 +103,10 @@ class Enemy extends Reference:
 		hp = full_hp
 		tile = Vector2(x, y)
 		sprite_node = EnemyScene.instance()
-		# sprite_node.frame = enemy_level
+		sprite_node.frame = sprite_node.frame + enemy_level * 16
 		# assign enemy names and levels
-		enemy_name = "Boblin"
+		print("level is " + str(enemy_level))
+		enemy_name = possible_types[enemy_level]
 		sprite_node.position = tile * TILE_SIZE
 		game.add_child(sprite_node)
 
@@ -158,7 +160,7 @@ class Enemy extends Reference:
 			var move_tile = Vector2(path[1].x, path[1].y)
 			
 			if move_tile == game.player_tile:
-				game.damage_player(1)
+				game.damage_player(1, self)
 				var pos = sprite_node.position
 				game.spawn_label("-1", 3, pos + Vector2(12, 12))
 			else:
@@ -536,7 +538,7 @@ func try_move(dx, dy):
 		# if door, turn it into floor to "open"
 		Tile.Door:
 			set_tile(x, y, Tile.Floor)
-			yield(get_tree(), "idle_frame")
+			# yield(get_tree(), "idle_frame")
 			# play door open sound
 			play_sfx(level_sound, snd_door_open, 0.9, 1)
 			# anim
@@ -722,7 +724,7 @@ func build_level():
 	var player_y = start_room.position.y + 1 + randi() % int(start_room.size.y - 2)
 	player_tile = Vector2(player_x, player_y)
 	
-	yield(get_tree(), "idle_frame")
+	# yield(get_tree(), "idle_frame")
 	call_deferred("update_visuals")
 	
 	# place end ladder
@@ -802,7 +804,8 @@ func build_level():
 
 func update_visuals():
 	# convert tile coords into pixel coords
-	yield(get_tree(), "idle_frame")
+	
+	# yield(get_tree(), "idle_frame")
 	player.position = player_tile * TILE_SIZE
 
 	# assuming we're not inside a room
@@ -832,7 +835,9 @@ func update_visuals():
 		i += 1
 	
 	# update enemy sprite positions
-	var enemies_spotted = 0
+	
+	# empty list of enemies
+	var enemies_spotted = []
 	
 	for enemy in enemies:
 		enemy.sprite_node.position = enemy.tile * TILE_SIZE
@@ -844,14 +849,44 @@ func update_visuals():
 			if !occlusion:
 				# turn node visibility on
 				enemy.sprite_node.visible = true
+				spawn_label("!", 3, enemy.sprite_node.position)
 				# add to count of enemies that spotted you
-				enemies_spotted += 1
+				enemies_spotted.append(enemy.enemy_name)
 				
-	if enemies_spotted > 0:
-		if enemies_spotted == 1:
-			message_log.add_message("A Boblin spots you.")
-		else:
-			message_log.add_message(str(enemies_spotted) + " Boblins spot you!")
+	if enemies_spotted.size() > 0:
+		# create dictionary of enemies in room
+		var enemy_counts = {}
+		
+		for enemy in enemies_spotted:
+			enemy_counts[enemy] = enemies_spotted.count(enemy)
+		
+		# assemble this most complex of messages...
+		# key is the type of enemy as a string
+		# uniques is the number of unique enemy types
+		# thismany is the number of instances of that type
+			
+		var uniques = enemy_counts.size()
+		
+		var spotted_message = "You were spotted by"
+		
+		var count_i = 0
+		for key in enemy_counts:
+			count_i += 1
+			var thismany = enemy_counts[key]
+			if thismany == 1:
+				spotted_message += " a " + key
+			else:
+				spotted_message += " " + str(thismany) + " " + key
+			if thismany > 1:
+				spotted_message += "s"
+			if count_i < uniques && uniques >= 3:
+				spotted_message += ","
+			if uniques > 1 && count_i == (uniques - 1):
+				spotted_message += " and"
+			if count_i == uniques:
+				spotted_message += "."
+
+		message_log.add_message(spotted_message)
 			
 	# show and hide items
 	
@@ -1121,9 +1156,9 @@ func set_tile(x, y, type):
 		clear_path(Vector2(x, y))
 
 # player taking damage= --------------------------------------------------------
-func damage_player(dmg):
+func damage_player(dmg, me):
 	player_hp = max(0, player_hp - dmg)
-	message_log.add_message("Monster attacks you for " + str(dmg) + " damage!")
+	message_log.add_message(me.enemy_name + " attacks you for " + str(dmg) + " damage!")
 	if player_hp == 0:
 		lose_screen.visible = true
 		var death_area = ""
@@ -1133,7 +1168,7 @@ func damage_player(dmg):
 			death_area = "level " + str(level_num)
 		
 		$CanvasLayer/Lose/Score.text = "Score: " + str(score)
-		$CanvasLayer/Lose/DeathMsg.text = "You were slain by a monster in\n"
+		$CanvasLayer/Lose/DeathMsg.text = "You were slain by a" + me.enemy_name + "in\n"
 		$CanvasLayer/Lose/DeathMsg.text += death_area + " of the terrible basement."
 		game_state = "lose"
 		
