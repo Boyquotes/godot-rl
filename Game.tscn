@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=2]
+[gd_scene load_steps=19 format=2]
 
 [ext_resource path="res://img/tileset.png" type="Texture" id=1]
 [ext_resource path="res://Game.gd" type="Script" id=2]
@@ -277,6 +277,23 @@ tracks/0/keys = {
 "transitions": PoolRealArray( 1, 1, 1, 1, 1 ),
 "update": 1,
 "values": [ Rect2( 0, 50, 10, 10 ), Rect2( 10, 50, 10, 10 ), Rect2( 20, 50, 10, 10 ), Rect2( 30, 50, 10, 10 ), Rect2( 0, 50, 10, 10 ) ]
+}
+
+[sub_resource type="Animation" id=11]
+resource_name = "Bounce"
+length = 0.5
+loop = true
+tracks/0/type = "value"
+tracks/0/path = NodePath(".:offset")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.2, 0.3 ),
+"transitions": PoolRealArray( 1, 1, 1 ),
+"update": 0,
+"values": [ Vector2( 0, 0 ), Vector2( 0, -2 ), Vector2( 0, 0 ) ]
 }
 
 [node name="Game" type="Node2D"]
@@ -644,6 +661,16 @@ align = 1
 __meta__ = {
 "_edit_use_anchors_": false
 }
+
+[node name="SelectedMarker" type="Sprite" parent="CanvasLayer/Shop"]
+position = Vector2( 120, 100 )
+texture = ExtResource( 1 )
+vframes = 16
+hframes = 16
+frame = 223
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="CanvasLayer/Shop/SelectedMarker"]
+anims/Bounce = SubResource( 11 )
 
 [node name="Lose" type="ColorRect" parent="CanvasLayer"]
 visible = false

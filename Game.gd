@@ -204,6 +204,9 @@ onready var lose_screen = $CanvasLayer/Lose
 onready var win_screen = $CanvasLayer/Win
 onready var shop_screen = $CanvasLayer/Shop
 
+onready var shop_slots = [$CanvasLayer/Shop/Slot1, $CanvasLayer/Shop/Slot2, $CanvasLayer/Shop/Slot3]
+onready var shop_names = [$CanvasLayer/Shop/Slot1/Name, $CanvasLayer/Shop/Slot2/Name, $CanvasLayer/Shop/Slot3/Name]
+
 # game states ------------------------------------------------------------------
 var game_state
 var player_name
@@ -224,36 +227,65 @@ var shop_items = {
 	"vampirism" : {
 		"name" : "Vampirism",
 		"cost" : 1,
-		"purchased" : false,
-		"description" : "Drink blood to gain health"
+		"purchased" : true,
+		"description" : "Drink blood to gain health",
+		"frame" : 56
 	},
 	"pedicure" : {
 		"name" : "Pedicure",
 		"cost" : 1,
 		"purchased" : false,
-		"description" : "Improves kick strength by 2"
+		"description" : "Improves kick strength by 2",
+		"frame" : 57
 	},
 	"scaryface" : {
 		"name" : "Scary Face",
 		"cost" : 1,
 		"purchased" : false,
-		"description" : "Enemies lose 1 health when they spot you"
+		"description" : "Enemies lose 1 health when they spot you",
+		"frame" : 58
 	},
 	"forgery" : {
 		"name" : "Forgery",
 		"cost" : 1,
 		"purchased" : false,
-		"description" : "Coins have 5x their normal value"
+		"description" : "Coins have 5x their normal value",
+		"frame" : 59
 	},
-	"goodluck" : {
+	"goodeyes" : {
 		"name" : "Good Eyes",
 		"cost" : 1,
 		"purchased" : false,
-		"description" : "Find better items"
+		"description" : "Find better items",
+		"frame" : 60
+	},
+	"extralife" : {
+		"name" : "Extra Life",
+		"cost" : 1,
+		"purchased" : false,
+		"description" : "Upon dying, restart level at full health",
+		"frame" : 61
+	},
+	"bait" : {
+		"name" : "Bait",
+		"cost" : 1,
+		"purchased" : false,
+		"description" : "Spawn more enemies",
+		"frame" : 62
+	},
+	"slime" : {
+		"name" : "Slime",
+		"cost" : 1,
+		"purchased" : false,
+		"description" : "Leave a toxic trail that hurts enemies",
+		"frame" : 63
 	}
 }
 
+
+
 var selected_item_name
+var selected_slot
 
 # status effects ---------------------------------------------------------------
 
@@ -320,6 +352,9 @@ func title_setup():
 	play_music(music_sound, snd_menu_amb)
 
 func shop_setup():
+	# 0 is first item, 2 is last item
+	selected_slot = 0
+	
 	# TODO:
 	# stop gameplay etc., set up controls
 	# disable pause etc.
@@ -328,7 +363,22 @@ func shop_setup():
 	play_music(music_sound, snd_menu_amb)
 	game_state = "shop"
 	
+	var shop_items_values = shop_items.values()
+	# choose random items to display in shop
+	shop_items_values.shuffle()
+	
+	for i in range (0, 3):
+		# fill in image, name, description, value
+		shop_names[i].text = shop_items_values[i].name + "\n"
+		if shop_items_values[i].purchased:
+			shop_names[i].text += "Purchased"
+		else:
+			shop_names[i].text += str(shop_items_values[i].cost)
+		shop_slots[i].frame = shop_items_values[i].frame
+		
 	# fill slots with items from dictionary, set up titles
+	
+	$CanvasLayer/Shop/SelectedMarker/AnimationPlayer.play("Bounce")
 	
 	# make shop visible
 	shop_screen.visible = true
@@ -336,6 +386,22 @@ func shop_setup():
 	# check currently selected
 	# for the selected item, allow purchase if enough coins
 	# for the selected item, update item description
+	
+func shop_update():
+	# update purchased text
+	# update visuals on purchase
+	return
+
+func select_item(dir):
+	# try to select an item left or right from us
+	selected_slot += dir
+	selected_slot = clamp(selected_slot, 0, 2)
+	$CanvasLayer/Shop/SelectedMarker.position.x = 120 + selected_slot * 80
+	return
+	
+func purchase_item(item):
+	# attempt to purchase item
+	return
 
 # fires when walk timer has timed out
 func on_walk_timeout_complete():
@@ -490,9 +556,11 @@ func _input(event):
 	
 	if game_state == "shop" && event.is_action("ui_left"):
 		play_sfx(level_sound, snd_ui_back, 0.9, 1)
+		select_item(-1)
 		return
 	if game_state == "shop" && event.is_action("ui_right"):
 		play_sfx(level_sound, snd_ui_back, 0.9, 1)
+		select_item(1)
 		return
 		
 	if game_state == "shop" && event.is_action("Restart"):
@@ -962,6 +1030,8 @@ func build_level():
 	else:
 		$CanvasLayer/Level.text = "Ground Floor"
 		message_log.add_message("You enter the ground floor.")
+		
+	shop_setup()
 
 # visibility -------------------------------------------------------------------
 
