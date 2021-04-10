@@ -524,6 +524,7 @@ __meta__ = {
 }
 
 [node name="Shop" type="ColorRect" parent="CanvasLayer"]
+visible = false
 margin_right = 400.0
 margin_bottom = 300.0
 color = Color( 0, 0, 0, 1 )

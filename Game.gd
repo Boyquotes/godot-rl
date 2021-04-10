@@ -286,6 +286,7 @@ var shop_items = {
 
 var selected_item_name
 var selected_slot
+var shop_items_values
 
 # status effects ---------------------------------------------------------------
 
@@ -354,6 +355,7 @@ func title_setup():
 func shop_setup():
 	# 0 is first item, 2 is last item
 	selected_slot = 0
+	$CanvasLayer/Shop/SelectedMarker.position.x = 120 + selected_slot * 80
 	
 	# TODO:
 	# stop gameplay etc., set up controls
@@ -363,14 +365,18 @@ func shop_setup():
 	play_music(music_sound, snd_menu_amb)
 	game_state = "shop"
 	
-	var shop_items_values = shop_items.values()
+	shop_items_values = shop_items.values()
 	# choose random items to display in shop
 	shop_items_values.shuffle()
 	
 	for i in range (0, 3):
+		# reset opacity
+		shop_slots[i].modulate = Color(1, 1, 1, 1)
+		
 		# fill in image, name, description, value
 		shop_names[i].text = shop_items_values[i].name + "\n"
 		if shop_items_values[i].purchased:
+			shop_slots[i].modulate = Color(1, 1, 1, 0.3)
 			shop_names[i].text += "Purchased"
 		else:
 			shop_names[i].text += str(shop_items_values[i].cost)
@@ -390,16 +396,31 @@ func shop_setup():
 func shop_update():
 	# update purchased text
 	# update visuals on purchase
+
+	for i in range (0, 3):
+		# reset opacity
+		shop_slots[i].modulate = Color(1, 1, 1, 1)
+	
+		# fill in image, name, description, value
+		shop_names[i].text = shop_items_values[i].name + "\n"
+		if shop_items_values[i].purchased:
+			shop_slots[i].modulate = Color(1, 1, 1, 0.3)
+			shop_names[i].text += "Purchased"
+		else:
+			shop_names[i].text += str(shop_items_values[i].cost)
+		shop_slots[i].frame = shop_items_values[i].frame
 	return
 
 func select_item(dir):
 	# try to select an item left or right from us
 	selected_slot += dir
+	if selected_slot >= 0 && selected_slot <= 2:
+		play_sfx(level_sound, snd_ui_back, 0.9, 1)
 	selected_slot = clamp(selected_slot, 0, 2)
 	$CanvasLayer/Shop/SelectedMarker.position.x = 120 + selected_slot * 80
 	return
 	
-func purchase_item(item):
+func try_purchase(item):
 	# attempt to purchase item
 	return
 
@@ -555,20 +576,19 @@ func _input(event):
 	# things we can do in the shop
 	
 	if game_state == "shop" && event.is_action("ui_left"):
-		play_sfx(level_sound, snd_ui_back, 0.9, 1)
 		select_item(-1)
 		return
 	if game_state == "shop" && event.is_action("ui_right"):
-		play_sfx(level_sound, snd_ui_back, 0.9, 1)
 		select_item(1)
 		return
 		
 	if game_state == "shop" && event.is_action("Restart"):
 		play_sfx(level_sound, snd_ui_back, 0.9, 1)
 		# return to game
-		game_state = "gameplay"
-		shop_screen.visible = false
-		build_level()
+#		game_state = "gameplay"
+#		shop_screen.visible = false
+#		build_level()
+		shop_setup()
 		return
 	
 	# global inputs
