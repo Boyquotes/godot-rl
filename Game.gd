@@ -41,7 +41,7 @@ var name_titles = ["of The Valley", "of The Woodlands", "The Unknowable", "The W
 var save_path = "user://save.dat"
 
 # enum to get tiles by index ---------------------------------------------------
-enum Tile {Player, Stone, Floor, Ladder, Wall, Door, Bloody, Bones}
+enum Tile {Player, Stone, Floor, Ladder, Wall, Door, Bloody, Bones, ShopGrate}
 enum VisTile { Dark, Shaded, Debug }
 enum ExplTile { Unexplored, Explored }
 
@@ -107,7 +107,6 @@ class Enemy extends Reference:
 		sprite_node = EnemyScene.instance()
 		sprite_node.frame = sprite_node.frame + enemy_level * 16
 		# assign enemy names and levels
-		print("level is " + str(enemy_level))
 		enemy_name = possible_types[enemy_level]
 		sprite_node.position = tile * TILE_SIZE
 		game.add_child(sprite_node)
@@ -292,13 +291,30 @@ var shop_items_values
 
 var player_status = {
 	"vampirism" : {
-		"active" : false,
-		"remaining" : -1
+		"active" : false
 	},
-	"greedy" : {
+	"pedicure" : {
+		"active" : false
+	},
+	"scaryface" : {
 		"active" : false,
-		"remaining" : 5
-	} 
+		"damage" : 1
+	},
+	"forgery" : {
+		"active" : false
+	},
+	"goodeyes" : {
+		"active" : false
+	},
+	"extralife" : {
+		"active" : false
+	},
+	"bait" : {
+		"active" : false
+	},
+	"slime" : {
+		"active" : false
+	}
 }
 
 
@@ -368,25 +384,14 @@ func shop_setup():
 	shop_items_values = shop_items.values()
 	# choose random items to display in shop
 	shop_items_values.shuffle()
-	
-	for i in range (0, 3):
-		# reset opacity
-		shop_slots[i].modulate = Color(1, 1, 1, 1)
-		
-		# fill in image, name, description, value
-		shop_names[i].text = shop_items_values[i].name + "\n"
-		if shop_items_values[i].purchased:
-			shop_slots[i].modulate = Color(1, 1, 1, 0.3)
-			shop_names[i].text += "Purchased"
-		else:
-			shop_names[i].text += str(shop_items_values[i].cost)
-		shop_slots[i].frame = shop_items_values[i].frame
 		
 	# fill slots with items from dictionary, set up titles
 	
 	$CanvasLayer/Shop/SelectedMarker/AnimationPlayer.play("Bounce")
+	$CanvasLayer/Shop/ItemDescription.text = shop_items_values[selected_slot].description
 	
 	# make shop visible
+	shop_update()
 	shop_screen.visible = true
 	
 	# check currently selected
@@ -396,6 +401,8 @@ func shop_setup():
 func shop_update():
 	# update purchased text
 	# update visuals on purchase
+	
+	$CanvasLayer/Shop/CurrentCoins.text = "Your coins: " + str(coins)
 
 	for i in range (0, 3):
 		# reset opacity
@@ -418,11 +425,45 @@ func select_item(dir):
 		play_sfx(level_sound, snd_ui_back, 0.9, 1)
 	selected_slot = clamp(selected_slot, 0, 2)
 	$CanvasLayer/Shop/SelectedMarker.position.x = 120 + selected_slot * 80
+	$CanvasLayer/Shop/ItemDescription.text = shop_items_values[selected_slot].description
 	return
 	
-func try_purchase(item):
+func try_purchase(selected_slot):
 	# attempt to purchase item
-	return
+	if !shop_items_values[selected_slot].purchased:
+		if coins > shop_items_values[selected_slot].cost:
+			var pos = Vector2(100, 100)
+			spawn_label("purchased", 2, pos)
+			# TODO: make label work
+			
+			coins -= shop_items_values[selected_slot].cost
+			shop_items_values[selected_slot].purchased = true
+			shop_update()
+			
+			# activate abilities
+			var status_to_activate = shop_items_values[selected_slot].name
+			match status_to_activate:
+				"Vampirism":
+					player_status.vampirism.active = true
+				"Pedicure":
+					player_status.pedicure.active = true
+				"Scary Face":
+					player_status.scaryface.active = true
+				"Forgery":
+					player_status.forgery.active = true
+				"Good Eyes":
+					player_status.goodeyes.active = true
+				"Extra Life":
+					player_status.extralife.active = true
+				"Bait":
+					player_status.bait.active = true
+				"Slime":
+					player_status.slime.active = true
+			
+		else:
+			print("cannot afford")
+	else:
+		print("already purchased")
 
 # fires when walk timer has timed out
 func on_walk_timeout_complete():
@@ -516,6 +557,9 @@ func _input(event):
 		pause_screen.visible = true
 		return
 		
+	if game_state == "gameplay" && event.is_action("DebugShop"):
+		shop_setup()
+		
 	# things we can do from the pause screen
 	
 	if game_state == "pause" && event.is_action("Escape"):
@@ -585,11 +629,12 @@ func _input(event):
 	if game_state == "shop" && event.is_action("Restart"):
 		play_sfx(level_sound, snd_ui_back, 0.9, 1)
 		# return to game
-#		game_state = "gameplay"
-#		shop_screen.visible = false
-#		build_level()
-		shop_setup()
+		game_state = "gameplay"
+		shop_screen.visible = false
 		return
+		
+	if game_state == "shop" && event.is_action("Start"):
+		try_purchase(selected_slot)
 	
 	# global inputs
 		
@@ -624,7 +669,7 @@ func initialize_game():
 	randomize()
 	level_num = 0
 	score = 0
-	coins = 0
+	coins = 99
 	player_dmg = 1
 
 	$CanvasLayer/Win.visible = false
@@ -653,6 +698,10 @@ func try_move(dx, dy):
 	
 	# actions based on this type of tile
 	match tile_type:
+		# if shop
+		Tile.ShopGrate:
+			shop_setup()
+		
 		# if floor
 		Tile.Floor:
 			
@@ -684,7 +733,7 @@ func try_move(dx, dy):
 			var blocked = false
 			for enemy in enemies:
 				if enemy.tile.x == x && enemy.tile.y == y:
-					enemy.take_damage(self, player_dmg)
+					enemy.take_damage(enemy, player_dmg)
 					# sfx
 					play_sfx(player_sound, snd_enemy_hurt, 0.8, 1)
 					$Player/ShakeCamera2D.add_trauma(0.5)
@@ -989,6 +1038,16 @@ func build_level():
 	var ladder_y = end_room.position.y + 1 + randi() % int(end_room.size.y - 2)
 	set_tile(ladder_x, ladder_y, Tile.Ladder)
 	
+	# place shop
+	
+	randomize()
+	var shopchance = randi() % 100
+	if shopchance > 50:
+		var shop_x = start_room.position.x + 1 + randi() % int(start_room.size.x - 2)
+		var shop_y = start_room.position.y
+		if tile_map.get_cell(shop_x, shop_y) != Tile.Door:
+			set_tile(shop_x, shop_y, Tile.ShopGrate)
+	
 	# place enemies
 	
 	# BUG: make sure enemies can't ever be on top of ladders
@@ -1050,8 +1109,6 @@ func build_level():
 	else:
 		$CanvasLayer/Level.text = "Ground Floor"
 		message_log.add_message("You enter the ground floor.")
-		
-	shop_setup()
 
 # visibility -------------------------------------------------------------------
 
@@ -1109,6 +1166,8 @@ func update_visuals():
 				spawn_label("!", 3, enemy.sprite_node.position)
 				# add to count of enemies that spotted you
 				enemies_spotted.append(enemy.enemy_name)
+				if player_status.scaryface.active == true:
+					enemy.take_damage(self, player_status.scaryface.damage)
 				
 	if enemies_spotted.size() > 0:
 		# create dictionary of enemies in room
@@ -1116,7 +1175,7 @@ func update_visuals():
 		
 		for enemy in enemies_spotted:
 			enemy_counts[enemy] = enemies_spotted.count(enemy)
-		
+			
 		# assemble this most complex of messages...
 		# key is the type of enemy as a string
 		# uniques is the number of unique enemy types
@@ -1144,6 +1203,9 @@ func update_visuals():
 				spotted_message += "."
 
 		message_log.add_message(spotted_message)
+		if player_status.scaryface.active == true:
+			message_log.add_message("Your face scared them a little.")
+			# TODO: scary face isn't working properly, hp bar goes missing?
 			
 	# show and hide items
 	
