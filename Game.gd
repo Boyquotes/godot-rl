@@ -24,6 +24,7 @@ const PLAYER_START_HP = 15
 var coin_value = 1
 var coin_score = 10
 var heart_health = 5
+var blood_health = 1
 var heart_score = 10
 var potion_score = 20
 
@@ -32,6 +33,7 @@ const STATUS_EFFECTS = ["heal_once", "heal_over_time", "poison"]
 const EnemyScene = preload("res://Enemy.tscn")
 const ItemScene = preload("res://Item.tscn")
 const FloatLabelScene = preload("res://FloatLabel.tscn")
+const BloodScene = preload("res://Blood.tscn")
 
 var name_parts = "..bobabukekogixaxoxurirero"
 var name_titles = ["of The Valley", "of The Woodlands", "The Unknowable", "The Warrior", "The Knight", "The Brave", "The Foolish", "The Forsaken", "The Idiot", "The Smelly", "The Sticky", "Smith", "The Thief", "The Rogue", "The Unseen", "The Drifter", "The Dweller", "The Lurker", "The Small", "The Unforgiven", "The Crestfallen", "The Hungry", "The Second Oldest", "The Younger", "The Original"]
@@ -180,6 +182,7 @@ var map = []
 var rooms = []
 var enemies = []
 var items = []
+var bloodstains = []
 var level_size
 
 # references to commonly used nodes --------------------------------------------
@@ -214,6 +217,20 @@ var window_scale = 1
 var screen_size = OS.get_screen_size()
 var window_size = OS.get_window_size()
 
+# status effects ---------------------------------------------------------------
+
+var player_status = {
+	"vampirism" : {
+		"active" : false,
+		"remaining" : -1
+	},
+	"greedy" : {
+		"active" : false,
+		"remaining" : 5
+	} 
+}
+
+
 # movement delay ---------------------------------------------------------------
 var move_timer
 var can_move = true
@@ -222,6 +239,7 @@ var move_delay = 0.15
 # Called when the node enters the scene tree for the first time ----------------
 func _ready():
 	OS.set_window_size(Vector2(400 * window_scale,300 * window_scale))
+	OS.set_window_position(screen_size*0.5 - window_size*0.5)
 	get_tree().set_auto_accept_quit(false)
 	
 	# load settings
@@ -452,6 +470,9 @@ func initialize_game():
 	$CanvasLayer/Lose.visible = false
 	$CanvasLayer/Title.visible = false
 	
+	player_status.vampirism.active = true
+	print("vampirism enabled")
+	
 	build_level()
 		
 func try_move(dx, dy):
@@ -474,6 +495,30 @@ func try_move(dx, dy):
 		# if floor
 		Tile.Floor:
 			
+			# check if walking in blood
+			var has_bloody_feet = false
+			for bloodstain in bloodstains:
+				if bloodstain.position.x == x * TILE_SIZE && bloodstain.position.y == y * TILE_SIZE:
+					has_bloody_feet = true
+					# drink blood for hp
+					if player_status.vampirism.active == true:
+						bloodstains.erase(bloodstain)
+						bloodstain.queue_free()
+						print("drinking blood")
+						var heal_amount = 0
+						var pos = player_tile * TILE_SIZE
+						if player_hp < max_hp:
+							# heal by difference
+							heal_amount = min(max_hp - player_hp, blood_health)
+							player_hp += heal_amount
+							message_log.add_message("You drink the blood. " + str(heal_amount) + " health restored.")
+							spawn_label("+" + str(heal_amount), 2, pos)
+							$CanvasLayer/HPBar.rect_size.x = $CanvasLayer/HPBarEmpty.rect_size.x * player_hp / max_hp
+						else:
+							message_log.add_message("You drink the blood. Nothing happens.")
+							spawn_label("no effect", 1, pos)
+				
+			
 			# maybe an enemy interaction
 			var blocked = false
 			for enemy in enemies:
@@ -481,6 +526,7 @@ func try_move(dx, dy):
 					enemy.take_damage(self, player_dmg)
 					# sfx
 					play_sfx(player_sound, snd_enemy_hurt, 0.8, 1)
+					$Player/ShakeCamera2D.add_trauma(0.5)
 					# anim
 					if dx < 0:
 						player.set_flip_h(true)
@@ -489,14 +535,48 @@ func try_move(dx, dy):
 					player_anims.stop(true)
 					player_anims.play("Attack")
 					
-					# log_random("attack")
-					
 					if enemy.dead:
 						play_sfx(player_sound, snd_enemy_death, 0.8, 1)
 						message_log.add_message("You defeat the " + enemy.enemy_name + ".")
 						enemy.remove()
 						enemies.erase(enemy)
 						# bleed on the floor
+						# check player kick direction
+						# bleed within distance of 3 times the direction
+					
+						var blood_i = 0
+						var blood_x = x
+						var blood_y = y
+						var bleeding = true
+						while bleeding:
+							# horizontal bleed
+							if dy != 0:
+								if tile_map.get_cell(x, blood_y) == Tile.Floor:
+									var blood = BloodScene.instance()
+									blood.position = Vector2(x, blood_y) * TILE_SIZE
+									bloodstains.append(blood)
+									add_child(blood)
+									blood_y += dy
+									blood_i += 1
+								else:
+									bleeding = false
+								
+							if dx != 0:
+								if tile_map.get_cell(blood_x, y) == Tile.Floor:
+									var blood = BloodScene.instance()
+									blood.position = Vector2(blood_x, y) * TILE_SIZE
+									bloodstains.append(blood)
+									add_child(blood)
+									blood_x += dx
+									blood_i += 1
+								else:
+									bleeding = false
+							if blood_i > 2:
+								bleeding = false
+								# TODO: "spawn" blood instead
+								# TODO: stop splattering once a non-floor object is hit
+								# BUG: can't pickup coin inside blood
+						
 						# for bx in range(x-1, x+2):
 						#	for by in range(y-1, y+2):
 						#		if tile_map.get_cell(bx, by) == Tile.Floor:
@@ -513,8 +593,11 @@ func try_move(dx, dy):
 			if !blocked:
 				player_tile = Vector2(x, y)
 				# play walk sound
-				var r = snd_walk[randi() % snd_walk.size()]
-				play_sfx(player_sound, r, 0.8, 1)
+				if has_bloody_feet:
+					play_sfx(player_sound, snd_walk_blood, 0.6, 1)
+				else:
+					var r = snd_walk[randi() % snd_walk.size()]
+					play_sfx(player_sound, r, 0.8, 1)
 				# anim
 				if dx < 0:
 					player.set_flip_h(true)
@@ -557,7 +640,6 @@ func try_move(dx, dy):
 			play_sfx(level_sound, snd_ladder, 0.9, 1)
 			level_num += 1
 			score += 20
-			print("level completed")
 			$CanvasLayer/Score.text = "Score: " + str(score)
 			if level_num < LEVEL_SIZES.size():
 				build_level()
@@ -610,6 +692,7 @@ func pickup_items():
 					player_hp += heal_amount
 					message_log.add_message("You find a heart! " + str(heal_amount) + " health restored.")
 					spawn_label("+" + str(heal_amount), 2, pos)
+					$CanvasLayer/HPBar.rect_size.x = $CanvasLayer/HPBarEmpty.rect_size.x * player_hp / max_hp
 				else:
 					message_log.add_message("You find a heart! Nothing happens.")
 					spawn_label("no effect", 1, pos)
@@ -624,6 +707,7 @@ func pickup_items():
 					message_log.add_message("You drink a potion and restore your full health.")
 					# spawn info text
 					spawn_label("healed", 2, pos)
+					$CanvasLayer/HPBar.rect_size.x = $CanvasLayer/HPBarEmpty.rect_size.x * player_hp / max_hp
 				else:
 					message_log.add_message("You drink a potion. Nothing happens.")
 					# spawn info text
@@ -650,6 +734,7 @@ func pickup_items():
 				play_sfx(level_sound, snd_ui_set, 0.8, 1)
 				$CanvasLayer/HP.text = "HP: " + str(player_hp) + " / " + str(max_hp)
 				message_log.add_message("You drink from the goblet. Max health +10!")
+				$CanvasLayer/HPBar.rect_size.x = $CanvasLayer/HPBarEmpty.rect_size.x * player_hp / max_hp
 				# spawn info text
 				spawn_label("max +10", 2, pos)
 			elif item.sprite_node.frame == 21:
@@ -679,6 +764,11 @@ func build_level():
 	rooms.clear()
 	map.clear()
 	tile_map.clear()
+	
+	# clean up all that blood
+	for bloodstain in bloodstains:
+		bloodstain.queue_free()
+	bloodstains.clear()
 	
 	# remove enemies
 	for enemy in enemies:
@@ -1170,7 +1260,7 @@ func damage_player(dmg, me):
 			death_area = "level " + str(level_num)
 		
 		$CanvasLayer/Lose/Score.text = "Score: " + str(score)
-		$CanvasLayer/Lose/DeathMsg.text = "You were slain by a" + me.enemy_name + "in\n"
+		$CanvasLayer/Lose/DeathMsg.text = "You were slain by a " + me.enemy_name + " in\n"
 		$CanvasLayer/Lose/DeathMsg.text += death_area + " of the terrible basement."
 		game_state = "lose"
 		
@@ -1211,11 +1301,6 @@ func play_music(myplayer, mysound):
 	
 func stop_sound(myplayer):
 	myplayer.stop()
-
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-# func _process(delta):
-	# $CanvasLayer/Debug.text = str(game_state) + " * " + str(rooms.size()) + " rooms"
-#	pass
 
 func log_random(type):
 	if type == "attack":
