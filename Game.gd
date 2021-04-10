@@ -202,6 +202,7 @@ onready var pause_screen = $CanvasLayer/Pause
 onready var credits_screen = $CanvasLayer/Credits
 onready var lose_screen = $CanvasLayer/Lose
 onready var win_screen = $CanvasLayer/Win
+onready var shop_screen = $CanvasLayer/Shop
 
 # game states ------------------------------------------------------------------
 var game_state
@@ -216,6 +217,43 @@ var enemy_pathfinding
 var window_scale = 1
 var screen_size = OS.get_screen_size()
 var window_size = OS.get_window_size()
+
+# shop -------------------------------------------------------------------------
+
+var shop_items = {
+	"vampirism" : {
+		"name" : "Vampirism",
+		"cost" : 1,
+		"purchased" : false,
+		"description" : "Drink blood to gain health"
+	},
+	"pedicure" : {
+		"name" : "Pedicure",
+		"cost" : 1,
+		"purchased" : false,
+		"description" : "Improves kick strength by 2"
+	},
+	"scaryface" : {
+		"name" : "Scary Face",
+		"cost" : 1,
+		"purchased" : false,
+		"description" : "Enemies lose 1 health when they spot you"
+	},
+	"forgery" : {
+		"name" : "Forgery",
+		"cost" : 1,
+		"purchased" : false,
+		"description" : "Coins have 5x their normal value"
+	},
+	"goodluck" : {
+		"name" : "Good Eyes",
+		"cost" : 1,
+		"purchased" : false,
+		"description" : "Find better items"
+	}
+}
+
+var selected_item_name
 
 # status effects ---------------------------------------------------------------
 
@@ -280,6 +318,24 @@ func title_setup():
 	
 	# play menu ambience
 	play_music(music_sound, snd_menu_amb)
+
+func shop_setup():
+	# TODO:
+	# stop gameplay etc., set up controls
+	# disable pause etc.
+	
+	# play shop music
+	play_music(music_sound, snd_menu_amb)
+	game_state = "shop"
+	
+	# fill slots with items from dictionary, set up titles
+	
+	# make shop visible
+	shop_screen.visible = true
+	
+	# check currently selected
+	# for the selected item, allow purchase if enough coins
+	# for the selected item, update item description
 
 # fires when walk timer has timed out
 func on_walk_timeout_complete():
@@ -422,13 +478,30 @@ func _input(event):
 		toggle_setting("log")
 		return
 		
-	# things we can do from the settings screen
+	# things we can do from the credits screen
 	
 	if game_state == "credits" && event.is_action("Escape"):
 		play_sfx(level_sound, snd_ui_back, 0.9, 1)
 		# back to title
 		game_state = "title"
 		credits_screen.visible = false
+		
+	# things we can do in the shop
+	
+	if game_state == "shop" && event.is_action("ui_left"):
+		play_sfx(level_sound, snd_ui_back, 0.9, 1)
+		return
+	if game_state == "shop" && event.is_action("ui_right"):
+		play_sfx(level_sound, snd_ui_back, 0.9, 1)
+		return
+		
+	if game_state == "shop" && event.is_action("Restart"):
+		play_sfx(level_sound, snd_ui_back, 0.9, 1)
+		# return to game
+		game_state = "gameplay"
+		shop_screen.visible = false
+		build_level()
+		return
 	
 	# global inputs
 		
@@ -631,7 +704,7 @@ func try_move(dx, dy):
 			else:
 				player.set_flip_h(false)
 			player_anims.play("OpenDoor")
-			message_log.add_message("The door opens without a key.")
+			# message_log.add_message("The door opens without a key.")
 			
 		# if ladder, increase level count, add score, etc.
 		Tile.Ladder:
@@ -642,10 +715,11 @@ func try_move(dx, dy):
 			score += 20
 			$CanvasLayer/Score.text = "Score: " + str(score)
 			if level_num < LEVEL_SIZES.size():
-				build_level()
-				
+				# go to shop
+#				build_level()
 				var pos = player_tile * TILE_SIZE
 				spawn_label("level completed", 0, pos)
+				shop_setup()
 			else:
 				# no more levels left, you win
 				score += 1000
@@ -653,6 +727,8 @@ func try_move(dx, dy):
 				$CanvasLayer/Win.visible = true
 				game_state = "end"
 			return
+			
+			
 				
 	# every enemy tries to move
 	
