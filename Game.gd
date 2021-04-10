@@ -429,6 +429,7 @@ func _input(event):
 func initialize_game():
 	AudioServer.set_bus_bypass_effects(1, true)
 	player_hp = PLAYER_START_HP
+	$CanvasLayer/HPBar.rect_size.x = $CanvasLayer/HPBarEmpty.rect_size.x
 	
 	game_state = "gameplay"
 	
@@ -1159,6 +1160,7 @@ func set_tile(x, y, type):
 func damage_player(dmg, me):
 	player_hp = max(0, player_hp - dmg)
 	message_log.add_message(me.enemy_name + " attacks you for " + str(dmg) + " damage!")
+	$CanvasLayer/HPBar.rect_size.x = $CanvasLayer/HPBarEmpty.rect_size.x * player_hp / max_hp
 	if player_hp == 0:
 		lose_screen.visible = true
 		var death_area = ""
