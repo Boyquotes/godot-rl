@@ -473,6 +473,16 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
+[node name="StatusIcons" type="Node2D" parent="CanvasLayer"]
+position = Vector2( 10, 24 )
+
+[node name="1" type="Sprite" parent="CanvasLayer/StatusIcons"]
+texture = ExtResource( 1 )
+centered = false
+vframes = 16
+hframes = 16
+frame = 208
+
 [node name="Win" type="ColorRect" parent="CanvasLayer"]
 visible = false
 margin_right = 400.0
