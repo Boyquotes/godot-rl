@@ -239,7 +239,7 @@ var shop_items = {
 	"scaryface" : {
 		"name" : "Scary Face",
 		"cost" : 1,
-		"purchased" : false,
+		"purchased" : true,
 		"description" : "Enemies lose 1 health when they spot you",
 		"frame" : 58
 	},
@@ -673,7 +673,8 @@ func initialize_game():
 	$CanvasLayer/Title.visible = false
 	
 	player_status.vampirism.active = true
-	print("vampirism enabled")
+	player_status.scaryface.active = true
+	print("debug status effects enabled!")
 	
 	build_level()
 		
@@ -711,7 +712,6 @@ func try_move(dx, dy):
 					if player_status.vampirism.active == true:
 						bloodstains.erase(bloodstain)
 						bloodstain.queue_free()
-						print("drinking blood")
 						var heal_amount = 0
 						var pos = player_tile * TILE_SIZE
 						if player_hp < max_hp:
@@ -1047,8 +1047,6 @@ func build_level():
 	
 	# place enemies
 	
-	# BUG: make sure enemies can't ever be on top of ladders
-	
 	var num_enemies = LEVEL_ENEMY_COUNT[level_num]
 	for _i in range(num_enemies):
 		var room = rooms[1 + randi() % (rooms.size() - 1)]
@@ -1062,7 +1060,7 @@ func build_level():
 				break
 			if tile_map.get_cell(enemy_x, enemy_y) == Tile.Ladder:
 				blocked = true
-				print("enemy tried to spawn on ladder")
+				# this makes sure enemies won't spawn on ladders
 				break
 			
 		if !blocked:
@@ -1160,11 +1158,27 @@ func update_visuals():
 			if !occlusion:
 				# turn node visibility on
 				enemy.sprite_node.visible = true
-				spawn_label("!", 3, enemy.sprite_node.position)
+				
 				# add to count of enemies that spotted you
 				enemies_spotted.append(enemy.enemy_name)
-#				if player_status.scaryface.active == true:
-#					enemy.take_damage(self, player_status.scaryface.damage)
+				if player_status.scaryface.active == true:
+					enemy.take_damage(self, player_status.scaryface.damage)
+					
+					# check if this kills them
+					if enemy.dead:
+						play_sfx(player_sound, snd_enemy_death, 0.4, 0.5)
+						enemy.remove()
+						enemies.erase(enemy)
+						for bx in range(enemy.tile.x - 1, enemy.tile.x + 2):
+							for by in range(enemy.tile.y - 1, enemy.tile.y + 2):
+								if tile_map.get_cell(bx, by) == Tile.Floor:
+									var blood = BloodScene.instance()
+									blood.position = Vector2(bx, by) * TILE_SIZE
+									bloodstains.append(blood)
+									add_child(blood)
+				else:
+					# they just spot you
+					spawn_label("!", 3, enemy.sprite_node.position)
 				
 	if enemies_spotted.size() > 0:
 		# create dictionary of enemies in room
