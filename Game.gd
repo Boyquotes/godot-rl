@@ -34,6 +34,7 @@ const EnemyScene = preload("res://Enemy.tscn")
 const ItemScene = preload("res://Item.tscn")
 const FloatLabelScene = preload("res://FloatLabel.tscn")
 const BloodScene = preload("res://Blood.tscn")
+const BloodParticles = preload("res://BloodParticles.tscn")
 
 var name_parts = "..bobabukekogixaxoxurirero"
 var name_titles = ["of The Valley", "of The Woodlands", "The Unknowable", "The Warrior", "The Knight", "The Brave", "The Foolish", "The Forsaken", "The Idiot", "The Smelly", "The Sticky", "Smith", "The Thief", "The Rogue", "The Unseen", "The Drifter", "The Dweller", "The Lurker", "The Small", "The Unforgiven", "The Crestfallen", "The Hungry", "The Second Oldest", "The Younger", "The Original"]
@@ -697,7 +698,9 @@ func try_move(dx, dy):
 	match tile_type:
 		# if shop
 		Tile.ShopGrate:
-			shop_setup()
+			# only allow this when approaching from bottom
+			if dy == -1:
+				shop_setup()
 			return
 		
 		# if floor
@@ -750,6 +753,11 @@ func try_move(dx, dy):
 						# bleed on the floor
 						# check player kick direction
 						# bleed within distance of 3 times the direction
+						
+						# spawn blood particles
+						var particles = BloodParticles.instance()
+						particles.position = Vector2(enemy.tile.x + 0.2, enemy.tile.y + 0.2) * TILE_SIZE
+						add_child(particles)
 					
 						var blood_i = 0
 						var blood_x = x
@@ -800,6 +808,7 @@ func try_move(dx, dy):
 			if !blocked:
 				player_tile = Vector2(x, y)
 				# play walk sound
+		
 				if has_bloody_feet:
 					play_sfx(player_sound, snd_walk_blood, 0.6, 1)
 				else:
@@ -850,10 +859,9 @@ func try_move(dx, dy):
 			$CanvasLayer/Score.text = "Score: " + str(score)
 			if level_num < LEVEL_SIZES.size():
 				# go to shop
-#				build_level()
+				build_level()
 				var pos = player_tile * TILE_SIZE
 				spawn_label("level completed", 0, pos)
-				shop_setup()
 			else:
 				# no more levels left, you win
 				score += 1000
@@ -1148,6 +1156,9 @@ func update_visuals():
 	# empty list of enemies
 	var enemies_spotted = []
 	
+	# if we're encountering multiple enemies
+	var enemies_to_explore = []
+	
 	for enemy in enemies:
 		enemy.sprite_node.position = enemy.tile * TILE_SIZE
 		# if enemy isn't already visible
@@ -1167,8 +1178,8 @@ func update_visuals():
 					# check if this kills them
 					if enemy.dead:
 						play_sfx(player_sound, snd_enemy_death, 0.4, 0.5)
-						enemy.remove()
-						enemies.erase(enemy)
+						# enemy.remove()
+						# enemies.erase(enemy)
 						for bx in range(enemy.tile.x - 1, enemy.tile.x + 2):
 							for by in range(enemy.tile.y - 1, enemy.tile.y + 2):
 								if tile_map.get_cell(bx, by) == Tile.Floor:
@@ -1176,6 +1187,13 @@ func update_visuals():
 									blood.position = Vector2(bx, by) * TILE_SIZE
 									bloodstains.append(blood)
 									add_child(blood)
+						# spawn blood particles
+						var particles = BloodParticles.instance()
+						particles.position = Vector2(enemy.tile.x + 0.2, enemy.tile.y + 0.2) * TILE_SIZE
+						add_child(particles)
+						print("spotted one enemy")
+						
+						# TODO: deal with enemy exploding in a separate array?
 				else:
 					# they just spot you
 					spawn_label("!", 3, enemy.sprite_node.position)
