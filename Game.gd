@@ -77,7 +77,6 @@ var log_status = "ON"
 class Item extends Reference:
 	var sprite_node
 	var tile
-	var this_drop
 
 	func _init(game, x, y, this_drop):
 		tile = Vector2(x, y)
@@ -428,20 +427,20 @@ func select_item(dir):
 	$CanvasLayer/Shop/ItemDescription.text = shop_items_values[selected_slot].description
 	return
 	
-func try_purchase(selected_slot):
+func try_purchase(selection):
 	# attempt to purchase item
-	if !shop_items_values[selected_slot].purchased:
-		if coins > shop_items_values[selected_slot].cost:
+	if !shop_items_values[selection].purchased:
+		if coins > shop_items_values[selection].cost:
 			var pos = Vector2(100, 100)
 			spawn_label("purchased", 2, pos)
 			# TODO: make label work
 			
-			coins -= shop_items_values[selected_slot].cost
-			shop_items_values[selected_slot].purchased = true
+			coins -= shop_items_values[selection].cost
+			shop_items_values[selection].purchased = true
 			shop_update()
 			
 			# activate abilities
-			var status_to_activate = shop_items_values[selected_slot].name
+			var status_to_activate = shop_items_values[selection].name
 			match status_to_activate:
 				"Vampirism":
 					player_status.vampirism.active = true
@@ -556,9 +555,6 @@ func _input(event):
 		$CanvasLayer/Pause/Info.text += "Restart\nQuit to Title"
 		pause_screen.visible = true
 		return
-		
-	if game_state == "gameplay" && event.is_action("DebugShop"):
-		shop_setup()
 		
 	# things we can do from the pause screen
 	
@@ -701,6 +697,7 @@ func try_move(dx, dy):
 		# if shop
 		Tile.ShopGrate:
 			shop_setup()
+			return
 		
 		# if floor
 		Tile.Floor:
@@ -733,7 +730,7 @@ func try_move(dx, dy):
 			var blocked = false
 			for enemy in enemies:
 				if enemy.tile.x == x && enemy.tile.y == y:
-					enemy.take_damage(enemy, player_dmg)
+					enemy.take_damage(self, player_dmg)
 					# sfx
 					play_sfx(player_sound, snd_enemy_hurt, 0.8, 1)
 					$Player/ShakeCamera2D.add_trauma(0.5)
@@ -1014,7 +1011,7 @@ func build_level():
 	var free_regions = [Rect2(Vector2(2, 2), level_size - Vector2(4, 4))]
 	
 	var num_rooms = LEVEL_ROOM_COUNT[level_num]
-	for i in range(num_rooms):
+	for _i in range(num_rooms):
 		add_room(free_regions)
 		if free_regions.empty():
 			break
@@ -1053,7 +1050,7 @@ func build_level():
 	# BUG: make sure enemies can't ever be on top of ladders
 	
 	var num_enemies = LEVEL_ENEMY_COUNT[level_num]
-	for i in range(num_enemies):
+	for _i in range(num_enemies):
 		var room = rooms[1 + randi() % (rooms.size() - 1)]
 		var enemy_x = room.position.x + 1 + randi() % int(room.size.x - 2)
 		var enemy_y = room.position.y + 1 + randi() % int(room.size.y - 2)
@@ -1075,7 +1072,7 @@ func build_level():
 	# place items
 	
 	var num_items = LEVEL_ITEM_COUNT[level_num]
-	for i in range(num_items):
+	for _i in range(num_items):
 		var room = rooms[randi() % (rooms.size())]
 		var x = room.position.x + 1 + randi() % int(room.size.x - 2)
 		var y = room.position.y + 1 + randi() % int(room.size.y - 2)
@@ -1089,7 +1086,7 @@ func build_level():
 	
 	var num_powers = LEVEL_POWERUP_COUNT[level_num]
 	if num_powers > 0:
-		for i in range(num_powers):
+		for _i in range(num_powers):
 			var room = rooms[1 + randi() % (rooms.size() - 1)]
 			var x = room.position.x + 1 + randi() % int(room.size.x - 2)
 			var y = room.position.y + 1 + randi() % int(room.size.y - 2)
@@ -1166,8 +1163,8 @@ func update_visuals():
 				spawn_label("!", 3, enemy.sprite_node.position)
 				# add to count of enemies that spotted you
 				enemies_spotted.append(enemy.enemy_name)
-				if player_status.scaryface.active == true:
-					enemy.take_damage(self, player_status.scaryface.damage)
+#				if player_status.scaryface.active == true:
+#					enemy.take_damage(self, player_status.scaryface.damage)
 				
 	if enemies_spotted.size() > 0:
 		# create dictionary of enemies in room
@@ -1203,8 +1200,8 @@ func update_visuals():
 				spotted_message += "."
 
 		message_log.add_message(spotted_message)
-		if player_status.scaryface.active == true:
-			message_log.add_message("Your face scared them a little.")
+#		if player_status.scaryface.active == true:
+#			message_log.add_message("Your face scared them a little.")
 			# TODO: scary face isn't working properly, hp bar goes missing?
 			
 	# show and hide items
@@ -1509,7 +1506,7 @@ func get_pair():
 
 func get_name(pairs=4):
 	var name = ''
-	for i in range(pairs):
+	for _i in range(pairs):
 		name += get_pair()
 	return name.capitalize()
 

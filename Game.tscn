@@ -20,10 +20,10 @@ points = PoolVector2Array( 10, 10, 0, 10, 0, 0, 10, 0 )
 [sub_resource type="ConvexPolygonShape2D" id=4]
 points = PoolVector2Array( 10, 10, 0, 10, 0, 0, 10, 0 )
 
-[sub_resource type="ConvexPolygonShape2D" id=12]
+[sub_resource type="ConvexPolygonShape2D" id=5]
 points = PoolVector2Array( 0, 0, 10, 0, 10, 10, 0, 10 )
 
-[sub_resource type="TileSet" id=5]
+[sub_resource type="TileSet" id=6]
 0/name = "player"
 0/texture = ExtResource( 1 )
 0/tex_offset = Vector2( 0, 0 )
@@ -173,19 +173,19 @@ points = PoolVector2Array( 0, 0, 10, 0, 10, 10, 0, 10 )
 8/navigation_offset = Vector2( 0, 0 )
 8/shape_offset = Vector2( 0, 0 )
 8/shape_transform = Transform2D( 1, 0, 0, 1, 0, 0 )
-8/shape = SubResource( 12 )
+8/shape = SubResource( 5 )
 8/shape_one_way = false
 8/shape_one_way_margin = 1.0
 8/shapes = [ {
 "autotile_coord": Vector2( 0, 0 ),
 "one_way": false,
 "one_way_margin": 1.0,
-"shape": SubResource( 12 ),
+"shape": SubResource( 5 ),
 "shape_transform": Transform2D( 1, 0, 0, 1, 0, 0 )
 } ]
 8/z_index = 0
 
-[sub_resource type="TileSet" id=6]
+[sub_resource type="TileSet" id=7]
 0/name = "dark.png 0"
 0/texture = ExtResource( 4 )
 0/tex_offset = Vector2( 0, 0 )
@@ -229,7 +229,7 @@ points = PoolVector2Array( 0, 0, 10, 0, 10, 10, 0, 10 )
 2/shapes = [  ]
 2/z_index = 0
 
-[sub_resource type="TileSet" id=7]
+[sub_resource type="TileSet" id=8]
 0/name = "explore.png 0"
 0/texture = ExtResource( 7 )
 0/tex_offset = Vector2( 0, 0 )
@@ -259,7 +259,7 @@ points = PoolVector2Array( 0, 0, 10, 0, 10, 10, 0, 10 )
 1/shapes = [  ]
 1/z_index = 0
 
-[sub_resource type="Animation" id=8]
+[sub_resource type="Animation" id=9]
 tracks/0/type = "value"
 tracks/0/path = NodePath(".:region_rect")
 tracks/0/interp = 1
@@ -273,7 +273,7 @@ tracks/0/keys = {
 "values": [ Rect2( 60, 50, 10, 10 ), Rect2( 70, 50, 10, 10 ), Rect2( 0, 50, 10, 10 ) ]
 }
 
-[sub_resource type="Animation" id=9]
+[sub_resource type="Animation" id=10]
 tracks/0/type = "value"
 tracks/0/path = NodePath(".:region_rect")
 tracks/0/interp = 1
@@ -287,7 +287,7 @@ tracks/0/keys = {
 "values": [ Rect2( 40, 50, 10, 10 ), Rect2( 50, 50, 10, 10 ), Rect2( 0, 50, 10, 10 ) ]
 }
 
-[sub_resource type="Animation" id=10]
+[sub_resource type="Animation" id=11]
 length = 0.2
 step = 0.02
 tracks/0/type = "value"
@@ -303,8 +303,7 @@ tracks/0/keys = {
 "values": [ Rect2( 0, 50, 10, 10 ), Rect2( 10, 50, 10, 10 ), Rect2( 20, 50, 10, 10 ), Rect2( 30, 50, 10, 10 ), Rect2( 0, 50, 10, 10 ) ]
 }
 
-[sub_resource type="Animation" id=11]
-resource_name = "Bounce"
+[sub_resource type="Animation" id=12]
 length = 0.5
 loop = true
 tracks/0/type = "value"
@@ -324,7 +323,7 @@ tracks/0/keys = {
 script = ExtResource( 2 )
 
 [node name="TileMap" type="TileMap" parent="."]
-tile_set = SubResource( 5 )
+tile_set = SubResource( 6 )
 cell_size = Vector2( 10, 10 )
 cell_quadrant_size = 10
 cell_custom_transform = Transform2D( 1, 0, 0, 1, 0, 0 )
@@ -332,7 +331,7 @@ format = 1
 
 [node name="VisibilityMap" type="TileMap" parent="."]
 z_index = 5
-tile_set = SubResource( 6 )
+tile_set = SubResource( 7 )
 cell_size = Vector2( 10, 10 )
 cell_quadrant_size = 10
 cell_custom_transform = Transform2D( 1, 0, 0, 1, 0, 0 )
@@ -340,7 +339,7 @@ format = 1
 
 [node name="ExplorationMap" type="TileMap" parent="."]
 z_index = 4
-tile_set = SubResource( 7 )
+tile_set = SubResource( 8 )
 cell_size = Vector2( 10, 10 )
 cell_quadrant_size = 10
 cell_custom_transform = Transform2D( 1, 0, 0, 1, 0, 0 )
@@ -363,9 +362,9 @@ drag_margin_bottom = 0.0
 script = ExtResource( 6 )
 
 [node name="PlayerAnims" type="AnimationPlayer" parent="Player"]
-anims/Attack = SubResource( 8 )
-anims/OpenDoor = SubResource( 9 )
-anims/PlayerWalk = SubResource( 10 )
+anims/Attack = SubResource( 9 )
+anims/OpenDoor = SubResource( 10 )
+anims/PlayerWalk = SubResource( 11 )
 
 [node name="SoundPlayer" type="AudioStreamPlayer2D" parent="Player"]
 bus = "SFX"
@@ -697,7 +696,7 @@ hframes = 16
 frame = 223
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="CanvasLayer/Shop/SelectedMarker"]
-anims/Bounce = SubResource( 11 )
+anims/Bounce = SubResource( 12 )
 
 [node name="Lose" type="ColorRect" parent="CanvasLayer"]
 visible = false
