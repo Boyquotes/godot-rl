@@ -1157,7 +1157,7 @@ func update_visuals():
 	var enemies_spotted = []
 	
 	# if we're encountering multiple enemies
-	var enemies_to_explore = []
+	var enemies_to_remove = []
 	
 	for enemy in enemies:
 		enemy.sprite_node.position = enemy.tile * TILE_SIZE
@@ -1170,14 +1170,12 @@ func update_visuals():
 				# turn node visibility on
 				enemy.sprite_node.visible = true
 				
-				# add to count of enemies that spotted you
-				enemies_spotted.append(enemy.enemy_name)
 				if player_status.scaryface.active == true:
 					enemy.take_damage(self, player_status.scaryface.damage)
-					
 					# check if this kills them
 					if enemy.dead:
-						play_sfx(player_sound, snd_enemy_death, 0.4, 0.5)
+						# add to removal list
+						enemies_to_remove.append(enemy)
 						# enemy.remove()
 						# enemies.erase(enemy)
 						for bx in range(enemy.tile.x - 1, enemy.tile.x + 2):
@@ -1191,12 +1189,27 @@ func update_visuals():
 						var particles = BloodParticles.instance()
 						particles.position = Vector2(enemy.tile.x + 0.2, enemy.tile.y + 0.2) * TILE_SIZE
 						add_child(particles)
-						print("spotted one enemy")
+					else:
+						# not dying but getting hurt
+						play_sfx(player_sound, snd_enemy_hurt, 0.8, 1)
+					
+					spawn_label("!", 3, enemy.sprite_node.position)
+					
+					# add to count of enemies that spotted you
+					enemies_spotted.append(enemy.enemy_name)
 						
 						# TODO: deal with enemy exploding in a separate array?
-				else:
-					# they just spot you
-					spawn_label("!", 3, enemy.sprite_node.position)
+					
+	
+	# remove exploded enemies
+	
+	if enemies_to_remove.size() > 0:
+		play_sfx(player_sound, snd_enemy_death, 0.4, 0.5)
+	
+	for enemy in enemies_to_remove:
+		enemy.remove()
+		enemies.erase(enemy)
+	enemies_to_remove = []
 				
 	if enemies_spotted.size() > 0:
 		# create dictionary of enemies in room
