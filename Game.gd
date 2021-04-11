@@ -222,101 +222,16 @@ var window_size = OS.get_window_size()
 
 # shop -------------------------------------------------------------------------
 
-var shop_items = {
-	"vampirism" : {
-		"name" : "Vampirism",
-		"cost" : 1,
-		"purchased" : true,
-		"description" : "Drink blood to gain health",
-		"frame" : 56
-	},
-	"pedicure" : {
-		"name" : "Pedicure",
-		"cost" : 1,
-		"purchased" : false,
-		"description" : "Improves kick strength by 2",
-		"frame" : 57
-	},
-	"scaryface" : {
-		"name" : "Scary Face",
-		"cost" : 1,
-		"purchased" : true,
-		"description" : "Enemies lose 1 health when they spot you",
-		"frame" : 58
-	},
-	"forgery" : {
-		"name" : "Forgery",
-		"cost" : 1,
-		"purchased" : false,
-		"description" : "Coins have 5x their normal value",
-		"frame" : 59
-	},
-	"goodeyes" : {
-		"name" : "Good Eyes",
-		"cost" : 1,
-		"purchased" : false,
-		"description" : "Find better items",
-		"frame" : 60
-	},
-	"extralife" : {
-		"name" : "Extra Life",
-		"cost" : 1,
-		"purchased" : false,
-		"description" : "Upon dying, restart level at full health",
-		"frame" : 61
-	},
-	"bait" : {
-		"name" : "Bait",
-		"cost" : 1,
-		"purchased" : false,
-		"description" : "Spawn more enemies",
-		"frame" : 62
-	},
-	"slime" : {
-		"name" : "Slime",
-		"cost" : 1,
-		"purchased" : false,
-		"description" : "Leave a toxic trail that hurts enemies",
-		"frame" : 63
-	}
-}
-
-
+var shop_items = {}
 
 var selected_item_name
 var selected_slot
 var shop_items_values
+var shop_visited
 
 # status effects ---------------------------------------------------------------
 
-var player_status = {
-	"vampirism" : {
-		"active" : false
-	},
-	"pedicure" : {
-		"active" : false
-	},
-	"scaryface" : {
-		"active" : false,
-		"damage" : 1
-	},
-	"forgery" : {
-		"active" : false
-	},
-	"goodeyes" : {
-		"active" : false
-	},
-	"extralife" : {
-		"active" : false
-	},
-	"bait" : {
-		"active" : false
-	},
-	"slime" : {
-		"active" : false
-	}
-}
-
+var player_status = {}
 
 # movement delay ---------------------------------------------------------------
 var move_timer
@@ -383,7 +298,11 @@ func shop_setup():
 	
 	shop_items_values = shop_items.values()
 	# choose random items to display in shop
-	shop_items_values.shuffle()
+	if !shop_visited:
+		shop_items_values.shuffle()
+		print("shuffling shop")
+		
+	# BUG: on second view of shop, items always in default order
 		
 	# fill slots with items from dictionary, set up titles
 	
@@ -393,6 +312,9 @@ func shop_setup():
 	# make shop visible
 	shop_update()
 	shop_screen.visible = true
+	
+	# shop only shuffles once per level
+	shop_visited = true
 	
 	# check currently selected
 	# for the selected item, allow purchase if enough coins
@@ -451,6 +373,8 @@ func try_purchase(selection):
 					player_status.scaryface.active = true
 				"Forgery":
 					player_status.forgery.active = true
+					# raise coin_value
+					coin_value = 5
 				"Good Eyes":
 					player_status.goodeyes.active = true
 				"Extra Life":
@@ -668,16 +592,120 @@ func initialize_game():
 	score = 0
 	coins = 99
 	player_dmg = 1
+	
+	
 
 	$CanvasLayer/Win.visible = false
 	$CanvasLayer/Lose.visible = false
 	$CanvasLayer/Title.visible = false
 	
-	player_status.vampirism.active = true
-	player_status.scaryface.active = true
-	print("debug status effects enabled!")
+	status_setup()
+	
+	# make sure all player statuses are turned off
+	
+#	for status in player_status_a:
+#		status.active = false
+#
+#	for item in shop_items_a:
+#		item.purchased = false
+	
+#	player_status.vampirism.active = true
+#	player_status.scaryface.active = true
+#	player_status.forgery.active = true
+#	print("debug status effects enabled!")
 	
 	build_level()
+	
+func status_setup():
+	# status effects
+	player_status = {
+		"vampirism" : {
+			"active" : false
+		},
+		"pedicure" : {
+			"active" : false,
+			"damage" : 2
+		},
+		"scaryface" : {
+			"active" : false,
+			"damage" : 1
+		},
+		"forgery" : {
+			"active" : false
+		},
+		"goodeyes" : {
+			"active" : false
+		},
+		"extralife" : {
+			"active" : false
+		},
+		"bait" : {
+			"active" : false
+		},
+		"slime" : {
+			"active" : false
+		}
+	}
+	
+	# shop items
+	shop_items = {
+		"vampirism" : {
+			"name" : "Vampirism",
+			"cost" : 1,
+			"purchased" : true,
+			"description" : "Drink blood to gain health",
+			"frame" : 56
+		},
+		"pedicure" : {
+			"name" : "Pedicure",
+			"cost" : 1,
+			"purchased" : false,
+			"description" : "Improves kick strength by 2",
+			"frame" : 57
+		},
+		"scaryface" : {
+			"name" : "Scary Face",
+			"cost" : 1,
+			"purchased" : true,
+			"description" : "Enemies lose 1 health when they spot you",
+			"frame" : 58
+		},
+		"forgery" : {
+			"name" : "Forgery",
+			"cost" : 1,
+			"purchased" : false,
+			"description" : "Coins have 5x their normal value",
+			"frame" : 59
+		},
+		"goodeyes" : {
+			"name" : "Good Eyes",
+			"cost" : 1,
+			"purchased" : false,
+			"description" : "Find better items",
+			"frame" : 60
+		},
+		"extralife" : {
+			"name" : "Extra Life",
+			"cost" : 1,
+			"purchased" : false,
+			"description" : "Upon dying, restart level at full health",
+			"frame" : 61
+		},
+		"bait" : {
+			"name" : "Bait",
+			"cost" : 1,
+			"purchased" : false,
+			"description" : "Spawn more enemies",
+			"frame" : 62
+		},
+		"slime" : {
+			"name" : "Slime",
+			"cost" : 1,
+			"purchased" : false,
+			"description" : "Leave a toxic trail that hurts enemies",
+			"frame" : 63
+		}
+	}	
 		
 func try_move(dx, dy):
 	# disable walking until timer complete
@@ -750,6 +778,7 @@ func try_move(dx, dy):
 						message_log.add_message("You defeat the " + enemy.enemy_name + ".")
 						enemy.remove()
 						enemies.erase(enemy)
+						
 						# bleed on the floor
 						# check player kick direction
 						# bleed within distance of 3 times the direction
@@ -982,6 +1011,8 @@ func build_level():
 	rooms.clear()
 	map.clear()
 	tile_map.clear()
+	
+	shop_visited = false
 	
 	# clean up all that blood
 	for bloodstain in bloodstains:
