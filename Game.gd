@@ -296,9 +296,9 @@ func shop_setup():
 	play_music(music_sound, snd_menu_amb)
 	game_state = "shop"
 	
-	shop_items_values = shop_items.values()
 	# choose random items to display in shop
 	if !shop_visited:
+		shop_items_values = shop_items.values()
 		shop_items_values.shuffle()
 		print("shuffling shop")
 		

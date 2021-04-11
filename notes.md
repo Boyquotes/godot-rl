@@ -9,8 +9,6 @@
 
 ## bugs / improvements
 
-- on second view of shop, items always in default order. related to:
-- shop can be re-rollde infinitely. close after one use or only allow one item roll
 - tile map shading is slowing game down
 - smarter way to display settings
 - enemy animations
