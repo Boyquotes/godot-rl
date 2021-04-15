@@ -35,6 +35,7 @@ const ItemScene = preload("res://Item.tscn")
 const StatusIconScene= preload("res://StatusIcon.tscn")
 const FloatLabelScene = preload("res://FloatLabel.tscn")
 const BloodScene = preload("res://Blood.tscn")
+const SlimeScene = preload("res://Slime.tscn")
 const BloodParticles = preload("res://BloodParticles.tscn")
 
 var name_parts = "..bobabukekogixaxoxurirero"
@@ -174,6 +175,17 @@ class Enemy extends Reference:
 				
 				if !blocked:
 					tile = move_tile
+					
+					# check if in slime
+					if game.player_status.slime.active == true:
+						var slimed = true
+						for slimestain in game.slimestains:
+							if slimestain.position.x == tile.x * TILE_SIZE && slimestain.position.y == tile.y * TILE_SIZE:
+								print("got slimed")
+								take_damage(game, 1)
+								# TODO: make this work properly
+								# sfx
+								# game.play_sfx(game.player_sound, snd_enemy_hurt, 0.8, 1)
 
 # current level data -----------------------------------------------------------
 
@@ -183,6 +195,7 @@ var rooms = []
 var enemies = []
 var items = []
 var bloodstains = []
+var slimestains = []
 var level_size
 
 # references to commonly used nodes --------------------------------------------
@@ -631,6 +644,7 @@ func initialize_game():
 #	player_status.scaryface.active = true
 #	player_status.forgery.active = true
 #	print("debug status effects enabled!")
+	player_status.slime.active = true
 
 	update_icons()
 	
@@ -785,6 +799,7 @@ func try_move(dx, dy):
 							spawn_label("no effect", 1, pos)
 				
 			
+			
 			# maybe an enemy interaction
 			var blocked = false
 			for enemy in enemies:
@@ -863,7 +878,17 @@ func try_move(dx, dy):
 					break
 					
 			if !blocked:
+
+				# leave slime trail where we were
+				if player_status.slime.active == true:
+					var slime = SlimeScene.instance()
+					slime.position = player_tile * TILE_SIZE
+					slimestains.append(slime)
+					add_child(slime)
+					
+				# move
 				player_tile = Vector2(x, y)
+					
 				# play walk sound
 		
 				if has_bloody_feet:
@@ -1047,6 +1072,11 @@ func build_level():
 	for bloodstain in bloodstains:
 		bloodstain.queue_free()
 	bloodstains.clear()
+	
+	# remove slime too
+	for slimestain in slimestains:
+		slimestain.queue_free()
+	slimestains.clear()
 	
 	# remove enemies
 	for enemy in enemies:
@@ -1581,6 +1611,8 @@ func damage_player(dmg, me):
 	message_log.add_message(me.enemy_name + " attacks you for " + str(dmg) + " damage!")
 	$CanvasLayer/HPBar.rect_size.x = $CanvasLayer/HPBarEmpty.rect_size.x * player_hp / max_hp
 	if player_hp == 0:
+		
+		# TODO: move enemies back and reset the level?
 		
 		# extra life check
 		if player_status.extralife.active && !extralife_used:

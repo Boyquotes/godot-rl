@@ -9,6 +9,7 @@
 
 ## bugs / improvements
 
+- sliming enemies: damage taking not working properly
 - tile map shading is slowing game down
 - smarter way to display settings
 - enemy animations
