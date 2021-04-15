@@ -220,6 +220,7 @@ var enemy_pathfinding
 var window_scale = 1
 var screen_size = OS.get_screen_size()
 var window_size = OS.get_window_size()
+var player_start_pos
 
 # shop -------------------------------------------------------------------------
 
@@ -229,6 +230,7 @@ var selected_item_name
 var selected_slot
 var shop_items_values
 var shop_visited
+var extralife_used
 
 # status effects ---------------------------------------------------------------
 
@@ -1038,6 +1040,7 @@ func build_level():
 	map.clear()
 	tile_map.clear()
 	
+	extralife_used = false
 	shop_visited = false
 	
 	# clean up all that blood
@@ -1088,7 +1091,9 @@ func build_level():
 	var start_room = rooms.front()
 	var player_x = start_room.position.x + 1 + randi() % int(start_room.size.x - 2)
 	var player_y = start_room.position.y + 1 + randi() % int(start_room.size.y - 2)
-	player_tile = Vector2(player_x, player_y)
+	
+	player_start_pos = Vector2(player_x, player_y)
+	player_tile = player_start_pos
 	
 	# yield(get_tree(), "idle_frame")
 	call_deferred("update_visuals")
@@ -1576,17 +1581,30 @@ func damage_player(dmg, me):
 	message_log.add_message(me.enemy_name + " attacks you for " + str(dmg) + " damage!")
 	$CanvasLayer/HPBar.rect_size.x = $CanvasLayer/HPBarEmpty.rect_size.x * player_hp / max_hp
 	if player_hp == 0:
-		lose_screen.visible = true
-		var death_area = ""
-		if (level_num) == 0:
-			death_area = "the ground floor"
-		else:
-			death_area = "level " + str(level_num)
 		
-		$CanvasLayer/Lose/Score.text = "Score: " + str(score)
-		$CanvasLayer/Lose/DeathMsg.text = "You were slain by a " + me.enemy_name + " in\n"
-		$CanvasLayer/Lose/DeathMsg.text += death_area + " of the terrible basement."
-		game_state = "lose"
+		# extra life check
+		if player_status.extralife.active && !extralife_used:
+			# move back to start
+			player_tile = player_start_pos
+			player_hp = max_hp
+			extralife_used = true
+			var pos = player_tile * TILE_SIZE
+			spawn_label("resurrected", 2, pos)
+			update_visuals()
+		
+		else:
+			# die for real
+			lose_screen.visible = true
+			var death_area = ""
+			if (level_num) == 0:
+				death_area = "the ground floor"
+			else:
+				death_area = "level " + str(level_num)
+			
+			$CanvasLayer/Lose/Score.text = "Score: " + str(score)
+			$CanvasLayer/Lose/DeathMsg.text = "You were slain by a " + me.enemy_name + " in\n"
+			$CanvasLayer/Lose/DeathMsg.text += death_area + " of the terrible basement."
+			game_state = "lose"
 		
 # floating label spawner -------------------------------------------------------
 
