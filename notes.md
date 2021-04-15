@@ -9,11 +9,9 @@
 
 ## bugs / improvements
 
-- enemies spotting player is broken
 - tile map shading is slowing game down
 - smarter way to display settings
 - enemy animations
-- show status upgrades on screen
 
 ## ideas
 

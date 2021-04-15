@@ -32,6 +32,7 @@ const STATUS_EFFECTS = ["heal_once", "heal_over_time", "poison"]
 
 const EnemyScene = preload("res://Enemy.tscn")
 const ItemScene = preload("res://Item.tscn")
+const StatusIconScene= preload("res://StatusIcon.tscn")
 const FloatLabelScene = preload("res://FloatLabel.tscn")
 const BloodScene = preload("res://Blood.tscn")
 const BloodParticles = preload("res://BloodParticles.tscn")
@@ -350,7 +351,8 @@ func select_item(dir):
 	$CanvasLayer/Shop/ItemDescription.text = shop_items_values[selected_slot].description
 	return
 	
-func try_purchase(selection):
+func try_purchase(selection):		
+	
 	# attempt to purchase item
 	if !shop_items_values[selection].purchased:
 		if coins > shop_items_values[selection].cost:
@@ -388,6 +390,20 @@ func try_purchase(selection):
 			print("cannot afford")
 	else:
 		print("already purchased")
+		
+	update_icons()
+
+func update_icons():
+	var icon_x = 0
+	for item in shop_items:
+		if shop_items[item].purchased == true:
+			var iconpos = Vector2(icon_x, 0)
+			var icon = StatusIconScene.instance()
+			icon.position = iconpos
+			icon.frame = shop_items[item].icon
+			$CanvasLayer/StatusIcons.add_child(icon)
+			icon_x += 12
+			
 
 # fires when walk timer has timed out
 func on_walk_timeout_complete():
@@ -613,6 +629,8 @@ func initialize_game():
 #	player_status.scaryface.active = true
 #	player_status.forgery.active = true
 #	print("debug status effects enabled!")
+
+	update_icons()
 	
 	build_level()
 	
@@ -652,58 +670,66 @@ func status_setup():
 		"vampirism" : {
 			"name" : "Vampirism",
 			"cost" : 1,
-			"purchased" : true,
+			"purchased" : false,
 			"description" : "Drink blood to gain health",
-			"frame" : 56
+			"frame" : 56,
+			"icon" : 208
 		},
 		"pedicure" : {
 			"name" : "Pedicure",
 			"cost" : 1,
 			"purchased" : false,
 			"description" : "Improves kick strength by 2",
-			"frame" : 57
+			"frame" : 57,
+			"icon" : 209
 		},
 		"scaryface" : {
 			"name" : "Scary Face",
 			"cost" : 1,
-			"purchased" : true,
+			"purchased" : false,
 			"description" : "Enemies lose 1 health when they spot you",
-			"frame" : 58
+			"frame" : 58,
+			"icon" : 210
 		},
 		"forgery" : {
 			"name" : "Forgery",
 			"cost" : 1,
 			"purchased" : false,
 			"description" : "Coins have 5x their normal value",
-			"frame" : 59
+			"frame" : 59,
+			"icon" : 211
 		},
 		"goodeyes" : {
 			"name" : "Good Eyes",
 			"cost" : 1,
 			"purchased" : false,
 			"description" : "Find better items",
-			"frame" : 60
+			"frame" : 60,
+			"icon" : 212
 		},
 		"extralife" : {
 			"name" : "Extra Life",
 			"cost" : 1,
 			"purchased" : false,
 			"description" : "Upon dying, restart level at full health",
-			"frame" : 61
+			"frame" : 61,
+			"icon" : 213
 		},
 		"bait" : {
 			"name" : "Bait",
 			"cost" : 1,
 			"purchased" : false,
 			"description" : "Spawn more enemies",
-			"frame" : 62
+			"frame" : 62,
+			"icon" : 214
 		},
 		"slime" : {
 			"name" : "Slime",
 			"cost" : 1,
 			"purchased" : false,
 			"description" : "Leave a toxic trail that hurts enemies",
-			"frame" : 63
+			"frame" : 63,
+			"icon" : 215
 		}
 	}	
 		
@@ -1224,13 +1250,10 @@ func update_visuals():
 						# not dying but getting hurt
 						play_sfx(player_sound, snd_enemy_hurt, 0.8, 1)
 					
-					spawn_label("!", 3, enemy.sprite_node.position)
-					
-					# add to count of enemies that spotted you
-					enemies_spotted.append(enemy.enemy_name)
-						
-						# TODO: deal with enemy exploding in a separate array?
-					
+				spawn_label("!", 3, enemy.sprite_node.position)
+				
+				# add to count of enemies that spotted you
+				enemies_spotted.append(enemy.enemy_name)
 	
 	# remove exploded enemies
 	
