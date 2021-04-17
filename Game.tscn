@@ -548,6 +548,84 @@ bbcode_enabled = true
 bbcode_text = "[color=yellow][center][wave amp=30 freq=4]Y O U   W I N ! ! ![/wave]"
 text = "Y O U   W I N ! ! !"
 
+[node name="IntroScreens" type="ColorRect" parent="CanvasLayer"]
+visible = false
+margin_right = 400.0
+margin_bottom = 300.0
+color = Color( 0, 0, 0, 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="first" type="ColorRect" parent="CanvasLayer/IntroScreens"]
+visible = false
+margin_right = 400.0
+margin_bottom = 300.0
+color = Color( 0, 0, 0, 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Text" type="RichTextLabel" parent="CanvasLayer/IntroScreens/first"]
+margin_left = 80.0
+margin_top = 50.0
+margin_right = 320.0
+margin_bottom = 90.0
+rect_clip_content = false
+custom_fonts/normal_font = ExtResource( 3 )
+bbcode_enabled = true
+bbcode_text = "first"
+text = "first"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="second" type="ColorRect" parent="CanvasLayer/IntroScreens"]
+visible = false
+margin_right = 400.0
+margin_bottom = 300.0
+color = Color( 0.239216, 0.121569, 0.380392, 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Text" type="RichTextLabel" parent="CanvasLayer/IntroScreens/second"]
+margin_left = 80.0
+margin_top = 50.0
+margin_right = 320.0
+margin_bottom = 90.0
+rect_clip_content = false
+custom_fonts/normal_font = ExtResource( 3 )
+bbcode_enabled = true
+bbcode_text = "second"
+text = "second"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="third" type="ColorRect" parent="CanvasLayer/IntroScreens"]
+visible = false
+margin_right = 400.0
+margin_bottom = 300.0
+color = Color( 0.305882, 0.00784314, 0.00784314, 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Text" type="RichTextLabel" parent="CanvasLayer/IntroScreens/third"]
+margin_left = 80.0
+margin_top = 50.0
+margin_right = 320.0
+margin_bottom = 90.0
+rect_clip_content = false
+custom_fonts/normal_font = ExtResource( 3 )
+bbcode_enabled = true
+bbcode_text = "third"
+text = "third"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
 [node name="Shop" type="ColorRect" parent="CanvasLayer"]
 visible = false
 margin_right = 400.0

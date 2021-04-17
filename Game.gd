@@ -60,6 +60,8 @@ const snd_ladder = preload("res://sound/ladder1.wav")
 const snd_enemy_hurt = preload("res://sound/enemy-hurt.wav")
 const snd_enemy_death = preload("res://sound/enemy-death.wav")
 const snd_music1 = preload("res://sound/music1.wav")
+const snd_music_death = preload("res://sound/music-death.wav")
+const snd_music_intro = preload("res://sound/music-intro.wav")
 const snd_ui_select = preload("res://sound/ui-select.wav")
 const snd_ui_back = preload("res://sound/ui-back.wav")
 const snd_ui_set = preload("res://sound/ui-set.wav")
@@ -223,6 +225,7 @@ onready var player_sound = $Player/SoundPlayer
 onready var level_sound = $Player/SoundLevel
 onready var music_sound = $Player/SoundMusic
 onready var message_log = $CanvasLayer/MessageLog
+onready var intro_screen = $CanvasLayer/IntroScreens
 onready var settings_screen = $CanvasLayer/Settings
 onready var pause_screen = $CanvasLayer/Pause
 onready var credits_screen = $CanvasLayer/Credits
@@ -232,6 +235,7 @@ onready var shop_screen = $CanvasLayer/Shop
 
 onready var shop_slots = [$CanvasLayer/Shop/Slot1, $CanvasLayer/Shop/Slot2, $CanvasLayer/Shop/Slot3]
 onready var shop_names = [$CanvasLayer/Shop/Slot1/Name, $CanvasLayer/Shop/Slot2/Name, $CanvasLayer/Shop/Slot3/Name]
+onready var intro_screens = [$CanvasLayer/IntroScreens/first, $CanvasLayer/IntroScreens/second, $CanvasLayer/IntroScreens/third]
 
 # game states ------------------------------------------------------------------
 var game_state
@@ -247,6 +251,13 @@ var window_scale = 1
 var screen_size = OS.get_screen_size()
 var window_size = OS.get_window_size()
 var player_start_pos
+
+# intro ------------------------------------------------------------------------
+
+var intro_state = 0
+var intro_timer
+var intro_input = true
+var intro_delay = 0.3
 
 # shop -------------------------------------------------------------------------
 
@@ -308,6 +319,13 @@ func title_setup():
 	move_timer.set_wait_time(move_delay)
 	move_timer.connect("timeout", self, "on_walk_timeout_complete")
 	add_child(move_timer)
+	
+	# create intro timer
+	intro_timer = Timer.new()
+	intro_timer.set_one_shot(true)
+	intro_timer.set_wait_time(intro_delay)
+	intro_timer.connect("timeout", self, "on_intro_timeout_complete")
+	add_child(intro_timer)
 	
 	# play menu ambience
 	play_music(music_sound, snd_menu_amb)
@@ -436,6 +454,11 @@ func update_icons():
 func on_walk_timeout_complete():
 	can_move = true
 	
+# fires when intro timer has timed out
+func on_intro_timeout_complete():
+	print("timeout complete")
+	intro_input = true
+	
 # input event handler
 func _input(event):
 	if !event.is_pressed():
@@ -445,8 +468,10 @@ func _input(event):
 	
 	# start the game
 	if game_state == "title" && event.is_action("Start"):
+		game_state = "intro"
+		intro_setup()
 		play_sfx(level_sound, snd_ui_select, 0.2, 0.4)
-		initialize_game()
+		# TODO: BUG: DOM: here, make this work
 		
 	# quit from main menu
 	if game_state == "title" && event.is_action("Quit"):
@@ -470,6 +495,25 @@ func _input(event):
 		$CanvasLayer/Settings/Info.text += "Message Log is " + log_status + "\n\n"
 		$CanvasLayer/Settings/Info.text += "Back"
 		settings_screen.visible = true
+		return
+		
+	# things we can do in the intro
+	
+	if game_state == "intro" && event.is_action("Start") && intro_input:
+		intro_input = false
+		intro_timer.start()
+		if intro_state < intro_screens.size() - 1:
+			# either go to next slide
+			intro_state += 1
+			intro_screens[intro_state].visible = true
+			print("showing intro screen " + str(intro_state))
+		else:
+			# or start game
+			print("initializing")
+			$CanvasLayer/IntroScreens.visible = false
+			initialize_game()
+		play_sfx(level_sound, snd_ui_select, 0.2, 0.4)
+		
 		return
 		
 	# things we can do on game over
@@ -608,6 +652,18 @@ func _input(event):
 		else:
 			window_scale = 1
 		OS.set_window_size(Vector2(400 * window_scale,300 * window_scale))
+
+# show the intro cutscene ------------------------------------------------------
+
+func intro_setup():
+	play_music(music_sound, snd_music_intro)
+	intro_input = false
+	intro_timer.start()
+	print("intro setup!")
+	$CanvasLayer/Title.visible = false
+	intro_screen.visible = true
+	intro_state = 0
+	intro_screens[intro_state].visible = true
 
 # function to initialize / restart the entire game -----------------------------
 
