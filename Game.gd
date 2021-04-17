@@ -181,11 +181,24 @@ class Enemy extends Reference:
 						var slimed = true
 						for slimestain in game.slimestains:
 							if slimestain.position.x == tile.x * TILE_SIZE && slimestain.position.y == tile.y * TILE_SIZE:
-								print("got slimed")
 								take_damage(game, 1)
 								# TODO: make this work properly
 								# sfx
 								# game.play_sfx(game.player_sound, snd_enemy_hurt, 0.8, 1)
+
+								if self.dead:
+									# play sound
+									game.play_sfx(game.player_sound, snd_enemy_death, 0.8, 1)
+									game.message_log.add_message("The " + self.enemy_name + " is slimed to death.")
+									self.remove()
+									game.enemies.erase(self)
+									# spawn blood particles
+									var particles = BloodParticles.instance()
+									particles.position = Vector2(self.tile.x + 0.2, self.tile.y + 0.2) * TILE_SIZE
+									game.add_child(particles)
+								else:
+									# not dying but getting hurt
+									game.play_sfx(game.player_sound, snd_enemy_hurt, 0.8, 1)
 
 # current level data -----------------------------------------------------------
 
@@ -419,7 +432,6 @@ func update_icons():
 			$CanvasLayer/StatusIcons.add_child(icon)
 			icon_x += 12
 			
-
 # fires when walk timer has timed out
 func on_walk_timeout_complete():
 	can_move = true
@@ -428,10 +440,7 @@ func on_walk_timeout_complete():
 func _input(event):
 	if !event.is_pressed():
 		return
-	
-	# inputs outside of gameplay only
-	## TODO: if game_state == "title" or game_state == "end":
-	
+		
 	# things we can do in title screen
 	
 	# start the game
@@ -778,6 +787,7 @@ func try_move(dx, dy):
 			
 			# check if walking in blood
 			var has_bloody_feet = false
+			var has_slimy_feet = false
 			for bloodstain in bloodstains:
 				if bloodstain.position.x == x * TILE_SIZE && bloodstain.position.y == y * TILE_SIZE:
 					has_bloody_feet = true
@@ -798,7 +808,9 @@ func try_move(dx, dy):
 							message_log.add_message("You drink the blood. Nothing happens.")
 							spawn_label("no effect", 1, pos)
 				
-			
+			for slimestain in slimestains:
+				if slimestain.position.x == x * TILE_SIZE && slimestain.position.y == y * TILE_SIZE:
+					has_slimy_feet = true
 			
 			# maybe an enemy interaction
 			var blocked = false
@@ -860,16 +872,6 @@ func try_move(dx, dy):
 									bleeding = false
 							if blood_i > 2:
 								bleeding = false
-								# TODO: "spawn" blood instead
-								# TODO: stop splattering once a non-floor object is hit
-								# BUG: can't pickup coin inside blood
-						
-						# for bx in range(x-1, x+2):
-						#	for by in range(y-1, y+2):
-						#		if tile_map.get_cell(bx, by) == Tile.Floor:
-						#			set_tile(bx, by, Tile.Bloody)
-						# BUG
-						# set_tile(x, y, Tile.Bones)
 					else:
 						message_log.add_message("You attack the " + enemy.enemy_name + ".")
 						
@@ -881,10 +883,19 @@ func try_move(dx, dy):
 
 				# leave slime trail where we were
 				if player_status.slime.active == true:
-					var slime = SlimeScene.instance()
-					slime.position = player_tile * TILE_SIZE
-					slimestains.append(slime)
-					add_child(slime)
+					# place one if there isn't one already
+					
+					var hasslime = false
+					for check in slimestains:
+						if check.position == player_tile * TILE_SIZE:
+							hasslime = true
+					if !hasslime:
+						var slime = SlimeScene.instance()
+						slime.position = player_tile * TILE_SIZE
+						slimestains.append(slime)
+						add_child(slime)
+						print("made new slime at " + str(slime.position))
+							
 					
 				# move
 				player_tile = Vector2(x, y)
@@ -893,6 +904,8 @@ func try_move(dx, dy):
 		
 				if has_bloody_feet:
 					play_sfx(player_sound, snd_walk_blood, 0.6, 1)
+				elif has_slimy_feet:
+					play_sfx(player_sound, snd_walk_blood, 0.4, 0.6)
 				else:
 					var r = snd_walk[randi() % snd_walk.size()]
 					play_sfx(player_sound, r, 0.8, 1)
@@ -954,12 +967,7 @@ func try_move(dx, dy):
 			
 			
 				
-	# every enemy tries to move
-	
-	# TODO: add action phase
-	# disable player input
-	# run enemy animations, effects, etc.
-	# after a timer, allow player input again
+	# every enemy tries to move or attack
 	
 	for enemy in enemies:
 		enemy.act(self)
@@ -1268,8 +1276,6 @@ func update_visuals():
 					if enemy.dead:
 						# add to removal list
 						enemies_to_remove.append(enemy)
-						# enemy.remove()
-						# enemies.erase(enemy)
 						for bx in range(enemy.tile.x - 1, enemy.tile.x + 2):
 							for by in range(enemy.tile.y - 1, enemy.tile.y + 2):
 								if tile_map.get_cell(bx, by) == Tile.Floor:
@@ -1334,9 +1340,6 @@ func update_visuals():
 				spotted_message += "."
 
 		message_log.add_message(spotted_message)
-#		if player_status.scaryface.active == true:
-#			message_log.add_message("Your face scared them a little.")
-			# TODO: scary face isn't working properly, hp bar goes missing?
 			
 	# show and hide items
 	
