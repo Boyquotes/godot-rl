@@ -5,25 +5,27 @@ extends Node2D
 const TILE_SIZE = 10
 
 const LEVEL_SIZES = [
-	Vector2(30, 20),
-	Vector2(35, 25),
-	Vector2(40, 30),
-	Vector2(45, 35),
-	Vector2(50, 40)
+	Vector2(28, 20),
+	Vector2(30, 22),
+	Vector2(32, 24),
+	Vector2(34, 26),
+	Vector2(36, 28),
+	Vector2(38, 30),
+	Vector2(40, 32)
 ]
 
-const LEVEL_ROOM_COUNT = [4, 5, 9, 11, 13]
-const LEVEL_ENEMY_COUNT = [3, 5, 7, 9, 11]
-const LEVEL_ITEM_COUNT = [1, 3, 5, 5, 5]
-const LEVEL_POWERUP_COUNT = [0, 1, 1, 1, 1]
+const LEVEL_ROOM_COUNT = [4, 5, 7, 8, 9, 9, 9]
+const LEVEL_ENEMY_COUNT = [3, 5, 7, 9, 11, 12, 15]
+const LEVEL_ITEM_COUNT = [0, 1, 2, 2, 3, 4, 4]
+const LEVEL_POWERUP_COUNT = [0, 0, 1, 0, 1, 0, 1]
 const MIN_ROOM_DIMENSION = 5
 const MAX_ROOM_DIMENSION = 9
-const PLAYER_START_HP = 15
+const PLAYER_START_HP = 5
 
 # item values
 var coin_value = 1
 var coin_score = 10
-var heart_health = 5
+var heart_health = 3
 var blood_health = 1
 var heart_score = 10
 var potion_score = 20
@@ -68,6 +70,7 @@ const snd_ui_set = preload("res://sound/ui-set.wav")
 const snd_item_coin = preload("res://sound/item-coin.wav")
 const snd_item_potion = preload("res://sound/item-potion.wav")
 const snd_item_heart = preload("res://sound/item-heart.wav")
+const snd_purchase = preload("res://sound/purchase.wav")
 
 var snd_walk = [snd_walk1, snd_walk2, snd_walk3]
 
@@ -96,7 +99,7 @@ class Item extends Reference:
 # enemy class ------------------------------------------------------------------
 
 class Enemy extends Reference:
-	var possible_types = ["Boblin", "Gogonim", "Gogant", "Sepekter", "Ancient Sepekter", "Old One"]
+	var possible_types = ["Boblin", "Bibi", "Gobwitch", "Spectral Thing", "Ravaging Thing", "Baddie", "Demon Guy"]
 	var enemy_name
 	var sprite_node
 	var tile
@@ -105,7 +108,7 @@ class Enemy extends Reference:
 	var dead = false
 
 	func _init(game, enemy_level, x, y):
-		full_hp = 1 + enemy_level * 2
+		full_hp = 1 + enemy_level
 		hp = full_hp
 		tile = Vector2(x, y)
 		sprite_node = EnemyScene.instance()
@@ -340,7 +343,7 @@ func shop_setup():
 	# disable pause etc.
 	
 	# play shop music
-	play_music(music_sound, snd_menu_amb)
+	# play_music(music_sound, snd_menu_amb)
 	game_state = "shop"
 	
 	# choose random items to display in shop
@@ -408,6 +411,7 @@ func try_purchase(selection):
 			
 			coins -= shop_items_values[selection].cost
 			shop_items_values[selection].purchased = true
+			play_sfx(level_sound, snd_purchase, 0.9, 1)
 			shop_update()
 			
 			# activate abilities
@@ -433,9 +437,9 @@ func try_purchase(selection):
 					player_status.slime.active = true
 			
 		else:
-			print("cannot afford")
+			$CanvasLayer/Shop/ItemDescription.text = "You cannot afford that right now."
 	else:
-		print("already purchased")
+		$CanvasLayer/Shop/ItemDescription.text = "You have already purchased that."
 		
 	update_icons()
 
@@ -686,7 +690,7 @@ func initialize_game():
 	randomize()
 	level_num = 0
 	score = 0
-	coins = 99
+	coins = 0
 	player_dmg = 1
 	
 	
@@ -709,7 +713,7 @@ func initialize_game():
 #	player_status.scaryface.active = true
 #	player_status.forgery.active = true
 #	print("debug status effects enabled!")
-	player_status.slime.active = true
+#	player_status.slime.active = true
 
 	update_icons()
 	
@@ -750,7 +754,7 @@ func status_setup():
 	shop_items = {
 		"vampirism" : {
 			"name" : "Vampirism",
-			"cost" : 1,
+			"cost" : 13,
 			"purchased" : false,
 			"description" : "Drink blood to gain health",
 			"frame" : 56,
@@ -758,7 +762,7 @@ func status_setup():
 		},
 		"pedicure" : {
 			"name" : "Pedicure",
-			"cost" : 1,
+			"cost" : 10,
 			"purchased" : false,
 			"description" : "Improves kick strength by 2",
 			"frame" : 57,
@@ -766,7 +770,7 @@ func status_setup():
 		},
 		"scaryface" : {
 			"name" : "Scary Face",
-			"cost" : 1,
+			"cost" : 7,
 			"purchased" : false,
 			"description" : "Enemies lose 1 health when they spot you",
 			"frame" : 58,
@@ -774,7 +778,7 @@ func status_setup():
 		},
 		"forgery" : {
 			"name" : "Forgery",
-			"cost" : 1,
+			"cost" : 5,
 			"purchased" : false,
 			"description" : "Coins have 5x their normal value",
 			"frame" : 59,
@@ -782,15 +786,15 @@ func status_setup():
 		},
 		"goodeyes" : {
 			"name" : "Good Eyes",
-			"cost" : 1,
+			"cost" : 10,
 			"purchased" : false,
-			"description" : "Find better items",
+			"description" : "DOES NOT WORK! Find better items",
 			"frame" : 60,
 			"icon" : 212
 		},
 		"extralife" : {
 			"name" : "Extra Life",
-			"cost" : 1,
+			"cost" : 5,
 			"purchased" : false,
 			"description" : "Upon dying, restart level at full health",
 			"frame" : 61,
@@ -798,15 +802,15 @@ func status_setup():
 		},
 		"bait" : {
 			"name" : "Bait",
-			"cost" : 1,
+			"cost" : 3,
 			"purchased" : false,
-			"description" : "Spawn more enemies",
+			"description" : "DOES NOT WORK! Spawn more enemies",
 			"frame" : 62,
 			"icon" : 214
 		},
 		"slime" : {
 			"name" : "Slime",
-			"cost" : 1,
+			"cost" : 20,
 			"purchased" : false,
 			"description" : "Leave a toxic trail that hurts enemies",
 			"frame" : 63,
@@ -1203,11 +1207,23 @@ func build_level():
 	
 	randomize()
 	var shopchance = randi() % 100
-	if shopchance > 50:
+	# TODO: spawn shop only if we have enough coins?
+	# also only in higher levels
+	if coins > 3 && shopchance > 60:
 		var shop_x = start_room.position.x + 1 + randi() % int(start_room.size.x - 2)
 		var shop_y = start_room.position.y
 		if tile_map.get_cell(shop_x, shop_y) != Tile.Door:
 			set_tile(shop_x, shop_y, Tile.ShopGrate)
+			if shopchance > 90:
+				var shop_dialogue = randi() % 3
+				if shop_dialogue == 0:
+					spawn_label("hey...", 1, Vector2(shop_x, shop_y) * TILE_SIZE)
+				if shop_dialogue == 1:
+					spawn_label("in here...", 1, Vector2(shop_x, shop_y) * TILE_SIZE)
+				if shop_dialogue == 2:
+					spawn_label("need some wares?", 1, Vector2(shop_x, shop_y) * TILE_SIZE)
+				if shop_dialogue == 3:
+					spawn_label("nice coins...", 1, Vector2(shop_x, shop_y) * TILE_SIZE)
 	
 	# place enemies
 	
@@ -1246,17 +1262,18 @@ func build_level():
 	
 	randomize()
 	
-	var num_powers = LEVEL_POWERUP_COUNT[level_num]
-	if num_powers > 0:
-		for _i in range(num_powers):
-			var room = rooms[1 + randi() % (rooms.size() - 1)]
-			var x = room.position.x + 1 + randi() % int(room.size.x - 2)
-			var y = room.position.y + 1 + randi() % int(room.size.y - 2)
-			var r = randi() % 100
-			if r >= 50:
-				items.append(Item.new(self, x, y, 20))
-			else:
-				items.append(Item.new(self, x, y, 21))
+	# TODO: powerups
+#	var num_powers = LEVEL_POWERUP_COUNT[level_num]
+#	if num_powers > 0:
+#		for _i in range(num_powers):
+#			var room = rooms[1 + randi() % (rooms.size() - 1)]
+#			var x = room.position.x + 1 + randi() % int(room.size.x - 2)
+#			var y = room.position.y + 1 + randi() % int(room.size.y - 2)
+#			var r = randi() % 100
+#			if r >= 50:
+#				items.append(Item.new(self, x, y, 20))
+#			else:
+#				items.append(Item.new(self, x, y, 21))
 	
 	call_deferred("update_visuals")
 
@@ -1681,10 +1698,12 @@ func damage_player(dmg, me):
 			extralife_used = true
 			var pos = player_tile * TILE_SIZE
 			spawn_label("resurrected", 2, pos)
+			$CanvasLayer/HPBar.rect_size.x = $CanvasLayer/HPBarEmpty.rect_size.x * player_hp / max_hp
 			update_visuals()
 		
 		else:
 			# die for real
+			play_music(music_sound, snd_music_death)
 			lose_screen.visible = true
 			var death_area = ""
 			if (level_num) == 0:
