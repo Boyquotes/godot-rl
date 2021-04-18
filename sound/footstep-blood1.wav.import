@@ -12,7 +12,7 @@ dest_files=[ "res://.import/footstep-blood1.wav-96f296ac685bceec4a319a1ae247bc70
 [params]
 
 force/8_bit=false
-force/mono=false
+force/mono=true
 force/max_rate=false
 force/max_rate_hz=44100
 edit/trim=false

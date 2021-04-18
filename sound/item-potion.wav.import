@@ -12,7 +12,7 @@ dest_files=[ "res://.import/item-potion.wav-9cfdf9201fbee8a88eb2f8eef17f38e6.sam
 [params]
 
 force/8_bit=false
-force/mono=false
+force/mono=true
 force/max_rate=false
 force/max_rate_hz=44100
 edit/trim=false

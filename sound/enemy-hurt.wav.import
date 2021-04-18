@@ -12,7 +12,7 @@ dest_files=[ "res://.import/enemy-hurt.wav-09221135e7558f64ed7a84a961f184a2.samp
 [params]
 
 force/8_bit=false
-force/mono=false
+force/mono=true
 force/max_rate=false
 force/max_rate_hz=44100
 edit/trim=false

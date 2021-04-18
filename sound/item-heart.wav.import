@@ -12,7 +12,7 @@ dest_files=[ "res://.import/item-heart.wav-d2c004737cc4215d6f14f8b8a50e6940.samp
 [params]
 
 force/8_bit=false
-force/mono=false
+force/mono=true
 force/max_rate=false
 force/max_rate_hz=44100
 edit/trim=false

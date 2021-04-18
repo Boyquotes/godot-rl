@@ -12,7 +12,7 @@ dest_files=[ "res://.import/footstep3.wav-8bf9bd49f7e479c711d900501d6f7d59.sampl
 [params]
 
 force/8_bit=false
-force/mono=false
+force/mono=true
 force/max_rate=false
 force/max_rate_hz=44100
 edit/trim=false

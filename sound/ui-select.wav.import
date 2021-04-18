@@ -12,7 +12,7 @@ dest_files=[ "res://.import/ui-select.wav-3414e656c1578c249a42fdca692fe77c.sampl
 [params]
 
 force/8_bit=false
-force/mono=false
+force/mono=true
 force/max_rate=false
 force/max_rate_hz=44100
 edit/trim=false

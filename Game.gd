@@ -260,7 +260,7 @@ var player_start_pos
 var intro_state = 0
 var intro_timer
 var intro_input = true
-var intro_delay = 0.3
+var intro_delay = 0.15
 
 # shop -------------------------------------------------------------------------
 
@@ -271,6 +271,8 @@ var selected_slot
 var shop_items_values
 var shop_visited
 var extralife_used
+
+var shop_icons = []
 
 # status effects ---------------------------------------------------------------
 
@@ -350,7 +352,6 @@ func shop_setup():
 	if !shop_visited:
 		shop_items_values = shop_items.values()
 		shop_items_values.shuffle()
-		print("shuffling shop")
 		
 	# BUG: on second view of shop, items always in default order
 		
@@ -404,9 +405,10 @@ func try_purchase(selection):
 	
 	# attempt to purchase item
 	if !shop_items_values[selection].purchased:
-		if coins > shop_items_values[selection].cost:
+		# check if we have enough coins
+		if coins >= shop_items_values[selection].cost:
 			var pos = Vector2(100, 100)
-			spawn_label("purchased", 2, pos)
+			$CanvasLayer/Shop/ItemDescription.text = "Nice choice... good luck...... heh"
 			# TODO: make label work
 			
 			coins -= shop_items_values[selection].cost
@@ -451,6 +453,7 @@ func update_icons():
 			var icon = StatusIconScene.instance()
 			icon.position = iconpos
 			icon.frame = shop_items[item].icon
+			shop_icons.append(icon)
 			$CanvasLayer/StatusIcons.add_child(icon)
 			icon_x += 12
 			
@@ -460,7 +463,6 @@ func on_walk_timeout_complete():
 	
 # fires when intro timer has timed out
 func on_intro_timeout_complete():
-	print("timeout complete")
 	intro_input = true
 	
 # input event handler
@@ -510,10 +512,8 @@ func _input(event):
 			# either go to next slide
 			intro_state += 1
 			intro_screens[intro_state].visible = true
-			print("showing intro screen " + str(intro_state))
 		else:
 			# or start game
-			print("initializing")
 			$CanvasLayer/IntroScreens.visible = false
 			initialize_game()
 		play_sfx(level_sound, snd_ui_select, 0.2, 0.4)
@@ -663,7 +663,6 @@ func intro_setup():
 	play_music(music_sound, snd_music_intro)
 	intro_input = false
 	intro_timer.start()
-	print("intro setup!")
 	$CanvasLayer/Title.visible = false
 	intro_screen.visible = true
 	intro_state = 0
@@ -693,21 +692,22 @@ func initialize_game():
 	coins = 0
 	player_dmg = 1
 	
+	$CanvasLayer/Coins.text = "Coins: " + str(coins)
 	
 
 	$CanvasLayer/Win.visible = false
 	$CanvasLayer/Lose.visible = false
 	$CanvasLayer/Title.visible = false
 	
+	# hide all power up icons
+	
+	for icon in shop_icons:
+		icon.queue_free()
+	shop_icons.clear()
+	
 	status_setup()
 	
 	# make sure all player statuses are turned off
-	
-#	for status in player_status_a:
-#		status.active = false
-#
-#	for item in shop_items_a:
-#		item.purchased = false
 	
 #	player_status.vampirism.active = true
 #	player_status.scaryface.active = true
@@ -816,8 +816,10 @@ func status_setup():
 			"frame" : 63,
 			"icon" : 215
 		}
-	}	
-		
+	}
+	
+	shop_items_values = shop_items.values()
+			
 func try_move(dx, dy):
 	# disable walking until timer complete
 	can_move = false
@@ -954,9 +956,7 @@ func try_move(dx, dy):
 						slime.position = player_tile * TILE_SIZE
 						slimestains.append(slime)
 						add_child(slime)
-						print("made new slime at " + str(slime.position))
 							
-					
 				# move
 				player_tile = Vector2(x, y)
 					

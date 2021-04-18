@@ -12,7 +12,7 @@ dest_files=[ "res://.import/music1.wav-73cc219e7de09e9b78bcb7b75f0f0428.sample" 
 [params]
 
 force/8_bit=false
-force/mono=false
+force/mono=true
 force/max_rate=false
 force/max_rate_hz=44100
 edit/trim=false

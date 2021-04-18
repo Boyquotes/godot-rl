@@ -12,7 +12,7 @@ dest_files=[ "res://.import/music-death.wav-5855a4c1648072dafd330e91008efa89.sam
 [params]
 
 force/8_bit=false
-force/mono=false
+force/mono=true
 force/max_rate=false
 force/max_rate_hz=44100
 edit/trim=false

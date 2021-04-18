@@ -12,7 +12,7 @@ dest_files=[ "res://.import/item-coin.wav-0b12f7559966eb0faf811ebbd3c9f489.sampl
 [params]
 
 force/8_bit=false
-force/mono=false
+force/mono=true
 force/max_rate=false
 force/max_rate_hz=44100
 edit/trim=false
