@@ -2,17 +2,15 @@
 
 # critical
 
-- death effect / animation / sfx
 - get hurt sfx
 - end screens
-- add the goblet
+- red bar low hp
 
 ## bugs / improvements
 
 - sliming enemies: damage taking not working properly
 - tile map shading is slowing game down
 - smarter way to display settings
-- enemy animations
 
 ## ideas
 

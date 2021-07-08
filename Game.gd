@@ -235,6 +235,7 @@ onready var pause_screen = $CanvasLayer/Pause
 onready var credits_screen = $CanvasLayer/Credits
 onready var lose_screen = $CanvasLayer/Lose
 onready var win_screen = $CanvasLayer/Win
+onready var true_win_screen = $CanvasLayer/TrueWin
 onready var shop_screen = $CanvasLayer/Shop
 onready var interlude_screen = $CanvasLayer/InterludeScreen
 
@@ -410,7 +411,11 @@ func try_purchase(selection):
 		# check if we have enough coins
 		if coins >= shop_items_values[selection].cost:
 			var pos = Vector2(100, 100)
-			$CanvasLayer/Shop/ItemDescription.text = "Nice choice... good luck...... heh"
+			
+			if shop_items_values[selection].name == "BAD GOBLET":
+				$CanvasLayer/Shop/ItemDescription.text = "You... the goblet??? Impossible!!!"
+			else:
+				$CanvasLayer/Shop/ItemDescription.text = "Nice choice... good luck...... heh"
 			# TODO: make label work
 			
 			coins -= shop_items_values[selection].cost
@@ -439,6 +444,8 @@ func try_purchase(selection):
 					player_status.bait.active = true
 				"Slime":
 					player_status.slime.active = true
+				"BAD GOBLET":
+					player_status.badgoblet.active = true
 			
 		else:
 			$CanvasLayer/Shop/ItemDescription.text = "You cannot afford that right now."
@@ -516,6 +523,12 @@ func _input(event):
 			intro_screens[intro_state].visible = true
 		else:
 			# or start game
+			
+			# reset intro state
+			intro_screens[0].visible = false
+			intro_screens[1].visible = false
+			intro_screens[2].visible = false
+			intro_state = 0
 			$CanvasLayer/IntroScreens.visible = false
 			initialize_game()
 		play_sfx(level_sound, snd_ui_select, 0.2, 0.4)
@@ -561,6 +574,22 @@ func _input(event):
 	if game_state == "win" && event.is_action("Escape"):
 		play_sfx(level_sound, snd_ui_select, 0.3, 0.4)
 		win_screen.visible = false
+		title_setup()
+		return
+		
+	# things we can do on win
+	
+	# restart immediately
+	if game_state == "truewin" && event.is_action("Restart"):
+		play_sfx(level_sound, snd_ui_select, 0.3, 0.4)
+		true_win_screen.visible = false
+		initialize_game()
+		return
+	
+	# back to title
+	if game_state == "truewin" && event.is_action("Escape"):
+		play_sfx(level_sound, snd_ui_select, 0.3, 0.4)
+		true_win_screen.visible = false
 		title_setup()
 		return
 			
@@ -650,7 +679,15 @@ func _input(event):
 	if game_state == "shop" && event.is_action("Restart"):
 		play_sfx(level_sound, snd_ui_back, 0.9, 1)
 		# return to game
-		game_state = "gameplay"
+		if player_status.badgoblet.active == true:
+			print("you did it!")
+			# TRUE WIN
+			score += 1999
+			$CanvasLayer/TrueWin/Score.text = "Score: " + str(score)
+			$CanvasLayer/TrueWin.visible = true
+			game_state = "truewin"
+		else:
+			game_state = "gameplay"
 		shop_screen.visible = false
 		return
 		
@@ -710,7 +747,7 @@ func initialize_game():
 	randomize()
 	level_num = 0
 	score = 0
-	coins = 0
+	coins = 99
 	player_dmg = 1
 	coin_value = 1
 	
@@ -769,6 +806,9 @@ func status_setup():
 		},
 		"slime" : {
 			"active" : false
+		},
+		"badgoblet" : {
+			"active" : false
 		}
 	}
 	
@@ -806,14 +846,14 @@ func status_setup():
 			"frame" : 59,
 			"icon" : 211
 		},
-		"goodeyes" : {
-			"name" : "Good Eyes",
-			"cost" : 10,
-			"purchased" : false,
-			"description" : "DOES NOT WORK! Find better items",
-			"frame" : 60,
-			"icon" : 212
-		},
+#		"goodeyes" : {
+#			"name" : "Good Eyes",
+#			"cost" : 10,
+#			"purchased" : false,
+#			"description" : "DOES NOT WORK! Find better items",
+#			"frame" : 60,
+#			"icon" : 212
+#		},
 		"extralife" : {
 			"name" : "Extra Life",
 			"cost" : 5,
@@ -822,22 +862,30 @@ func status_setup():
 			"frame" : 61,
 			"icon" : 213
 		},
-		"bait" : {
-			"name" : "Bait",
-			"cost" : 3,
+		"badgoblet" : {
+			"name" : "BAD GOBLET",
+			"cost" : 99,
 			"purchased" : false,
-			"description" : "DOES NOT WORK! Spawn more enemies",
-			"frame" : 62,
-			"icon" : 214
-		},
-		"slime" : {
-			"name" : "Slime",
-			"cost" : 20,
-			"purchased" : false,
-			"description" : "Leave a toxic trail that hurts enemies",
+			"description" : "This is what you came here for",
 			"frame" : 63,
-			"icon" : 215
+			"icon" : 213
 		}
+#		"bait" : {
+#			"name" : "Bait",
+#			"cost" : 3,
+#			"purchased" : false,
+#			"description" : "DOES NOT WORK! Spawn more enemies",
+#			"frame" : 62,
+#			"icon" : 214
+#		},
+#		"slime" : {
+#			"name" : "Slime",
+#			"cost" : 20,
+#			"purchased" : false,
+#			"description" : "Leave a toxic trail that hurts enemies",
+#			"frame" : 63,
+#			"icon" : 215
+#		}
 	}
 	
 	shop_items_values = shop_items.values()
@@ -1044,7 +1092,7 @@ func try_move(dx, dy):
 				score += 1000
 				$CanvasLayer/Win/Score.text = "Score: " + str(score)
 				$CanvasLayer/Win.visible = true
-				game_state = "end"
+				game_state = "win"
 			return
 			
 			
@@ -1149,6 +1197,9 @@ func pickup_items():
 # function to generate and build level -----------------------------------------
 
 func build_level():
+	
+	# make sure player isn't dead
+	player_anims.play("PlayerWalk")
 	
 	# start with blank map
 	rooms.clear()
