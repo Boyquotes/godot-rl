@@ -14,10 +14,10 @@ const LEVEL_SIZES = [
 	Vector2(40, 32)
 ]
 
-const LEVEL_ROOM_COUNT = [4, 5, 7, 8, 9, 9, 9]
-const LEVEL_ENEMY_COUNT = [3, 5, 7, 9, 11, 12, 15]
-const LEVEL_ITEM_COUNT = [0, 1, 2, 2, 3, 4, 4]
-const LEVEL_POWERUP_COUNT = [0, 0, 1, 0, 1, 0, 1]
+const LEVEL_ROOM_COUNT = [4, 5, 7, 8, 9, 9, 9, 9, 9 , 9, 9, 9, 9, 9]
+const LEVEL_ENEMY_COUNT = [3, 5, 7, 9, 11, 12, 15, 15, 15, 15, 15, 15, 15, 15]
+const LEVEL_ITEM_COUNT = [0, 1, 2, 2, 3, 4, 4, 4, 4, 4, 2, 1, 0, 0]
+const LEVEL_POWERUP_COUNT = [0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0]
 const MIN_ROOM_DIMENSION = 5
 const MAX_ROOM_DIMENSION = 9
 const PLAYER_START_HP = 5
@@ -43,6 +43,7 @@ const BloodParticles = preload("res://BloodParticles.tscn")
 var name_parts = "..bobabukekogixaxoxurirero"
 var name_titles = ["of The Valley", "of The Woodlands", "The Unknowable", "The Warrior", "The Knight", "The Brave", "The Foolish", "The Forsaken", "The Idiot", "The Smelly", "The Sticky", "Smith", "The Thief", "The Rogue", "The Unseen", "The Drifter", "The Dweller", "The Lurker", "The Small", "The Unforgiven", "The Crestfallen", "The Hungry", "The Second Oldest", "The Younger", "The Original"]
 
+var interlude_options = ["You smell the damp moss in the crevices around you.", "Climbing down the ladder, you are greeted by a foul stench.", "You climb deeper into what rots below.", "Despite what everyone back in town suspected, you survive another level.", "Careful not to slip on the old broken steps, you journey deeper into the basement.", "You hear faint grunts and breathing. There is something waiting for you, unseen in the dark.", "You feel as though the walls are shifting. Still, you press on.", "You descend deeper into the terrible basement.", "Climbing down the slippery steps, you sense that you may just survive this gruesome adventure.", "For a moment, you feel as though you are hearing voices coming from the walls. Surely you are imagining things."]
 var save_path = "user://save.dat"
 
 # enum to get tiles by index ---------------------------------------------------
@@ -99,7 +100,7 @@ class Item extends Reference:
 # enemy class ------------------------------------------------------------------
 
 class Enemy extends Reference:
-	var possible_types = ["Boblin", "Bibi", "Gobwitch", "Spectral Thing", "Ravaging Thing", "Baddie", "Demon Guy"]
+	var possible_types = ["Boblin", "Bibi", "Nana", "Spectral Thing", "Ravaging Thing", "Baddie", "Demon Guy"]
 	var enemy_name
 	var sprite_node
 	var tile
@@ -235,6 +236,7 @@ onready var credits_screen = $CanvasLayer/Credits
 onready var lose_screen = $CanvasLayer/Lose
 onready var win_screen = $CanvasLayer/Win
 onready var shop_screen = $CanvasLayer/Shop
+onready var interlude_screen = $CanvasLayer/InterludeScreen
 
 onready var shop_slots = [$CanvasLayer/Shop/Slot1, $CanvasLayer/Shop/Slot2, $CanvasLayer/Shop/Slot3]
 onready var shop_names = [$CanvasLayer/Shop/Slot1/Name, $CanvasLayer/Shop/Slot2/Name, $CanvasLayer/Shop/Slot3/Name]
@@ -520,6 +522,16 @@ func _input(event):
 		
 		return
 		
+	# things we can do in the interlude
+	
+	if game_state == "interlude" && event.is_action("Start"):
+		# go into game
+		play_sfx(level_sound, snd_ui_select, 0.2, 0.4)
+		game_state = "gameplay"
+		interlude_screen.visible = false
+		build_level()
+		return
+		
 	# things we can do on game over
 	
 	# restart immediately
@@ -667,6 +679,15 @@ func intro_setup():
 	intro_screen.visible = true
 	intro_state = 0
 	intro_screens[intro_state].visible = true
+	
+# show intermediate cutscene ---------------------------------------------------
+
+func interlude_setup():
+	game_state = "interlude"
+	interlude_screen.visible = true
+	var r = interlude_options[randi() % interlude_options.size()]
+	$CanvasLayer/InterludeScreen/InterludeText.text = r
+	# waiting for input
 
 # function to initialize / restart the entire game -----------------------------
 
@@ -691,6 +712,7 @@ func initialize_game():
 	score = 0
 	coins = 0
 	player_dmg = 1
+	coin_value = 1
 	
 	$CanvasLayer/Coins.text = "Coins: " + str(coins)
 	
@@ -1013,10 +1035,10 @@ func try_move(dx, dy):
 			score += 20
 			$CanvasLayer/Score.text = "Score: " + str(score)
 			if level_num < LEVEL_SIZES.size():
-				# go to shop
-				build_level()
+				## %% make this infinite?
 				var pos = player_tile * TILE_SIZE
 				spawn_label("level completed", 0, pos)
+				interlude_setup()
 			else:
 				# no more levels left, you win
 				score += 1000
@@ -1703,6 +1725,7 @@ func damage_player(dmg, me):
 		
 		else:
 			# die for real
+			player_anims.play("Dead")
 			play_music(music_sound, snd_music_death)
 			lose_screen.visible = true
 			var death_area = ""
