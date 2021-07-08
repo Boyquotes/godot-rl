@@ -680,7 +680,6 @@ func _input(event):
 		play_sfx(level_sound, snd_ui_back, 0.9, 1)
 		# return to game
 		if player_status.badgoblet.active == true:
-			print("you did it!")
 			# TRUE WIN
 			score += 1999
 			$CanvasLayer/TrueWin/Score.text = "Score: " + str(score)
@@ -747,7 +746,7 @@ func initialize_game():
 	randomize()
 	level_num = 0
 	score = 0
-	coins = 99
+	coins = 0
 	player_dmg = 1
 	coin_value = 1
 	
@@ -1415,6 +1414,7 @@ func update_visuals():
 			if !occlusion:
 				# turn node visibility on
 				enemy.sprite_node.visible = true
+				
 				
 				if player_status.scaryface.active == true:
 					enemy.take_damage(self, player_status.scaryface.damage)

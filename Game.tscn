@@ -384,9 +384,11 @@ anims/OpenDoor = SubResource( 10 )
 anims/PlayerWalk = SubResource( 11 )
 
 [node name="SoundPlayer" type="AudioStreamPlayer2D" parent="Player"]
+volume_db = -4.0
 bus = "SFX"
 
 [node name="SoundLevel" type="AudioStreamPlayer2D" parent="Player"]
+volume_db = -3.0
 bus = "SFX"
 
 [node name="SoundMusic" type="AudioStreamPlayer2D" parent="Player"]
@@ -1100,7 +1102,7 @@ margin_top = 260.0
 margin_right = 390.0
 margin_bottom = 291.0
 custom_fonts/font = ExtResource( 3 )
-text = "v0.0.0.0.0.2"
+text = "v0.0.0.0.0.3"
 align = 2
 valign = 2
 __meta__ = {
