@@ -8,7 +8,7 @@
 
 ## bugs / improvements
 
-- sliming enemies: damage taking not working properly
+- leave shop with ESC
 - tile map shading is slowing game down
 - smarter way to display settings
 
