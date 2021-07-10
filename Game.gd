@@ -83,6 +83,11 @@ var lowpass = AudioServer.get_bus_effect(1, 0)
 var music_status = "ON"
 var sfx_status = "ON"
 var log_status = "ON"
+var timer_status = "OFF"
+
+# run timer
+var run_time_elapsed = 0.0
+var run_time_counting = true
 
 # item class -------------------------------------------------------------------
 
@@ -103,7 +108,7 @@ class Item extends Reference:
 # enemy class ------------------------------------------------------------------
 
 class Enemy extends Reference:
-	var possible_types = ["Boblin", "Bibi", "Nana", "Spectral Thing", "Ravaging Thing", "Baddie", "Demon Guy"]
+	var possible_types = ["Boblin", "Sludge", "Nana", "Spectral Thing", "Ravaging Thing", "Baddie", "Demon Guy"]
 	var enemy_name
 	var sprite_node
 	var tile
@@ -240,6 +245,7 @@ onready var win_screen = $CanvasLayer/Win
 onready var true_win_screen = $CanvasLayer/TrueWin
 onready var shop_screen = $CanvasLayer/Shop
 onready var interlude_screen = $CanvasLayer/InterludeScreen
+onready var run_time_label = $CanvasLayer/Runtime
 
 onready var shop_slots = [$CanvasLayer/Shop/Slot1, $CanvasLayer/Shop/Slot2, $CanvasLayer/Shop/Slot3]
 onready var shop_names = [$CanvasLayer/Shop/Slot1/Name, $CanvasLayer/Shop/Slot2/Name, $CanvasLayer/Shop/Slot3/Name]
@@ -500,6 +506,8 @@ func _input(event):
 		$CanvasLayer/Coins.text = "Coins: " + str(coins)
 		message_log.add_message("CHEAT: $$$")
 		play_sfx(player_sound, snd_item_coin, 0.4, 0.5)
+		
+		
 	# things we can do in title screen
 	
 	# start the game
@@ -528,7 +536,8 @@ func _input(event):
 		# print current settings
 		$CanvasLayer/Settings/Info.text = "Music is " + music_status + "\n"
 		$CanvasLayer/Settings/Info.text += "SFX are " + sfx_status + "\n"
-		$CanvasLayer/Settings/Info.text += "Message Log is " + log_status + "\n\n"
+		$CanvasLayer/Settings/Info.text += "Message Log is " + log_status + "\n"
+		$CanvasLayer/Settings/Info.text += "Timer is " + timer_status + "\n\n"
 		$CanvasLayer/Settings/Info.text += "Back"
 		settings_screen.visible = true
 		return
@@ -619,6 +628,10 @@ func _input(event):
 	
 	# open pause menu
 	if game_state == "gameplay" && event.is_action("Escape"):
+		
+		# pause run timer
+		run_time_counting = false
+		
 		play_sfx(level_sound, snd_ui_set, 0.9, 1)
 		game_state = "pause"
 		AudioServer.set_bus_bypass_effects(1, false)
@@ -626,7 +639,8 @@ func _input(event):
 		$CanvasLayer/Pause/Info.text = "Resume Game\n\n"
 		$CanvasLayer/Pause/Info.text += "Music is " + music_status + "\n"
 		$CanvasLayer/Pause/Info.text += "SFX are " + sfx_status + "\n"
-		$CanvasLayer/Pause/Info.text += "Message Log is " + log_status + "\n\n"
+		$CanvasLayer/Pause/Info.text += "Message Log is " + log_status + "\n"
+		$CanvasLayer/Pause/Info.text += "Timer is " + timer_status + "\n\n"
 		$CanvasLayer/Pause/Info.text += "Restart\nQuit to Title"
 		pause_screen.visible = true
 		return
@@ -639,6 +653,9 @@ func _input(event):
 		game_state = "gameplay"
 		pause_screen.visible = false
 		AudioServer.set_bus_bypass_effects(1, true)
+		
+		# resume run timer
+		run_time_counting = true
 		return
 	if game_state == "pause" && event.is_action("Restart"):
 		play_sfx(level_sound, snd_ui_select, 0.3, 0.4)
@@ -659,6 +676,11 @@ func _input(event):
 		play_sfx(level_sound, snd_ui_select, 0.3, 0.4)
 		pause_screen.visible = false
 		title_setup()
+		return
+	# show/hide timer
+	if game_state == "pause" && event.is_action("Timer"):
+		# run_time_label.visible = !run_time_label.visible
+		toggle_setting("timer")
 		return
 
 	# things we can do from the settings screen
@@ -705,7 +727,18 @@ func _input(event):
 			score += 1999
 			$CanvasLayer/TrueWin/Score.text = "Score: " + str(score)
 			$CanvasLayer/TrueWin.visible = true
+			var win_area = ""
+			if (level_num) == 0:
+				win_area = "no levels"
+			else:
+				win_area = str(level_num) + " levels"
+				
+			$CanvasLayer/TrueWin/DeathMsg3.text = "You have explored " + win_area + "."
 			game_state = "truewin"
+			
+			# timer
+			run_time_counting = false
+			$CanvasLayer/TrueWin/Time.text = run_time_process(run_time_elapsed)
 		else:
 			game_state = "gameplay"
 		shop_screen.visible = false
@@ -800,6 +833,12 @@ func initialize_game():
 	update_icons()
 	
 	build_level()
+	
+	# start run timer
+	
+	run_time_counting = true
+	run_time_elapsed = 0.0
+	
 	
 func status_setup():
 	# status effects
@@ -1850,8 +1889,22 @@ func damage_player(dmg, me):
 			$CanvasLayer/Lose/Score.text = "Score: " + str(score)
 			$CanvasLayer/Lose/DeathMsg.text = "You were slain by a " + me.enemy_name + " in\n"
 			$CanvasLayer/Lose/DeathMsg.text += death_area + " of the terrible basement."
+			
+			# timer
+			run_time_counting = false
+			$CanvasLayer/Lose/Time.text = run_time_process(run_time_elapsed)
+			
 			game_state = "lose"
-		
+
+# run timer text processing ----------------------------------------------------
+
+func run_time_process(t):
+	var minutes = t / 60
+	var seconds = fmod(t, 60)
+	var milliseconds := fmod(t, 1) * 100
+	var timestring = "Time: %02d:%02d.%02d" % [minutes, seconds, milliseconds]
+	return timestring
+
 # floating label spawner -------------------------------------------------------
 
 func spawn_label(text, color, pos):
@@ -1927,18 +1980,26 @@ func toggle_setting(setting):
 			log_status = "ON"
 		else:
 			log_status = "OFF"
+	if setting == "timer":
+		run_time_label.visible = !run_time_label.visible
+		if run_time_label.visible:
+			timer_status = "ON"
+		else:
+			timer_status = "OFF"
 		
 	# print current settings
 	$CanvasLayer/Pause/Info.text = "Resume Game\n\n"
 	$CanvasLayer/Pause/Info.text += "Music is " + music_status + "\n"
 	$CanvasLayer/Pause/Info.text += "SFX are " + sfx_status + "\n"
-	$CanvasLayer/Pause/Info.text += "Message Log is " + log_status + "\n\n"
-	$CanvasLayer/Pause/Info.text += "Restart\nQuit to Desktop"
+	$CanvasLayer/Pause/Info.text += "Message Log is " + log_status + "\n"
+	$CanvasLayer/Pause/Info.text += "Timer is " + timer_status + "\n\n"
+	$CanvasLayer/Pause/Info.text += "Restart\nQuit to Title"
 	
 	# print current settings
 	$CanvasLayer/Settings/Info.text = "Music is " + music_status + "\n"
 	$CanvasLayer/Settings/Info.text += "SFX are " + sfx_status + "\n"
-	$CanvasLayer/Settings/Info.text += "Message Log is " + log_status + "\n\n"
+	$CanvasLayer/Settings/Info.text += "Message Log is " + log_status + "\n"
+	$CanvasLayer/Settings/Info.text += "Timer is " + timer_status + "\n\n"
 	$CanvasLayer/Settings/Info.text += "Back"
 	
 func save_data():
@@ -1985,6 +2046,11 @@ func _notification(what):
 		get_tree().quit()
 
 func _process(delta):
+	
+	if run_time_counting:
+		run_time_elapsed += delta
+		run_time_label.text = run_time_process(run_time_elapsed)
+	
 	# gameplay-only inputs
 	if game_state == "gameplay" && can_move:
 		if Input.is_action_pressed("Up"):
