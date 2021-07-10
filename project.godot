@@ -22,6 +22,8 @@ config/custom_user_dir_name="BAD GOBLET"
 boot_splash/image="res://img/splash.png"
 boot_splash/bg_color=Color( 0, 0, 0, 1 )
 config/icon="res://img/icon.png"
+config/macos_native_icon="res://img/icon.icns"
+config/windows_native_icon="res://img/icon.ico"
 
 [display]
 
