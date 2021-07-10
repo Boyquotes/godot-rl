@@ -46,7 +46,7 @@ const BloodParticles = preload("res://BloodParticles.tscn")
 var name_parts = "..bobabukekogixaxoxurirero"
 var name_titles = ["of The Valley", "of The Woodlands", "The Unknowable", "The Warrior", "The Knight", "The Brave", "The Foolish", "The Forsaken", "The Idiot", "The Smelly", "The Sticky", "Smith", "The Thief", "The Rogue", "The Unseen", "The Drifter", "The Dweller", "The Lurker", "The Small", "The Unforgiven", "The Crestfallen", "The Hungry", "The Second Oldest", "The Younger", "The Original"]
 
-var interlude_options = ["You smell the damp moss in the crevices around you.", "Climbing down the ladder, you are greeted by a foul stench.", "You climb deeper into what rots below.", "Despite what everyone back in town suspected, you survive another level.", "Careful not to slip on the old broken steps, you journey deeper into the basement.", "You hear faint grunts and breathing. There is something waiting for you, unseen in the dark.", "You feel as though the walls are shifting. Still, you press on.", "You descend deeper into the terrible basement.", "Climbing down the slippery steps, you sense that you may just survive this gruesome adventure.", "For a moment, you feel as though you are hearing voices coming from the walls. Surely you are imagining things."]
+var interlude_options = ["A cold gust of wind dances around you as you descend.", "The pull of the artifact gives you the strength to keep going. You climb further down.", "You smell the damp moss in the crevices around you.", "Climbing down the ladder, you are greeted by a foul stench.", "You climb deeper into what rots below.", "Despite what everyone back in town suspected, you survive another level.", "Careful not to slip on the old broken steps, you journey deeper into the basement.", "You hear faint grunts and breathing. There is something waiting for you, unseen in the dark.", "You feel as though the walls are shifting. Still, you press on.", "You descend deeper into the terrible basement.", "Climbing down the slippery steps, you sense that you may just survive this gruesome adventure.", "For a moment, you feel as though you are hearing voices coming from the walls. Surely you are imagining things."]
 var save_path = "user://save.dat"
 
 # enum to get tiles by index ---------------------------------------------------
@@ -489,12 +489,13 @@ func _input(event):
 	if event.is_action("Cheat1"):
 		# invincible
 		can_take_damage = !can_take_damage
-		print("CHEAT - player can take damage: " + str(can_take_damage))
+		message_log.add_message("CHEAT: taking damage " + str(can_take_damage))
+		play_sfx(player_sound, snd_item_coin, 0.4, 0.5)
 	if event.is_action("Cheat2"):
 		# skip level
 		play_sfx(level_sound, snd_ladder, 0.9, 1)
+		message_log.add_message("CHEAT: skipping level")
 		next_level()
-		print("skipping level")
 		
 	# things we can do in title screen
 	
@@ -1319,7 +1320,7 @@ func build_level():
 		var shop_y = start_room.position.y
 		if tile_map.get_cell(shop_x, shop_y) != Tile.Door:
 			set_tile(shop_x, shop_y, Tile.ShopGrate)
-			if shopchance > 90:
+			if shopchance > 75:
 				var shop_dialogue = randi() % 3
 				if shop_dialogue == 0:
 					spawn_label("hey...", 1, Vector2(shop_x, shop_y) * TILE_SIZE)
