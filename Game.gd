@@ -75,6 +75,7 @@ const snd_item_coin = preload("res://sound/item-coin.wav")
 const snd_item_potion = preload("res://sound/item-potion.wav")
 const snd_item_heart = preload("res://sound/item-heart.wav")
 const snd_purchase = preload("res://sound/purchase.wav")
+const snd_gethit = preload("res://sound/gethit.wav")
 
 var snd_walk = [snd_walk1, snd_walk2, snd_walk3]
 
@@ -178,6 +179,7 @@ class Enemy extends Reference:
 					game.damage_player(1, self)
 					var pos = sprite_node.position
 					game.spawn_label("-1", 3, pos + Vector2(12, 12))
+					game.play_sfx(game.level_sound, snd_gethit, 0.8, 1)
 			else:
 				var blocked = false
 				for enemy in game.enemies:
