@@ -274,7 +274,7 @@ tracks/0/keys = {
 "values": [ Rect2( 60, 50, 10, 10 ), Rect2( 70, 50, 10, 10 ), Rect2( 0, 50, 10, 10 ) ]
 }
 
-[sub_resource type="Animation" id=13]
+[sub_resource type="Animation" id=10]
 resource_name = "Dead"
 tracks/0/type = "value"
 tracks/0/path = NodePath(".:region_rect")
@@ -289,7 +289,7 @@ tracks/0/keys = {
 "values": [ Rect2( 80, 50, 10, 10 ) ]
 }
 
-[sub_resource type="Animation" id=10]
+[sub_resource type="Animation" id=11]
 tracks/0/type = "value"
 tracks/0/path = NodePath(".:region_rect")
 tracks/0/interp = 1
@@ -303,7 +303,7 @@ tracks/0/keys = {
 "values": [ Rect2( 40, 50, 10, 10 ), Rect2( 50, 50, 10, 10 ), Rect2( 0, 50, 10, 10 ) ]
 }
 
-[sub_resource type="Animation" id=11]
+[sub_resource type="Animation" id=12]
 length = 0.2
 step = 0.02
 tracks/0/type = "value"
@@ -319,7 +319,7 @@ tracks/0/keys = {
 "values": [ Rect2( 0, 50, 10, 10 ), Rect2( 10, 50, 10, 10 ), Rect2( 20, 50, 10, 10 ), Rect2( 30, 50, 10, 10 ), Rect2( 0, 50, 10, 10 ) ]
 }
 
-[sub_resource type="Animation" id=12]
+[sub_resource type="Animation" id=13]
 length = 0.5
 loop = true
 tracks/0/type = "value"
@@ -379,9 +379,9 @@ script = ExtResource( 6 )
 
 [node name="PlayerAnims" type="AnimationPlayer" parent="Player"]
 anims/Attack = SubResource( 9 )
-anims/Dead = SubResource( 13 )
-anims/OpenDoor = SubResource( 10 )
-anims/PlayerWalk = SubResource( 11 )
+anims/Dead = SubResource( 10 )
+anims/OpenDoor = SubResource( 11 )
+anims/PlayerWalk = SubResource( 12 )
 
 [node name="SoundPlayer" type="AudioStreamPlayer2D" parent="Player"]
 volume_db = -4.0
@@ -950,7 +950,7 @@ hframes = 16
 frame = 223
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="CanvasLayer/Shop/SelectedMarker"]
-anims/Bounce = SubResource( 12 )
+anims/Bounce = SubResource( 13 )
 
 [node name="Lose" type="ColorRect" parent="CanvasLayer"]
 visible = false
