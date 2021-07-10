@@ -46,7 +46,7 @@ const BloodParticles = preload("res://BloodParticles.tscn")
 var name_parts = "..bobabukekogixaxoxurirero"
 var name_titles = ["of The Valley", "of The Woodlands", "The Unknowable", "The Warrior", "The Knight", "The Brave", "The Foolish", "The Forsaken", "The Idiot", "The Smelly", "The Sticky", "Smith", "The Thief", "The Rogue", "The Unseen", "The Drifter", "The Dweller", "The Lurker", "The Small", "The Unforgiven", "The Crestfallen", "The Hungry", "The Second Oldest", "The Younger", "The Original"]
 
-var interlude_options = ["A cold gust of wind dances around you as you descend.", "The pull of the artifact gives you the strength to keep going. You climb further down.", "You smell the damp moss in the crevices around you.", "Climbing down the ladder, you are greeted by a foul stench.", "You climb deeper into what rots below.", "Despite what everyone back in town suspected, you survive another level.", "Careful not to slip on the old broken steps, you journey deeper into the basement.", "You hear faint grunts and breathing. There is something waiting for you, unseen in the dark.", "You feel as though the walls are shifting. Still, you press on.", "You descend deeper into the terrible basement.", "Climbing down the slippery steps, you sense that you may just survive this gruesome adventure.", "For a moment, you feel as though you are hearing voices coming from the walls. Surely you are imagining things."]
+var interlude_options = ["A cold gust of wind dances around you as you descend.", "Your strong conviction leads you deeper into the basement.", "The pull of the artifact gives you the strength to keep going. You climb further down.", "You smell the damp moss in the crevices around you.", "Climbing down the ladder, you are greeted by a foul stench.", "You climb deeper into what rots below.", "Despite what everyone back in town suspected, you survive another level.", "Careful not to slip on the old broken steps, you journey deeper into the basement.", "You hear faint grunts and breathing. There is something waiting for you, unseen in the dark.", "You feel as though the walls are shifting. Still, you press on.", "You descend deeper into the terrible basement.", "Climbing down the slippery steps, you sense that you may just survive this gruesome adventure.", "For a moment, you feel as though you are hearing voices coming from the walls. Surely you are imagining things."]
 var save_path = "user://save.dat"
 
 # enum to get tiles by index ---------------------------------------------------
@@ -133,6 +133,8 @@ class Enemy extends Reference:
 		hp = max(0, hp - dmg)
 		sprite_node.get_node("HP").rect_size.x = TILE_SIZE * hp / full_hp
 		
+		sprite_node.get_node("AnimationPlayer").play("Hurt")
+		
 		var pos = sprite_node.position
 		game.spawn_label("-" + str(dmg), 0, pos)
 		
@@ -143,11 +145,6 @@ class Enemy extends Reference:
 			# drop item
 			
 			var r = randi() % 100
-			
-			# coins: 40% 
-			# full hp: 5%
-			# 5 hp: 10%
-			# nothing: rest
 			
 			if r >= 95:
 				# drop a potion
@@ -745,6 +742,7 @@ func intro_setup():
 func interlude_setup():
 	game_state = "interlude"
 	interlude_screen.visible = true
+	randomize()
 	var r = interlude_options[randi() % interlude_options.size()]
 	$CanvasLayer/InterludeScreen/InterludeText.text = r
 	# waiting for input
@@ -974,6 +972,7 @@ func try_move(dx, dy):
 			for enemy in enemies:
 				if enemy.tile.x == x && enemy.tile.y == y:
 					enemy.take_damage(self, player_dmg)
+					
 					# sfx
 					play_sfx(player_sound, snd_enemy_hurt, 0.8, 1)
 					$Player/ShakeCamera2D.add_trauma(0.5)
