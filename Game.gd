@@ -755,6 +755,7 @@ func initialize_game():
 	AudioServer.set_bus_bypass_effects(1, true)
 	player_hp = PLAYER_START_HP
 	$CanvasLayer/HPBar.rect_size.x = $CanvasLayer/HPBarEmpty.rect_size.x
+	refresh_hp()
 	
 	game_state = "gameplay"
 	
@@ -959,7 +960,7 @@ func try_move(dx, dy):
 							player_hp += heal_amount
 							message_log.add_message("You drink the blood. " + str(heal_amount) + " health restored.")
 							spawn_label("+" + str(heal_amount), 2, pos)
-							$CanvasLayer/HPBar.rect_size.x = $CanvasLayer/HPBarEmpty.rect_size.x * player_hp / max_hp
+							refresh_hp()
 						else:
 							message_log.add_message("You drink the blood. Nothing happens.")
 							spawn_label("no effect", 1, pos)
@@ -1116,6 +1117,19 @@ func try_move(dx, dy):
 
 	call_deferred("update_visuals")
 
+func refresh_hp():
+	# update hp bar
+	$CanvasLayer/HPBar.rect_size.x = $CanvasLayer/HPBarEmpty.rect_size.x * player_hp / max_hp
+	$CanvasLayer/HP.text = "HP: " + str(player_hp) + " / " + str(max_hp)
+	
+	# color hp bar based on current health
+	var hpsplit = ceil(max_hp / 2.0)
+	if player_hp < hpsplit:
+		$CanvasLayer/HPBar.color = Color("b11616")
+	else:
+		$CanvasLayer/HPBar.color = Color("3b632a")
+		
+
 func next_level():
 	score += 20
 	$CanvasLayer/Score.text = "Score: " + str(score)
@@ -1134,11 +1148,9 @@ func next_level():
 
 	# increase true level progress
 	level_progress += 1	
-	var pos = player_tile * TILE_SIZE
-	spawn_label("level completed", 0, pos)
+#	var pos = player_tile * TILE_SIZE
+#	spawn_label("level completed", 0, pos)
 	interlude_setup()
-	print("level_num: " + str(level_num))
-	print("level_progress: " + str(level_progress))
 
 # action phase -----------------------------------------------------------------
 
@@ -1166,7 +1178,7 @@ func pickup_items():
 					player_hp += heal_amount
 					message_log.add_message("You find a heart! " + str(heal_amount) + " health restored.")
 					spawn_label("+" + str(heal_amount), 2, pos)
-					$CanvasLayer/HPBar.rect_size.x = $CanvasLayer/HPBarEmpty.rect_size.x * player_hp / max_hp
+					refresh_hp()
 				else:
 					message_log.add_message("You find a heart! Nothing happens.")
 					spawn_label("no effect", 1, pos)
@@ -1181,7 +1193,7 @@ func pickup_items():
 					message_log.add_message("You drink a potion and restore your full health.")
 					# spawn info text
 					spawn_label("healed", 2, pos)
-					$CanvasLayer/HPBar.rect_size.x = $CanvasLayer/HPBarEmpty.rect_size.x * player_hp / max_hp
+					refresh_hp()
 				else:
 					message_log.add_message("You drink a potion. Nothing happens.")
 					# spawn info text
@@ -1206,9 +1218,8 @@ func pickup_items():
 				
 				# TODO: sfx
 				play_sfx(level_sound, snd_ui_set, 0.8, 1)
-				$CanvasLayer/HP.text = "HP: " + str(player_hp) + " / " + str(max_hp)
 				message_log.add_message("You drink from the goblet. Max health +10!")
-				$CanvasLayer/HPBar.rect_size.x = $CanvasLayer/HPBarEmpty.rect_size.x * player_hp / max_hp
+				refresh_hp()
 				# spawn info text
 				spawn_label("max +10", 2, pos)
 			elif item.sprite_node.frame == 21:
@@ -1387,6 +1398,12 @@ func build_level():
 #				items.append(Item.new(self, x, y, 20))
 #			else:
 #				items.append(Item.new(self, x, y, 21))
+	
+	# show level complete text
+	
+#	if level_num > 0:
+#		var pos = player_tile * TILE_SIZE
+#		spawn_label("level completed", 0, pos)
 	
 	call_deferred("update_visuals")
 
@@ -1799,7 +1816,7 @@ func set_tile(x, y, type):
 func damage_player(dmg, me):
 	player_hp = max(0, player_hp - dmg)
 	message_log.add_message(me.enemy_name + " attacks you for " + str(dmg) + " damage!")
-	$CanvasLayer/HPBar.rect_size.x = $CanvasLayer/HPBarEmpty.rect_size.x * player_hp / max_hp
+	refresh_hp()
 	if player_hp == 0:
 		
 		# TODO: move enemies back and reset the level?
@@ -1812,7 +1829,7 @@ func damage_player(dmg, me):
 			extralife_used = true
 			var pos = player_tile * TILE_SIZE
 			spawn_label("resurrected", 2, pos)
-			$CanvasLayer/HPBar.rect_size.x = $CanvasLayer/HPBarEmpty.rect_size.x * player_hp / max_hp
+			refresh_hp()
 			update_visuals()
 		
 		else:
