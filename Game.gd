@@ -1246,7 +1246,7 @@ func pickup_items():
 func build_level():
 	
 	# make sure player isn't dead
-	player_anims.play("PlayerWalk")
+	player_anims.play("Idle")
 	
 	# start with blank map
 	rooms.clear()
@@ -1814,6 +1814,11 @@ func set_tile(x, y, type):
 
 # player taking damage= --------------------------------------------------------
 func damage_player(dmg, me):
+	
+	# play hurt anim
+	player_anims.stop(true)
+	player_anims.play("Hurt")
+	
 	player_hp = max(0, player_hp - dmg)
 	message_log.add_message(me.enemy_name + " attacks you for " + str(dmg) + " damage!")
 	refresh_hp()
@@ -1995,3 +2000,9 @@ func _process(delta):
 		if Input.is_action_pressed("Right"):
 			yield(get_tree(), "idle_frame")
 			try_move(1, 0)
+
+
+func _on_PlayerAnims_animation_finished(anim_name):
+	if anim_name == "Hurt":
+		player_anims.stop(true)
+		player_anims.play("Idle")
