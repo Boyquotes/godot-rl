@@ -873,7 +873,7 @@ rect_pivot_offset = Vector2( 40, 30 )
 custom_fonts/font = ExtResource( 3 )
 text = "[ Left / Right ]
 [ Enter ]
-[ R ]"
+[ Esc ]"
 align = 2
 __meta__ = {
 "_edit_use_anchors_": false

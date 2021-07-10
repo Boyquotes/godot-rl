@@ -152,7 +152,7 @@ class Enemy extends Reference:
 			if r >= 95:
 				# drop a potion
 				game.items.append(Item.new(game, tile.x, tile.y, 17))
-			elif r >= 85:
+			elif r >= 75:
 				# drop a heart
 				game.items.append(Item.new(game, tile.x, tile.y, 16))
 			elif r >= 45:
@@ -700,7 +700,7 @@ func _input(event):
 		select_item(1)
 		return
 		
-	if game_state == "shop" && event.is_action("Restart"):
+	if game_state == "shop" && event.is_action("Escape"):
 		play_sfx(level_sound, snd_ui_back, 0.9, 1)
 		# return to game
 		if player_status.badgoblet.active == true:
@@ -1373,7 +1373,7 @@ func build_level():
 			
 	# place items
 	
-	var num_items = LEVEL_ITEM_COUNT[level_num]
+	var num_items = LEVEL_ITEM_COUNT[level_num] + 2
 	for _i in range(num_items):
 		var room = rooms[randi() % (rooms.size())]
 		var x = room.position.x + 1 + randi() % int(room.size.x - 2)
