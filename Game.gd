@@ -22,6 +22,9 @@ const MIN_ROOM_DIMENSION = 5
 const MAX_ROOM_DIMENSION = 9
 const PLAYER_START_HP = 5
 
+# cheat settings
+var can_take_damage = true
+
 # item values
 var coin_value = 1
 var coin_score = 10
@@ -126,7 +129,7 @@ class Enemy extends Reference:
 		
 		if dead:
 			return
-			
+		
 		hp = max(0, hp - dmg)
 		sprite_node.get_node("HP").rect_size.x = TILE_SIZE * hp / full_hp
 		
@@ -169,9 +172,10 @@ class Enemy extends Reference:
 			var move_tile = Vector2(path[1].x, path[1].y)
 			
 			if move_tile == game.player_tile:
-				game.damage_player(1, self)
-				var pos = sprite_node.position
-				game.spawn_label("-1", 3, pos + Vector2(12, 12))
+				if game.can_take_damage:
+					game.damage_player(1, self)
+					var pos = sprite_node.position
+					game.spawn_label("-1", 3, pos + Vector2(12, 12))
 			else:
 				var blocked = false
 				for enemy in game.enemies:
@@ -209,6 +213,7 @@ class Enemy extends Reference:
 # current level data -----------------------------------------------------------
 
 var level_num = 0
+var level_progress = 0
 var map = []
 var rooms = []
 var enemies = []
@@ -479,6 +484,18 @@ func _input(event):
 	if !event.is_pressed():
 		return
 		
+	# cheat codes
+	
+	if event.is_action("Cheat1"):
+		# invincible
+		can_take_damage = !can_take_damage
+		print("CHEAT - player can take damage: " + str(can_take_damage))
+	if event.is_action("Cheat2"):
+		# skip level
+		play_sfx(level_sound, snd_ladder, 0.9, 1)
+		next_level()
+		print("skipping level")
+		
 	# things we can do in title screen
 	
 	# start the game
@@ -745,6 +762,7 @@ func initialize_game():
 
 	randomize()
 	level_num = 0
+	level_progress = 0
 	score = 0
 	coins = 0
 	player_dmg = 1
@@ -1078,20 +1096,8 @@ func try_move(dx, dy):
 			# play ladder sound
 			
 			play_sfx(level_sound, snd_ladder, 0.9, 1)
-			level_num += 1
-			score += 20
-			$CanvasLayer/Score.text = "Score: " + str(score)
-			if level_num < LEVEL_SIZES.size():
-				## %% make this infinite?
-				var pos = player_tile * TILE_SIZE
-				spawn_label("level completed", 0, pos)
-				interlude_setup()
-			else:
-				# no more levels left, you win
-				score += 1000
-				$CanvasLayer/Win/Score.text = "Score: " + str(score)
-				$CanvasLayer/Win.visible = true
-				game_state = "win"
+			
+			next_level()
 			return
 			
 			
@@ -1102,6 +1108,30 @@ func try_move(dx, dy):
 		enemy.act(self)
 
 	call_deferred("update_visuals")
+
+func next_level():
+	score += 20
+	$CanvasLayer/Score.text = "Score: " + str(score)
+	if level_num < LEVEL_SIZES.size():
+		
+		## infinite?
+		level_num += 1
+		
+		
+#			else:
+#				# no more levels left, you win
+#				score += 1000
+#				$CanvasLayer/Win/Score.text = "Score: " + str(score)
+#				$CanvasLayer/Win.visible = true
+#				game_state = "win"
+
+	# increase true level progress
+	level_progress += 1	
+	var pos = player_tile * TILE_SIZE
+	spawn_label("level completed", 0, pos)
+	interlude_setup()
+	print("level_num: " + str(level_num))
+	print("level_progress: " + str(level_progress))
 
 # action phase -----------------------------------------------------------------
 
@@ -1232,7 +1262,10 @@ func build_level():
 	enemy_pathfinding = AStar.new()
 	
 	# look up size of this level
-	level_size = LEVEL_SIZES[level_num]
+	if level_num < LEVEL_SIZES.size():
+		level_size = LEVEL_SIZES[level_num]
+	else:
+		level_size = LEVEL_SIZES[LEVEL_SIZES.size() - 1]
 	
 	# make everything start as stone
 	for x in range(level_size.x):
@@ -1316,7 +1349,8 @@ func build_level():
 				break
 			
 		if !blocked:
-			var enemy = Enemy.new(self, randi() % (level_num + 1), enemy_x, enemy_y)
+			var enemychoose = clamp(level_num, 0, LEVEL_SIZES.size() - 1)
+			var enemy = Enemy.new(self, randi() % (enemychoose + 1), enemy_x, enemy_y)
 			enemies.append(enemy)
 			
 	# place items
@@ -1352,8 +1386,8 @@ func build_level():
 	
 	# update ui
 	if level_num > 0:
-		$CanvasLayer/Level.text = "Basement Level " + str(level_num)
-		message_log.add_message("You enter level " + str(level_num) + " of the dungeon.")
+		$CanvasLayer/Level.text = "Basement Level " + str(level_progress)
+		message_log.add_message("You enter level " + str(level_progress) + " of the dungeon.")
 	else:
 		$CanvasLayer/Level.text = "Ground Floor"
 		message_log.add_message("You enter the ground floor.")
