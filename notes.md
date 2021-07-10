@@ -2,13 +2,13 @@
 
 # critical
 
-- get hurt sfx (player + enemy)
-- end screens
+- player gets hurt sfx
 
 ## bugs / improvements
 
 - tile map shading is slowing game down
 - smarter way to display settings
+- end screens better
 
 ## ideas
 
