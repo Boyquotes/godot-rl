@@ -498,7 +498,11 @@ func _input(event):
 		play_sfx(level_sound, snd_ladder, 0.9, 1)
 		message_log.add_message("CHEAT: skipping level")
 		next_level()
-		
+	if event.is_action("Cheat3"):
+		coins += 100
+		$CanvasLayer/Coins.text = "Coins: " + str(coins)
+		message_log.add_message("CHEAT: $$$")
+		play_sfx(player_sound, snd_item_coin, 0.4, 0.5)
 	# things we can do in title screen
 	
 	# start the game
