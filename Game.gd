@@ -430,6 +430,8 @@ func try_purchase(selection):
 					player_status.vampirism.active = true
 				"Pedicure":
 					player_status.pedicure.active = true
+					# increase strength
+					player_dmg += 2
 				"Scary Face":
 					player_status.scaryface.active = true
 				"Forgery":
