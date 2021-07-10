@@ -428,6 +428,10 @@ bus = "SFX"
 [node name="SoundMusic" type="AudioStreamPlayer2D" parent="Player"]
 bus = "Music"
 
+[node name="SoundShop" type="AudioStreamPlayer2D" parent="Player"]
+volume_db = -7.0
+bus = "Shop"
+
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
 [node name="HPBarEmpty" type="ColorRect" parent="CanvasLayer"]

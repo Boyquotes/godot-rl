@@ -68,6 +68,7 @@ const snd_enemy_death = preload("res://sound/enemy-death.wav")
 const snd_music1 = preload("res://sound/music1.wav")
 const snd_music_death = preload("res://sound/music-death.wav")
 const snd_music_intro = preload("res://sound/music-intro.wav")
+const snd_music_shop = preload("res://sound/music-shop.wav")
 const snd_ui_select = preload("res://sound/ui-select.wav")
 const snd_ui_back = preload("res://sound/ui-back.wav")
 const snd_ui_set = preload("res://sound/ui-set.wav")
@@ -237,6 +238,7 @@ onready var player_anims = $Player/PlayerAnims
 onready var player_sound = $Player/SoundPlayer
 onready var level_sound = $Player/SoundLevel
 onready var music_sound = $Player/SoundMusic
+onready var shop_sound = $Player/SoundShop
 onready var message_log = $CanvasLayer/MessageLog
 onready var intro_screen = $CanvasLayer/IntroScreens
 onready var settings_screen = $CanvasLayer/Settings
@@ -358,7 +360,8 @@ func shop_setup():
 	# disable pause etc.
 	
 	# play shop music
-	# play_music(music_sound, snd_menu_amb)
+	AudioServer.set_bus_mute(5, false)
+	
 	game_state = "shop"
 	
 	# choose random items to display in shop
@@ -647,11 +650,12 @@ func _input(event):
 		pause_screen.visible = true
 		return
 		
-	# things we can do from the pause screen
+	# things we can do in the pause screen
 	
 	if game_state == "pause" && event.is_action("Escape"):
 		play_sfx(level_sound, snd_ui_back, 0.9, 1)
 		# resume the game
+		print("shop off!!!")
 		game_state = "gameplay"
 		pause_screen.visible = false
 		AudioServer.set_bus_bypass_effects(1, true)
@@ -723,6 +727,10 @@ func _input(event):
 		
 	if game_state == "shop" && event.is_action("Escape"):
 		play_sfx(level_sound, snd_ui_back, 0.9, 1)
+		
+		# kill shop music
+		AudioServer.set_bus_mute(5, true)
+		
 		# return to game
 		if player_status.badgoblet.active == true:
 			# TRUE WIN
@@ -797,6 +805,11 @@ func initialize_game():
 	
 	stop_sound(music_sound)
 	play_music(music_sound, snd_music1)
+	
+	
+	play_music(shop_sound, snd_music_shop)
+	# mute shop
+	AudioServer.set_bus_mute(5, true)
 	
 	player_name = get_name() + " " + get_title()
 	$CanvasLayer/Name.text = player_name
@@ -1423,6 +1436,13 @@ func build_level():
 			items.append(Item.new(self, x, y, 16))
 		else:
 			items.append(Item.new(self, x, y, 18))
+	
+	# drop a heart for the weak
+	if player_hp < 3:
+		var room = rooms.front()
+		var x = room.position.x + 1 + randi() % int(room.size.x - 2)
+		var y = room.position.y + 1 + randi() % int(room.size.y - 2)
+		items.append(Item.new(self, x, y, 16))
 	
 	randomize()
 	
