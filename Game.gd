@@ -69,6 +69,7 @@ const snd_music1 = preload("res://sound/music1.wav")
 const snd_music_death = preload("res://sound/music-death.wav")
 const snd_music_intro = preload("res://sound/music-intro.wav")
 const snd_music_shop = preload("res://sound/music-shop.wav")
+const snd_music_truewin = preload("res://sound/music-truewin.wav")
 const snd_ui_select = preload("res://sound/ui-select.wav")
 const snd_ui_back = preload("res://sound/ui-back.wav")
 const snd_ui_set = preload("res://sound/ui-set.wav")
@@ -737,6 +738,7 @@ func _input(event):
 			score += 1999
 			$CanvasLayer/TrueWin/Score.text = "Score: " + str(score)
 			$CanvasLayer/TrueWin.visible = true
+			play_music(music_sound, snd_music_truewin)
 			var win_area = ""
 			if (level_num) == 0:
 				win_area = "no levels"
@@ -752,6 +754,7 @@ func _input(event):
 		else:
 			game_state = "gameplay"
 		shop_screen.visible = false
+		$CanvasLayer/Coins.text = "Coins: " + str(coins)
 		return
 		
 	if game_state == "shop" && event.is_action("Start"):
@@ -1383,9 +1386,8 @@ func build_level():
 	
 	randomize()
 	var shopchance = randi() % 100
-	# TODO: spawn shop only if we have enough coins?
-	# also only in higher levels
-	if coins > 3 && shopchance > 60:
+	# spawn shop with min coins and increasing chance per level
+	if coins > 3 && shopchance < (50 + level_progress):
 		var shop_x = start_room.position.x + 1 + randi() % int(start_room.size.x - 2)
 		var shop_y = start_room.position.y
 		if tile_map.get_cell(shop_x, shop_y) != Tile.Door:
@@ -1426,7 +1428,7 @@ func build_level():
 			
 	# place items
 	
-	var num_items = LEVEL_ITEM_COUNT[level_num] + 2
+	var num_items = LEVEL_ITEM_COUNT[level_num] + 1
 	for _i in range(num_items):
 		var room = rooms[randi() % (rooms.size())]
 		var x = room.position.x + 1 + randi() % int(room.size.x - 2)
