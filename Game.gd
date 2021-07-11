@@ -88,7 +88,7 @@ var sfx_status = "ON"
 var log_status = "ON"
 var timer_status = "OFF"
 
-var cheats_active = true
+var cheats_active = false
 
 # run timer
 var run_time_elapsed = 0.0
