@@ -88,6 +88,8 @@ var sfx_status = "ON"
 var log_status = "ON"
 var timer_status = "OFF"
 
+var cheats_active = false
+
 # run timer
 var run_time_elapsed = 0.0
 var run_time_counting = true
@@ -497,17 +499,17 @@ func _input(event):
 		
 	# cheat codes
 	
-	if event.is_action("Cheat1"):
+	if cheats_active && event.is_action("Cheat1"):
 		# invincible
 		can_take_damage = !can_take_damage
 		message_log.add_message("CHEAT: taking damage " + str(can_take_damage))
 		play_sfx(player_sound, snd_item_coin, 0.4, 0.5)
-	if event.is_action("Cheat2"):
+	if cheats_active && event.is_action("Cheat2"):
 		# skip level
 		play_sfx(level_sound, snd_ladder, 0.9, 1)
 		message_log.add_message("CHEAT: skipping level")
 		next_level()
-	if event.is_action("Cheat3"):
+	if cheats_active && event.is_action("Cheat3"):
 		coins += 100
 		$CanvasLayer/Coins.text = "Coins: " + str(coins)
 		message_log.add_message("CHEAT: $$$")
@@ -770,6 +772,9 @@ func _input(event):
 		else:
 			window_scale = 1
 		OS.set_window_size(Vector2(400 * window_scale,300 * window_scale))
+		
+	if event.is_action("Fullscreen"):
+		OS.window_fullscreen = !OS.window_fullscreen
 
 # show the intro cutscene ------------------------------------------------------
 
