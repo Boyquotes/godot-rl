@@ -23,7 +23,7 @@ const MAX_ROOM_DIMENSION = 9
 const PLAYER_START_HP = 5
 
 # cheat settings
-var can_take_damage = false
+var can_take_damage = true
 
 # item values
 var coin_value = 1
