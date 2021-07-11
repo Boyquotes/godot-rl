@@ -656,7 +656,6 @@ func _input(event):
 	if game_state == "pause" && event.is_action("Escape"):
 		play_sfx(level_sound, snd_ui_back, 0.9, 1)
 		# resume the game
-		print("shop off!!!")
 		game_state = "gameplay"
 		pause_screen.visible = false
 		AudioServer.set_bus_bypass_effects(1, true)
@@ -740,10 +739,10 @@ func _input(event):
 			$CanvasLayer/TrueWin.visible = true
 			play_music(music_sound, snd_music_truewin)
 			var win_area = ""
-			if (level_num) == 0:
+			if (level_progress) == 0:
 				win_area = "no levels"
 			else:
-				win_area = str(level_num) + " levels"
+				win_area = str(level_progress) + " levels"
 				
 			$CanvasLayer/TrueWin/DeathMsg3.text = "You have explored " + win_area + "."
 			game_state = "truewin"
