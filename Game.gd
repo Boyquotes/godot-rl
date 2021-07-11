@@ -88,7 +88,7 @@ var sfx_status = "ON"
 var log_status = "ON"
 var timer_status = "OFF"
 
-var cheats_active = false
+var cheats_active = true
 
 # run timer
 var run_time_elapsed = 0.0
@@ -194,29 +194,29 @@ class Enemy extends Reference:
 				if !blocked:
 					tile = move_tile
 					
-					# check if in slime
-					if game.player_status.slime.active == true:
-						var slimed = true
-						for slimestain in game.slimestains:
-							if slimestain.position.x == tile.x * TILE_SIZE && slimestain.position.y == tile.y * TILE_SIZE:
-								take_damage(game, 1)
-								# TODO: make this work properly
-								# sfx
-								# game.play_sfx(game.player_sound, snd_enemy_hurt, 0.8, 1)
-
-								if self.dead:
-									# play sound
-									game.play_sfx(game.player_sound, snd_enemy_death, 0.8, 1)
-									game.message_log.add_message("The " + self.enemy_name + " is slimed to death.")
-									self.remove()
-									game.enemies.erase(self)
-									# spawn blood particles
-									var particles = BloodParticles.instance()
-									particles.position = Vector2(self.tile.x + 0.2, self.tile.y + 0.2) * TILE_SIZE
-									game.add_child(particles)
-								else:
-									# not dying but getting hurt
-									game.play_sfx(game.player_sound, snd_enemy_hurt, 0.8, 1)
+#					# check if in slime
+#					if game.player_status.slime.active == true:
+#						var slimed = true
+#						for slimestain in game.slimestains:
+#							if slimestain.position.x == tile.x * TILE_SIZE && slimestain.position.y == tile.y * TILE_SIZE:
+#								take_damage(game, 1)
+#								# TODO: make this work properly
+#								# sfx
+#								# game.play_sfx(game.player_sound, snd_enemy_hurt, 0.8, 1)
+#
+#								if self.dead:
+#									# play sound
+#									game.play_sfx(game.player_sound, snd_enemy_death, 0.8, 1)
+#									game.message_log.add_message("The " + self.enemy_name + " is slimed to death.")
+#									self.remove()
+#									game.enemies.erase(self)
+#									# spawn blood particles
+#									var particles = BloodParticles.instance()
+#									particles.position = Vector2(self.tile.x + 0.2, self.tile.y + 0.2) * TILE_SIZE
+#									game.add_child(particles)
+#								else:
+#									# not dying but getting hurt
+#									game.play_sfx(game.player_sound, snd_enemy_hurt, 0.8, 1)
 
 # current level data -----------------------------------------------------------
 
@@ -1001,32 +1001,7 @@ func try_move(dx, dy):
 		# if floor
 		Tile.Floor:
 			
-			# check if walking in blood
-			var has_bloody_feet = false
-			var has_slimy_feet = false
-			for bloodstain in bloodstains:
-				if bloodstain.position.x == x * TILE_SIZE && bloodstain.position.y == y * TILE_SIZE:
-					has_bloody_feet = true
-					# drink blood for hp
-					if player_status.vampirism.active == true:
-						bloodstains.erase(bloodstain)
-						bloodstain.queue_free()
-						var heal_amount = 0
-						var pos = player_tile * TILE_SIZE
-						if player_hp < max_hp:
-							# heal by difference
-							heal_amount = min(max_hp - player_hp, blood_health)
-							player_hp += heal_amount
-							message_log.add_message("You drink the blood. " + str(heal_amount) + " health restored.")
-							spawn_label("+" + str(heal_amount), 2, pos)
-							refresh_hp()
-						else:
-							message_log.add_message("You drink the blood. Nothing happens.")
-							spawn_label("no effect", 1, pos)
-				
-			for slimestain in slimestains:
-				if slimestain.position.x == x * TILE_SIZE && slimestain.position.y == y * TILE_SIZE:
-					has_slimy_feet = true
+
 			
 			# maybe an enemy interaction
 			var blocked = false
@@ -1094,23 +1069,61 @@ func try_move(dx, dy):
 						
 						$CanvasLayer/Score.text = "Score: " + str(score)
 					blocked = true
-					break
+					# break
 					
 			if !blocked:
-
-				# leave slime trail where we were
-				if player_status.slime.active == true:
-					# place one if there isn't one already
+				# only if we're not blocked:
+				# check if walking in blood
+				var has_bloody_feet = false
+				var blood_to_remove = []
+				for bloodstain in bloodstains:
+					if bloodstain.position.x == x * TILE_SIZE && bloodstain.position.y == y * TILE_SIZE:
+						# switch to bloody footstep sound
+						has_bloody_feet = true
+						
+						# add to list of blood below us
+						blood_to_remove.append(bloodstain)
+				
+				# then remove and clear removal list
+				for blood in blood_to_remove:
+					bloodstains.erase(blood)
+					blood.queue_free()
+				blood_to_remove = []
+						
+				# heal once at this position
+				if player_status.vampirism.active && has_bloody_feet:
+					var heal_amount = 0
+					var pos = player_tile * TILE_SIZE
+					if player_hp < max_hp:
+						# heal by difference
+						heal_amount = min(max_hp - player_hp, blood_health)
+						player_hp += heal_amount
+						message_log.add_message("You drink the blood. " + str(heal_amount) + " health restored.")
+						spawn_label("+" + str(heal_amount), 2, pos)
+						refresh_hp()
+					else:
+						message_log.add_message("You drink the blood. Nothing happens.")
+						spawn_label("no effect", 1, pos)
 					
-					var hasslime = false
-					for check in slimestains:
-						if check.position == player_tile * TILE_SIZE:
-							hasslime = true
-					if !hasslime:
-						var slime = SlimeScene.instance()
-						slime.position = player_tile * TILE_SIZE
-						slimestains.append(slime)
-						add_child(slime)
+#				for slimestain in slimestains:
+#					if slimestain.position.x == x * TILE_SIZE && slimestain.position.y == y * TILE_SIZE:
+#						has_slimy_feet = true
+						
+				
+
+#				# leave slime trail where we were
+#				if player_status.slime.active == true:
+#					# place one if there isn't one already
+#
+#					var hasslime = false
+#					for check in slimestains:
+#						if check.position == player_tile * TILE_SIZE:
+#							hasslime = true
+#					if !hasslime:
+#						var slime = SlimeScene.instance()
+#						slime.position = player_tile * TILE_SIZE
+#						slimestains.append(slime)
+#						add_child(slime)
 							
 				# move
 				player_tile = Vector2(x, y)
@@ -1119,8 +1132,8 @@ func try_move(dx, dy):
 		
 				if has_bloody_feet:
 					play_sfx(player_sound, snd_walk_blood, 0.6, 1)
-				elif has_slimy_feet:
-					play_sfx(player_sound, snd_walk_blood, 0.4, 0.6)
+#				elif has_slimy_feet:
+#					play_sfx(player_sound, snd_walk_blood, 0.4, 0.6)
 				else:
 					var r = snd_walk[randi() % snd_walk.size()]
 					play_sfx(player_sound, r, 0.8, 1)
