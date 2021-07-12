@@ -70,4 +70,4 @@ bus/5/solo = false
 bus/5/mute = false
 bus/5/bypass_fx = false
 bus/5/volume_db = 0.0
-bus/5/send = "Music"
+bus/5/send = "SFX"

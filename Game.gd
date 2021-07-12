@@ -69,6 +69,7 @@ const snd_music1 = preload("res://sound/music1.wav")
 const snd_music_death = preload("res://sound/music-death.wav")
 const snd_music_intro = preload("res://sound/music-intro.wav")
 const snd_music_shop = preload("res://sound/music-shop.wav")
+const snd_sewer_amb = preload("res://sound/ambience-sewer.wav")
 const snd_music_truewin = preload("res://sound/music-truewin.wav")
 const snd_ui_select = preload("res://sound/ui-select.wav")
 const snd_ui_back = preload("res://sound/ui-back.wav")
@@ -499,6 +500,11 @@ func _input(event):
 		
 	# cheat codes
 	
+	if event.is_action("Cheats"):
+		cheats_active = !cheats_active
+		play_sfx(player_sound, snd_item_coin, 0.1, 0.1)
+		message_log.add_message("CHEATS ACTIVE: " + str(cheats_active))
+		
 	if cheats_active && event.is_action("Cheat1"):
 		# invincible
 		can_take_damage = !can_take_damage
@@ -814,7 +820,7 @@ func initialize_game():
 	play_music(music_sound, snd_music1)
 	
 	
-	play_music(shop_sound, snd_music_shop)
+	play_sfx(shop_sound, snd_sewer_amb, 1.0, 1.0)
 	# mute shop
 	AudioServer.set_bus_mute(5, true)
 	
@@ -1082,7 +1088,8 @@ func try_move(dx, dy):
 						has_bloody_feet = true
 						
 						# add to list of blood below us
-						blood_to_remove.append(bloodstain)
+						if player_status.vampirism.active:
+							blood_to_remove.append(bloodstain)
 				
 				# then remove and clear removal list
 				for blood in blood_to_remove:
