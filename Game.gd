@@ -62,12 +62,15 @@ const snd_walk2 = preload("res://sound/footstep2.wav")
 const snd_walk3 = preload("res://sound/footstep3.wav")
 const snd_walk_blood = preload("res://sound/footstep-blood1.wav")
 const snd_door_open = preload("res://sound/door1.wav")
-const snd_ladder = preload("res://sound/ladder1.wav")
+const snd_ladder = preload("res://sound/ladder2.wav")
+const snd_interlude = preload("res://sound/interlude.wav")
 const snd_enemy_hurt = preload("res://sound/enemy-hurt.wav")
 const snd_enemy_death = preload("res://sound/enemy-death.wav")
 const snd_music1 = preload("res://sound/music1.wav")
 const snd_music_death = preload("res://sound/music-death.wav")
 const snd_music_intro = preload("res://sound/music-intro.wav")
+const snd_music_title = preload("res://sound/music-title.wav")
+const snd_music_groundfloor = preload("res://sound/music-groundfloor.wav")
 const snd_music_shop = preload("res://sound/music-shop.wav")
 const snd_sewer_amb = preload("res://sound/ambience-sewer.wav")
 const snd_music_truewin = preload("res://sound/music-truewin.wav")
@@ -351,8 +354,8 @@ func title_setup():
 	intro_timer.connect("timeout", self, "on_intro_timeout_complete")
 	add_child(intro_timer)
 	
-	# play menu ambience
-	play_music(music_sound, snd_menu_amb)
+	# play title screen music
+	play_music(music_sound, snd_music_title)
 
 func shop_setup():
 	# 0 is first item, 2 is last item
@@ -586,6 +589,11 @@ func _input(event):
 		play_sfx(level_sound, snd_ui_select, 0.2, 0.4)
 		game_state = "gameplay"
 		interlude_screen.visible = false
+		AudioServer.set_bus_bypass_effects(1, true)
+		
+		# if we're leaving ground floor, switch music
+		if music_sound.get_stream() == snd_music_groundfloor:
+			play_music(music_sound, snd_music1)
 		build_level()
 		return
 		
@@ -715,6 +723,10 @@ func _input(event):
 	if game_state == "settings" && event.is_action("Toggle Log"):
 		toggle_setting("log")
 		return
+	# show/hide timer
+	if game_state == "settings" && event.is_action("Timer"):
+		toggle_setting("timer")
+		return
 		
 	# things we can do from the credits screen
 	
@@ -798,6 +810,7 @@ func intro_setup():
 func interlude_setup():
 	game_state = "interlude"
 	interlude_screen.visible = true
+	AudioServer.set_bus_bypass_effects(1, false)
 	randomize()
 	var r = interlude_options[randi() % interlude_options.size()]
 	$CanvasLayer/InterludeScreen/InterludeText.text = r
@@ -817,7 +830,9 @@ func initialize_game():
 	message_log.messages.clear()
 	
 	stop_sound(music_sound)
-	play_music(music_sound, snd_music1)
+	
+	# play ground floor music
+	play_music(music_sound, snd_music_groundfloor)
 	
 	
 	play_sfx(shop_sound, snd_sewer_amb, 1.0, 1.0)
@@ -948,7 +963,7 @@ func status_setup():
 			"name" : "Extra Life",
 			"cost" : 5,
 			"purchased" : false,
-			"description" : "Upon dying, restart level at full health",
+			"description" : "Once per level, re-enter level after dying.",
 			"frame" : 61,
 			"icon" : 213
 		},

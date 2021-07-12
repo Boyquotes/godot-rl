@@ -429,7 +429,7 @@ bus = "SFX"
 bus = "Music"
 
 [node name="SoundShop" type="AudioStreamPlayer2D" parent="Player"]
-volume_db = -7.0
+volume_db = -10.0
 bus = "Shop"
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
@@ -1193,7 +1193,7 @@ margin_top = 260.0
 margin_right = 390.0
 margin_bottom = 291.0
 custom_fonts/font = ExtResource( 3 )
-text = "v0.6.3"
+text = "v0.6.4"
 align = 2
 valign = 2
 __meta__ = {
