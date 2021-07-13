@@ -1,0 +1,15 @@
+[remap]
+
+importer="ogg_vorbis"
+type="AudioStreamOGGVorbis"
+path="res://.import/footstep-blood1.ogg-2da27f1d7f869a80fcbdf6ec9443d1dc.oggstr"
+
+[deps]
+
+source_file="res://sound/footstep-blood1.ogg"
+dest_files=[ "res://.import/footstep-blood1.ogg-2da27f1d7f869a80fcbdf6ec9443d1dc.oggstr" ]
+
+[params]
+
+loop=false
+loop_offset=0

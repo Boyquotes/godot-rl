@@ -1,0 +1,15 @@
+[remap]
+
+importer="ogg_vorbis"
+type="AudioStreamOGGVorbis"
+path="res://.import/music-truewin.ogg-5c340e59c98eb5a2a8953b0a1f874d81.oggstr"
+
+[deps]
+
+source_file="res://sound/music-truewin.ogg"
+dest_files=[ "res://.import/music-truewin.ogg-5c340e59c98eb5a2a8953b0a1f874d81.oggstr" ]
+
+[params]
+
+loop=false
+loop_offset=0

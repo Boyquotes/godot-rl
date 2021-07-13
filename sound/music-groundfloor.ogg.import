@@ -1,0 +1,15 @@
+[remap]
+
+importer="ogg_vorbis"
+type="AudioStreamOGGVorbis"
+path="res://.import/music-groundfloor.ogg-711a19728354efff4be89e01e6147503.oggstr"
+
+[deps]
+
+source_file="res://sound/music-groundfloor.ogg"
+dest_files=[ "res://.import/music-groundfloor.ogg-711a19728354efff4be89e01e6147503.oggstr" ]
+
+[params]
+
+loop=true
+loop_offset=0
