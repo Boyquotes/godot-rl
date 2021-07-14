@@ -1285,7 +1285,7 @@ margin_bottom = 130.0
 rect_pivot_offset = Vector2( 190, -10 )
 custom_fonts/font = ExtResource( 3 )
 text = "Deepest Level:
-Highscore:
+Best Score:
 Best Time:"
 align = 2
 __meta__ = {
@@ -1299,9 +1299,9 @@ margin_right = 200.0
 margin_bottom = 190.0
 rect_pivot_offset = Vector2( 190, -10 )
 custom_fonts/font = ExtResource( 3 )
-text = "Total enemies slain:
-Total coins collected:
-Total deaths:"
+text = "Total Enemies Slain:
+Total Coins Collected:
+Total Deaths:"
 align = 2
 __meta__ = {
 "_edit_use_anchors_": false

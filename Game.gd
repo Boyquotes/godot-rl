@@ -165,7 +165,8 @@ class Enemy extends Reference:
 		if hp == 0:
 			dead = true
 			game.score += 10 * full_hp
-			game.total_enemies += 1
+			
+			game.killedenemies += 1
 			
 			# drop item
 			
@@ -281,6 +282,7 @@ var player_tile
 var player_dmg = 1
 var score = 0
 var coins = 0
+var killedenemies = 0
 var player_hp = PLAYER_START_HP
 var max_hp = PLAYER_START_HP
 var enemy_pathfinding
@@ -833,6 +835,9 @@ func _input(event):
 				pb = "[rainbow freq=0.7 sat=0.5 val=1] NEW PB! [/rainbow]"
 			$CanvasLayer/TrueWin/Time.bbcode_text = "[center]Time: " + run_time_process(run_time_elapsed) + pb + "[/center]"
 			
+			total_coins += coins
+			total_enemies += killedenemies
+			
 			# save records
 			save_data()
 			
@@ -949,6 +954,7 @@ func initialize_game():
 	level_progress = 0
 	score = 0
 	coins = 0
+	killedenemies = 0
 	player_dmg = 1
 	coin_value = 1
 	
@@ -1403,7 +1409,7 @@ func pickup_items():
 				play_sfx(level_sound, snd_item_coin, 0.8, 1)
 				$CanvasLayer/Coins.text = "Coins: " + str(coins)
 				message_log.add_message("You find a coin!")
-				total_coins += 1
+
 				# spawn info text
 				spawn_label("+" + str(coin_value), 4, pos)
 			elif item.sprite_node.frame == 20:
@@ -2046,7 +2052,7 @@ func damage_player(dmg, me):
 			player_anims.play("Dead")
 			play_music(music_sound, snd_music_death)
 			lose_screen.visible = true
-			total_deaths += 1
+
 			var death_area = ""
 			if (level_num) == 0:
 				death_area = "the ground floor"
@@ -2073,6 +2079,10 @@ func damage_player(dmg, me):
 			
 			# update time string
 			$CanvasLayer/Lose/Time.text = "Time: " + run_time_process(run_time_elapsed)
+			
+			total_coins += coins
+			total_enemies += killedenemies
+			total_deaths += 1
 			
 			# save records
 			save_data()
