@@ -417,18 +417,18 @@ anims/Idle = SubResource( 12 )
 anims/OpenDoor = SubResource( 13 )
 anims/PlayerWalk = SubResource( 14 )
 
-[node name="SoundPlayer" type="AudioStreamPlayer2D" parent="Player"]
+[node name="SoundPlayer" type="AudioStreamPlayer" parent="Player"]
 volume_db = -4.0
 bus = "SFX"
 
-[node name="SoundLevel" type="AudioStreamPlayer2D" parent="Player"]
+[node name="SoundLevel" type="AudioStreamPlayer" parent="Player"]
 volume_db = -3.0
 bus = "SFX"
 
-[node name="SoundMusic" type="AudioStreamPlayer2D" parent="Player"]
+[node name="SoundMusic" type="AudioStreamPlayer" parent="Player"]
 bus = "Music"
 
-[node name="SoundShop" type="AudioStreamPlayer2D" parent="Player"]
+[node name="SoundShop" type="AudioStreamPlayer" parent="Player"]
 volume_db = -10.0
 bus = "Shop"
 
@@ -671,6 +671,7 @@ __meta__ = {
 }
 
 [node name="DeathMsg3" type="Label" parent="CanvasLayer/TrueWin"]
+visible = false
 margin_left = 80.0
 margin_top = 160.0
 margin_right = 320.0
@@ -683,28 +684,44 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Score" type="Label" parent="CanvasLayer/TrueWin"]
+[node name="Levels" type="RichTextLabel" parent="CanvasLayer/TrueWin"]
 margin_left = 80.0
-margin_top = 180.0
+margin_top = 160.0
 margin_right = 320.0
-margin_bottom = 200.0
-custom_fonts/font = ExtResource( 3 )
-custom_colors/font_color = Color( 0, 1, 0.905882, 1 )
-text = "Score: 999"
-align = 1
+margin_bottom = 180.0
+rect_clip_content = false
+custom_fonts/normal_font = ExtResource( 3 )
+bbcode_enabled = true
+bbcode_text = "[center]Levels: 3 [rainbow freq=0.7 sat=0.5 val=1]NEW PB![/rainbow][/center]"
+text = "Levels: 3 NEW PB!"
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Time" type="Label" parent="CanvasLayer/TrueWin"]
+[node name="Score" type="RichTextLabel" parent="CanvasLayer/TrueWin"]
+margin_left = 80.0
+margin_top = 180.0
+margin_right = 320.0
+margin_bottom = 200.0
+rect_clip_content = false
+custom_fonts/normal_font = ExtResource( 3 )
+bbcode_enabled = true
+bbcode_text = "[center]Score: 12345 [rainbow freq=0.7 sat=0.5 val=1]NEW PB![/rainbow][/center]"
+text = "Score: 12345 NEW PB!"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Time" type="RichTextLabel" parent="CanvasLayer/TrueWin"]
 margin_left = 80.0
 margin_top = 200.0
 margin_right = 320.0
 margin_bottom = 220.0
-custom_fonts/font = ExtResource( 3 )
-custom_colors/font_color = Color( 0, 1, 0.905882, 1 )
-text = "Time: 999"
-align = 1
+rect_clip_content = false
+custom_fonts/normal_font = ExtResource( 3 )
+bbcode_enabled = true
+bbcode_text = "[center]Time: 12:34 [rainbow freq=0.7 sat=0.5 val=1]NEW PB![/rainbow][/center]"
+text = "Time: 12:34 NEW PB!"
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -1042,9 +1059,9 @@ __meta__ = {
 
 [node name="Info2" type="Label" parent="CanvasLayer/Lose"]
 margin_left = 180.0
-margin_top = 200.0
+margin_top = 220.0
 margin_right = 278.0
-margin_bottom = 290.0
+margin_bottom = 310.0
 rect_pivot_offset = Vector2( 40, 30 )
 custom_fonts/font = ExtResource( 3 )
 text = "Restart
@@ -1055,9 +1072,9 @@ __meta__ = {
 
 [node name="Hotkeys2" type="Label" parent="CanvasLayer/Lose"]
 margin_left = 120.0
-margin_top = 200.0
+margin_top = 220.0
 margin_right = 170.0
-margin_bottom = 290.0
+margin_bottom = 310.0
 rect_pivot_offset = Vector2( 40, 30 )
 custom_fonts/font = ExtResource( 3 )
 text = "[ R ]
@@ -1095,11 +1112,13 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Score" type="Label" parent="CanvasLayer/Lose"]
+[node name="Score1" type="Label" parent="CanvasLayer/Lose"]
+visible = false
 margin_left = 80.0
-margin_top = 140.0
+margin_top = 160.0
 margin_right = 320.0
-margin_bottom = 160.0
+margin_bottom = 180.0
+rect_pivot_offset = Vector2( 204.364, 40 )
 custom_fonts/font = ExtResource( 3 )
 text = "Score: 999"
 align = 1
@@ -1109,9 +1128,9 @@ __meta__ = {
 
 [node name="Time" type="Label" parent="CanvasLayer/Lose"]
 margin_left = 80.0
-margin_top = 160.0
+margin_top = 180.0
 margin_right = 320.0
-margin_bottom = 180.0
+margin_bottom = 200.0
 custom_fonts/font = ExtResource( 3 )
 text = "Time: 999"
 align = 1
@@ -1129,9 +1148,39 @@ custom_fonts/normal_font = ExtResource( 3 )
 bbcode_enabled = true
 bbcode_text = "[color=red][center][wave amp=30 freq=4]Y O U   D I E D[/wave]"
 text = "Y O U   D I E D"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Levels" type="RichTextLabel" parent="CanvasLayer/Lose"]
+margin_left = 80.0
+margin_top = 140.0
+margin_right = 320.0
+margin_bottom = 160.0
+rect_clip_content = false
+custom_fonts/normal_font = ExtResource( 3 )
+bbcode_enabled = true
+bbcode_text = "[center]Levels: 3 [rainbow freq=0.7 sat=0.5 val=1]NEW PB![/rainbow][/center]"
+text = "Levels: 3 NEW PB!"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Score" type="RichTextLabel" parent="CanvasLayer/Lose"]
+margin_left = 80.0
+margin_top = 160.0
+margin_right = 320.0
+margin_bottom = 180.0
+rect_clip_content = false
+custom_fonts/normal_font = ExtResource( 3 )
+bbcode_enabled = true
+bbcode_text = "[center]Score: 12345 [rainbow freq=0.7 sat=0.5 val=1]NEW PB![/rainbow][/center]"
+text = "Score: 12345 NEW PB!"
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
 [node name="Title" type="ColorRect" parent="CanvasLayer"]
-visible = false
 margin_right = 400.0
 margin_bottom = 300.0
 color = Color( 0.305882, 0, 0, 1 )
@@ -1162,10 +1211,10 @@ custom_fonts/font = ExtResource( 3 )
 text = "[ Enter ]
 
 [ S ]
+[ T ]
 [ C ]
 
-[ Q ]
-"
+[ Q ]"
 align = 2
 __meta__ = {
 "_edit_use_anchors_": false
@@ -1181,6 +1230,7 @@ custom_fonts/font = ExtResource( 3 )
 text = "Start
 
 Settings
+Stats
 Credits
 
 Quit to Desktop"
@@ -1204,6 +1254,146 @@ __meta__ = {
 position = Vector2( 200, 90 )
 scale = Vector2( 0.878788, 0.878788 )
 texture = ExtResource( 8 )
+
+[node name="Stats" type="ColorRect" parent="CanvasLayer"]
+visible = false
+margin_right = 400.0
+margin_bottom = 300.0
+color = Color( 0.305882, 0, 0, 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Title2" type="Label" parent="CanvasLayer/Stats"]
+margin_left = 80.0
+margin_top = 40.0
+margin_right = 320.0
+margin_bottom = 60.0
+rect_pivot_offset = Vector2( 110, 10 )
+custom_fonts/font = ExtResource( 3 )
+text = "S T A T S"
+align = 1
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Labels" type="Label" parent="CanvasLayer/Stats"]
+margin_left = 110.0
+margin_top = 70.0
+margin_right = 200.0
+margin_bottom = 130.0
+rect_pivot_offset = Vector2( 190, -10 )
+custom_fonts/font = ExtResource( 3 )
+text = "Deepest Level:
+Highscore:
+Best Time:"
+align = 2
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Labels2" type="Label" parent="CanvasLayer/Stats"]
+margin_left = 50.0
+margin_top = 130.0
+margin_right = 200.0
+margin_bottom = 190.0
+rect_pivot_offset = Vector2( 190, -10 )
+custom_fonts/font = ExtResource( 3 )
+text = "Total enemies slain:
+Total coins collected:
+Total deaths:"
+align = 2
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="ScoresA" type="Label" parent="CanvasLayer/Stats"]
+margin_left = 210.0
+margin_top = 70.0
+margin_right = 308.0
+margin_bottom = 130.0
+rect_pivot_offset = Vector2( 90, -10 )
+custom_fonts/font = ExtResource( 3 )
+text = "123
+12345
+12:34.56"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="ScoresB" type="Label" parent="CanvasLayer/Stats"]
+margin_left = 210.0
+margin_top = 130.0
+margin_right = 308.0
+margin_bottom = 190.0
+rect_pivot_offset = Vector2( 90, -10 )
+custom_fonts/font = ExtResource( 3 )
+text = "12345
+56789
+1"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Hotkeys2" type="Label" parent="CanvasLayer/Stats"]
+margin_left = 110.0
+margin_top = 240.0
+margin_right = 160.0
+margin_bottom = 267.0
+rect_pivot_offset = Vector2( 40, 30 )
+custom_fonts/font = ExtResource( 3 )
+text = "[ R ]
+[ Esc ]"
+align = 2
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Info2" type="Label" parent="CanvasLayer/Stats"]
+margin_left = 170.0
+margin_top = 240.0
+margin_right = 227.0
+margin_bottom = 267.0
+rect_pivot_offset = Vector2( 40, 30 )
+custom_fonts/font = ExtResource( 3 )
+text = "Reset Data
+Back"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="title" type="Sprite" parent="CanvasLayer/Stats"]
+visible = false
+position = Vector2( 200, 90 )
+scale = Vector2( 0.878788, 0.878788 )
+texture = ExtResource( 8 )
+
+[node name="Confirm" type="ColorRect" parent="CanvasLayer/Stats"]
+visible = false
+margin_right = 400.0
+margin_bottom = 300.0
+color = Color( 0, 0, 0, 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Title3" type="Label" parent="CanvasLayer/Stats/Confirm"]
+margin_left = 80.0
+margin_top = 100.0
+margin_right = 320.0
+margin_bottom = 167.0
+rect_pivot_offset = Vector2( 110, 10 )
+custom_fonts/font = ExtResource( 3 )
+text = "A R E   Y O U   S U R E ?
+
+All saved data will be erased.
+
+
+[ Esc ] No      [ Enter ] Yes"
+align = 1
+__meta__ = {
+"_edit_use_anchors_": false
+}
 
 [node name="Credits" type="ColorRect" parent="CanvasLayer"]
 visible = false

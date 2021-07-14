@@ -98,6 +98,16 @@ var cheats_active = false
 var run_time_elapsed = 0.0
 var run_time_counting = true
 
+# set up for data records
+
+var best_levels = 0
+var best_time = 0
+var best_score = 0
+
+var total_enemies = 0
+var total_coins = 0
+var total_deaths = 0
+
 # item class -------------------------------------------------------------------
 
 class Item extends Reference:
@@ -155,6 +165,7 @@ class Enemy extends Reference:
 		if hp == 0:
 			dead = true
 			game.score += 10 * full_hp
+			game.total_enemies += 1
 			
 			# drop item
 			
@@ -251,6 +262,7 @@ onready var intro_screen = $CanvasLayer/IntroScreens
 onready var settings_screen = $CanvasLayer/Settings
 onready var pause_screen = $CanvasLayer/Pause
 onready var credits_screen = $CanvasLayer/Credits
+onready var stats_screen = $CanvasLayer/Stats
 onready var lose_screen = $CanvasLayer/Lose
 onready var win_screen = $CanvasLayer/Win
 onready var true_win_screen = $CanvasLayer/TrueWin
@@ -311,7 +323,7 @@ func _ready():
 	OS.set_window_position(screen_size*0.5 - window_size*0.5)
 	get_tree().set_auto_accept_quit(false)
 	
-	# load settings
+	# load config
 	load_data()
 	
 	# apply loaded settings from save or defaults
@@ -546,6 +558,15 @@ func _input(event):
 		credits_screen.visible = true
 		return
 		
+	# view stats
+	if game_state == "title" && event.is_action("Stats"):
+		play_sfx(level_sound, snd_ui_select, 0.9, 1)
+		game_state = "stats"
+		stats_screen.visible = true
+		
+		refresh_stats()
+		return
+		
 	# view settings
 	if game_state == "title" && event.is_action("Settings"):
 		play_sfx(level_sound, snd_ui_select, 0.9, 1)
@@ -558,6 +579,37 @@ func _input(event):
 		$CanvasLayer/Settings/Info.text += "Back"
 		settings_screen.visible = true
 		return
+		
+	# things we can do in the stats screen
+	
+	if game_state == "stats" && event.is_action("Escape"):
+		play_sfx(level_sound, snd_ui_back, 0.9, 1)
+		game_state = "title"
+		stats_screen.visible = false
+		return
+		
+	if game_state == "stats" && event.is_action("Restart"):
+		play_sfx(level_sound, snd_ui_select, 0.9, 1)
+		$CanvasLayer/Stats/Confirm.visible = true
+		game_state = "confirmdelete"
+		return
+		
+	if game_state == "confirmdelete" && event.is_action("Escape"):
+		# no
+		play_sfx(level_sound, snd_ui_select, 0.3, 0.4)
+		$CanvasLayer/Stats/Confirm.visible = false
+		game_state = "stats"
+		
+	if game_state == "confirmdelete" && event.is_action("Start"):
+		# no
+		play_sfx(level_sound, snd_enemy_death, 0.5, 0.6)
+		$CanvasLayer/Stats/Confirm.visible = false
+		
+		# delete save
+		delete_data()
+		
+		game_state = "stats"
+		
 		
 	# things we can do in the intro
 	
@@ -754,22 +806,38 @@ func _input(event):
 		# return to game
 		if player_status.badgoblet.active == true:
 			# TRUE WIN
+			
+			# stop timer
+			run_time_counting = false
+			
 			score += 1999
 			$CanvasLayer/TrueWin/Score.text = "Score: " + str(score)
 			$CanvasLayer/TrueWin.visible = true
 			play_music(music_sound, snd_music_truewin)
-			var win_area = ""
-			if (level_progress) == 0:
-				win_area = "no levels"
-			else:
-				win_area = str(level_progress) + " levels"
-				
-			$CanvasLayer/TrueWin/DeathMsg3.text = "You have explored " + win_area + "."
+			
+			var pb = ""
+			if check_score("levels") == true:
+				# update levels string
+				pb = "[rainbow freq=0.7 sat=0.5 val=1] NEW PB! [/rainbow]"
+			$CanvasLayer/TrueWin/Levels.bbcode_text = "[center]Levels: " + str(level_progress) + pb + "[/center]"
+			
+			pb = ""
+			if check_score("score") == true:
+				# update score string
+				pb = "[rainbow freq=0.7 sat=0.5 val=1] NEW PB! [/rainbow]"
+			$CanvasLayer/TrueWin/Score.bbcode_text = "[center]Score: " + str(score) + pb + "[/center]"
+			
+			pb = ""
+			if check_score("time") == true:
+				# update score string
+				pb = "[rainbow freq=0.7 sat=0.5 val=1] NEW PB! [/rainbow]"
+			$CanvasLayer/TrueWin/Time.bbcode_text = "[center]Time: " + run_time_process(run_time_elapsed) + pb + "[/center]"
+			
+			# save records
+			save_data()
+			
 			game_state = "truewin"
 			
-			# timer
-			run_time_counting = false
-			$CanvasLayer/TrueWin/Time.text = run_time_process(run_time_elapsed)
 		else:
 			game_state = "gameplay"
 		shop_screen.visible = false
@@ -794,6 +862,40 @@ func _input(event):
 	if event.is_action("Fullscreen"):
 		OS.window_fullscreen = !OS.window_fullscreen
 
+
+# check highscores -------------------------------------------------------------
+func check_score(which):
+	var new_record = false
+	if which == "levels":
+		if best_levels == 0:
+			best_levels = level_progress
+			return new_record
+		if level_progress > best_levels:
+			best_levels = level_progress
+			print("new best levels! " + str(best_levels))
+			new_record = true
+			return new_record
+	if which == "time":
+		if best_time == 0:
+			best_time = run_time_elapsed
+			return new_record
+		elif run_time_elapsed < best_time:
+			best_time = run_time_elapsed
+			print("new best time! " + str(best_time))
+			new_record = true
+			return new_record
+	if which == "score":
+		if best_score == 0:
+			best_score = score
+			return new_record
+		elif score > best_score:
+			best_score = score
+			print("new best score! " + str(best_score))
+			new_record = true
+			return new_record
+	
+	
+				
 # show the intro cutscene ------------------------------------------------------
 
 func intro_setup():
@@ -1301,6 +1403,7 @@ func pickup_items():
 				play_sfx(level_sound, snd_item_coin, 0.8, 1)
 				$CanvasLayer/Coins.text = "Coins: " + str(coins)
 				message_log.add_message("You find a coin!")
+				total_coins += 1
 				# spawn info text
 				spawn_label("+" + str(coin_value), 4, pos)
 			elif item.sprite_node.frame == 20:
@@ -1943,19 +2046,36 @@ func damage_player(dmg, me):
 			player_anims.play("Dead")
 			play_music(music_sound, snd_music_death)
 			lose_screen.visible = true
+			total_deaths += 1
 			var death_area = ""
 			if (level_num) == 0:
 				death_area = "the ground floor"
 			else:
-				death_area = "level " + str(level_num)
+				death_area = "level " + str(level_progress)
 			
-			$CanvasLayer/Lose/Score.text = "Score: " + str(score)
 			$CanvasLayer/Lose/DeathMsg.text = "You were slain by a " + me.enemy_name + " in\n"
 			$CanvasLayer/Lose/DeathMsg.text += death_area + " of the terrible basement."
 			
-			# timer
+			# stop timer
 			run_time_counting = false
-			$CanvasLayer/Lose/Time.text = run_time_process(run_time_elapsed)
+			
+			var pb = ""
+			if check_score("levels") == true:
+				# update levels string
+				pb = "[rainbow freq=0.7 sat=0.5 val=1] NEW PB! [/rainbow]"
+			$CanvasLayer/Lose/Levels.bbcode_text = "[center]Levels: " + str(level_progress) + pb + "[/center]"
+			
+			pb = ""
+			if check_score("score") == true:
+				# update score string
+				pb = "[rainbow freq=0.7 sat=0.5 val=1] NEW PB! [/rainbow]"
+			$CanvasLayer/Lose/Score.bbcode_text = "[center]Score: " + str(score) + pb + "[/center]"
+			
+			# update time string
+			$CanvasLayer/Lose/Time.text = "Time: " + run_time_process(run_time_elapsed)
+			
+			# save records
+			save_data()
 			
 			game_state = "lose"
 
@@ -1965,7 +2085,7 @@ func run_time_process(t):
 	var minutes = t / 60
 	var seconds = fmod(t, 60)
 	var milliseconds := fmod(t, 1) * 100
-	var timestring = "Time: %02d:%02d.%02d" % [minutes, seconds, milliseconds]
+	var timestring = "%02d:%02d.%02d" % [minutes, seconds, milliseconds]
 	return timestring
 
 # floating label spawner -------------------------------------------------------
@@ -2072,6 +2192,12 @@ func save_data():
 		"setting_music": music_status,
 		"setting_sfx": sfx_status,
 		"setting_log": log_status,
+		"best_levels": best_levels,
+		"best_time": best_time,
+		"best_score": best_score,
+		"total_enemies": total_enemies,
+		"total_coins": total_coins,
+		"total_deaths": total_deaths
 	}
 	
 	var file = File.new()
@@ -2098,9 +2224,36 @@ func load_data():
 			music_status = player_data.setting_music
 			sfx_status = player_data.setting_sfx
 			log_status = player_data.setting_log
+			best_levels = player_data.best_levels
+			best_time = player_data.best_time
+			best_score = player_data.best_score
+			total_enemies = player_data.total_enemies
+			total_coins = player_data.total_coins
+			total_deaths = player_data.total_deaths
 		else:
-			print("error occured on load... oopsie...")
+			print("error occured on load... oopsie...")	
+
+func delete_data():
+	best_levels = 0
+	best_time = 0
+	best_score = 0
+	total_enemies = 0
+	total_coins = 0
+	total_deaths = 0
+	refresh_stats()
+	save_data()
 	
+func refresh_stats():
+	var a = ""
+	a += str(best_levels) + "\n"
+	a += str(best_score) + "\n"
+	if best_time == 0:
+		a += str("-")
+	else:
+		a += run_time_process(best_time)
+	
+	$CanvasLayer/Stats/ScoresA.text = a 
+	$CanvasLayer/Stats/ScoresB.text = str(total_enemies) + "\n" + str(total_coins) + "\n" + str(total_deaths) 
 
 # on quit request
 func _notification(what):
