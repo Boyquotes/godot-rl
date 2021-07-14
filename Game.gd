@@ -877,7 +877,6 @@ func check_score(which):
 			return new_record
 		if level_progress > best_levels:
 			best_levels = level_progress
-			print("new best levels! " + str(best_levels))
 			new_record = true
 			return new_record
 	if which == "time":
@@ -886,7 +885,6 @@ func check_score(which):
 			return new_record
 		elif run_time_elapsed < best_time:
 			best_time = run_time_elapsed
-			print("new best time! " + str(best_time))
 			new_record = true
 			return new_record
 	if which == "score":
@@ -895,7 +893,6 @@ func check_score(which):
 			return new_record
 		elif score > best_score:
 			best_score = score
-			print("new best score! " + str(best_score))
 			new_record = true
 			return new_record
 	
@@ -1535,13 +1532,16 @@ func build_level():
 	randomize()
 	var shopchance = randi() % 100
 	# spawn shop with min coins and increasing chance per level
-	if coins > 3 && shopchance < (50 + level_progress):
+	# if coins > 3 && shopchance < (50 + level_progress):
+	
+	# spawn shop every other level
+	if level_progress > 1 && (level_progress % 2) == 0:
 		var shop_x = start_room.position.x + 1 + randi() % int(start_room.size.x - 2)
 		var shop_y = start_room.position.y
 		if tile_map.get_cell(shop_x, shop_y) != Tile.Door:
 			set_tile(shop_x, shop_y, Tile.ShopGrate)
-			if shopchance > 75:
-				var shop_dialogue = randi() % 3
+			if level_progress > 3 && shopchance > 50:
+				var shop_dialogue = randi() % 8
 				if shop_dialogue == 0:
 					spawn_label("hey...", 1, Vector2(shop_x, shop_y) * TILE_SIZE)
 				if shop_dialogue == 1:
@@ -1550,6 +1550,16 @@ func build_level():
 					spawn_label("need some wares?", 1, Vector2(shop_x, shop_y) * TILE_SIZE)
 				if shop_dialogue == 3:
 					spawn_label("nice coins...", 1, Vector2(shop_x, shop_y) * TILE_SIZE)
+				if shop_dialogue == 4:
+					spawn_label("this sewer is so cool...", 1, Vector2(shop_x, shop_y) * TILE_SIZE)
+				if shop_dialogue == 5:
+					spawn_label("looking to buy?", 1, Vector2(shop_x, shop_y) * TILE_SIZE)
+				if shop_dialogue == 6:
+					spawn_label("he he he he he...", 1, Vector2(shop_x, shop_y) * TILE_SIZE)
+				if shop_dialogue == 7:
+					spawn_label("hey uhhhh...", 1, Vector2(shop_x, shop_y) * TILE_SIZE)
+				if shop_dialogue == 8:
+					spawn_label("whats up...", 1, Vector2(shop_x, shop_y) * TILE_SIZE)
 	
 	# place enemies
 	
@@ -1587,7 +1597,7 @@ func build_level():
 		else:
 			items.append(Item.new(self, x, y, 18))
 	
-	# drop a heart for the weak
+	# drop a heart for the low hp crew
 	if player_hp < 3:
 		var room = rooms.front()
 		var x = room.position.x + 1 + randi() % int(room.size.x - 2)
