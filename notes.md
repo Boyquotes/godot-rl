@@ -5,6 +5,7 @@
 ## bugs / improvements
 
 - more reliable money
+- make sure items can't spawn under ladders
 - tile map shading is slowing game down
 
 ## ideas

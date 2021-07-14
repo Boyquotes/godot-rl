@@ -447,11 +447,42 @@ func try_purchase(selection):
 			var pos = Vector2(100, 100)
 			
 			if shop_items_values[selection].name == "BAD GOBLET":
-				$CanvasLayer/Shop/ItemDescription.text = "You... the goblet??? Impossible!!!"
+				var roll = randi() % 5
+				var gobletline = ""
+				
+				if roll == 1:
+					gobletline = "You... the goblet??? Impossible!!!"
+				elif roll == 2:
+					gobletline = "So many coins...... you really did it..."
+				elif roll == 3:
+					gobletline = "Finally! Take it! This run is over!!!"
+				elif roll == 4:
+					gobletline = "Heh... good job and thanks for all the coins!!"
+				elif roll == 5:
+					gobletline = "Fresh goblet for you!!! Thanks for paying!!!"
+				else:
+					gobletline = "No way!!!! You just bought the goblet!!!"
+				
+				$CanvasLayer/Shop/ItemDescription.text = gobletline
 			else:
-				$CanvasLayer/Shop/ItemDescription.text = "Nice choice... good luck...... heh"
-			# TODO: make label work
-			
+				var roll = randi() % 5
+				var thanksline = ""
+				
+				if roll == 1:
+					thanksline = "Nice choice... good luck...... heh"
+				elif roll == 2:
+					thanksline = "Ooo nice... you're gonna need it.... heh"
+				elif roll == 3:
+					thanksline = "Thanks! Don't tell them you got it from me..."
+				elif roll == 4:
+					thanksline = "Weird choice but okay..... enjoy"
+				elif roll == 5:
+					thanksline = "Thanks... come back soon yes?.... heh"
+				else:
+					thanksline = "........ thanks.... he he he"
+					
+				$CanvasLayer/Shop/ItemDescription.text = thanksline
+							
 			coins -= shop_items_values[selection].cost
 			shop_items_values[selection].purchased = true
 			play_sfx(level_sound, snd_purchase, 0.9, 1)
@@ -611,7 +642,6 @@ func _input(event):
 		delete_data()
 		
 		game_state = "stats"
-		
 		
 	# things we can do in the intro
 	
@@ -867,8 +897,8 @@ func _input(event):
 	if event.is_action("Fullscreen"):
 		OS.window_fullscreen = !OS.window_fullscreen
 
-
 # check highscores -------------------------------------------------------------
+
 func check_score(which):
 	var new_record = false
 	if which == "levels":
@@ -895,9 +925,7 @@ func check_score(which):
 			best_score = score
 			new_record = true
 			return new_record
-	
-	
-				
+
 # show the intro cutscene ------------------------------------------------------
 
 func intro_setup():
@@ -938,7 +966,6 @@ func initialize_game():
 	# play ground floor music
 	play_music(music_sound, snd_music_groundfloor)
 	
-	
 	play_sfx(shop_sound, snd_sewer_amb, 1.0, 1.0)
 	# mute shop
 	AudioServer.set_bus_mute(5, true)
@@ -956,7 +983,6 @@ func initialize_game():
 	coin_value = 1
 	
 	$CanvasLayer/Coins.text = "Coins: " + str(coins)
-	
 
 	$CanvasLayer/Win.visible = false
 	$CanvasLayer/Lose.visible = false
@@ -969,14 +995,6 @@ func initialize_game():
 	shop_icons.clear()
 	
 	status_setup()
-	
-	# make sure all player statuses are turned off
-	
-#	player_status.vampirism.active = true
-#	player_status.scaryface.active = true
-#	player_status.forgery.active = true
-#	print("debug status effects enabled!")
-#	player_status.slime.active = true
 
 	update_icons()
 	
@@ -1056,14 +1074,6 @@ func status_setup():
 			"frame" : 59,
 			"icon" : 211
 		},
-#		"goodeyes" : {
-#			"name" : "Good Eyes",
-#			"cost" : 10,
-#			"purchased" : false,
-#			"description" : "DOES NOT WORK! Find better items",
-#			"frame" : 60,
-#			"icon" : 212
-#		},
 		"extralife" : {
 			"name" : "Extra Life",
 			"cost" : 5,
@@ -1080,22 +1090,6 @@ func status_setup():
 			"frame" : 63,
 			"icon" : 213
 		}
-#		"bait" : {
-#			"name" : "Bait",
-#			"cost" : 3,
-#			"purchased" : false,
-#			"description" : "DOES NOT WORK! Spawn more enemies",
-#			"frame" : 62,
-#			"icon" : 214
-#		},
-#		"slime" : {
-#			"name" : "Slime",
-#			"cost" : 20,
-#			"purchased" : false,
-#			"description" : "Leave a toxic trail that hurts enemies",
-#			"frame" : 63,
-#			"icon" : 215
-#		}
 	}
 	
 	shop_items_values = shop_items.values()
@@ -1126,9 +1120,7 @@ func try_move(dx, dy):
 		
 		# if floor
 		Tile.Floor:
-			
 
-			
 			# maybe an enemy interaction
 			var blocked = false
 			for enemy in enemies:
