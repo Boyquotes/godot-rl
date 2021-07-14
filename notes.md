@@ -6,6 +6,7 @@
 
 - more reliable money
 - make sure items can't spawn under ladders
+- when an enemy kills into a resurrect it turns invisible?
 - tile map shading is slowing game down
 
 ## ideas

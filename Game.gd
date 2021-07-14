@@ -1445,6 +1445,8 @@ func build_level():
 	rooms.clear()
 	map.clear()
 	tile_map.clear()
+	visibility_map.clear()
+	exploration_map.clear()
 	
 	extralife_used = false
 	shop_visited = false
