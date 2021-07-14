@@ -1637,7 +1637,6 @@ func build_level():
 func update_visuals():
 	# convert tile coords into pixel coords
 	
-	# yield(get_tree(), "idle_frame")
 	player.position = player_tile * TILE_SIZE
 
 	# assuming we're not inside a room
