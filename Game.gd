@@ -170,6 +170,8 @@ class Enemy extends Reference:
 			
 			# drop item
 			
+			randomize()
+			
 			var r = randi() % 100
 			
 			if r >= 95:
@@ -178,7 +180,7 @@ class Enemy extends Reference:
 			elif r >= 75:
 				# drop a heart
 				game.items.append(Item.new(game, tile.x, tile.y, 16))
-			elif r >= 45:
+			elif r >= 55:
 				# drop a coin
 				game.items.append(Item.new(game, tile.x, tile.y, 18))
 	
@@ -262,6 +264,7 @@ onready var message_log = $CanvasLayer/MessageLog
 onready var intro_screen = $CanvasLayer/IntroScreens
 onready var settings_screen = $CanvasLayer/Settings
 onready var pause_screen = $CanvasLayer/Pause
+onready var title_screen = $CanvasLayer/Title
 onready var credits_screen = $CanvasLayer/Credits
 onready var stats_screen = $CanvasLayer/Stats
 onready var lose_screen = $CanvasLayer/Lose
@@ -352,7 +355,7 @@ func title_setup():
 	
 	game_state = "title"
 	player_name = "nobody"
-	$CanvasLayer/Title.visible = true
+	title_screen.visible = true
 	
 	# create move delay timer
 	move_timer = Timer.new()
@@ -575,6 +578,8 @@ func _input(event):
 	# start the game
 	if game_state == "title" && event.is_action("Start"):
 		game_state = "intro"
+		title_screen.visible = false
+		$CanvasLayer/FogBG.visible = false
 		intro_setup()
 		play_sfx(level_sound, snd_ui_select, 0.2, 0.4)
 		# TODO: BUG: DOM: here, make this work
@@ -589,6 +594,7 @@ func _input(event):
 		play_sfx(level_sound, snd_ui_select, 0.9, 1)
 		game_state = "credits"
 		credits_screen.visible = true
+		title_screen.visible = false
 		return
 		
 	# view stats
@@ -596,7 +602,7 @@ func _input(event):
 		play_sfx(level_sound, snd_ui_select, 0.9, 1)
 		game_state = "stats"
 		stats_screen.visible = true
-		
+		title_screen.visible = false
 		refresh_stats()
 		return
 		
@@ -604,6 +610,7 @@ func _input(event):
 	if game_state == "title" && event.is_action("Settings"):
 		play_sfx(level_sound, snd_ui_select, 0.9, 1)
 		game_state = "settings"
+		title_screen.visible = false
 		# print current settings
 		$CanvasLayer/Settings/Info.text = "Music is " + music_status + "\n"
 		$CanvasLayer/Settings/Info.text += "SFX are " + sfx_status + "\n"
@@ -619,6 +626,7 @@ func _input(event):
 		play_sfx(level_sound, snd_ui_back, 0.9, 1)
 		game_state = "title"
 		stats_screen.visible = false
+		title_screen.visible = true
 		return
 		
 	if game_state == "stats" && event.is_action("Restart"):
@@ -694,6 +702,8 @@ func _input(event):
 	if game_state == "lose" && event.is_action("Escape"):
 		play_sfx(level_sound, snd_ui_select, 0.3, 0.4)
 		lose_screen.visible = false
+		title_screen.visible = true
+		$CanvasLayer/FogBG.visible = true
 		title_setup()
 		return
 	
@@ -710,6 +720,8 @@ func _input(event):
 	if game_state == "win" && event.is_action("Escape"):
 		play_sfx(level_sound, snd_ui_select, 0.3, 0.4)
 		win_screen.visible = false
+		title_screen.visible = true
+		$CanvasLayer/FogBG.visible = true
 		title_setup()
 		return
 		
@@ -726,6 +738,8 @@ func _input(event):
 	if game_state == "truewin" && event.is_action("Escape"):
 		play_sfx(level_sound, snd_ui_select, 0.3, 0.4)
 		true_win_screen.visible = false
+		title_screen.visible = true
+		$CanvasLayer/FogBG.visible = true
 		title_setup()
 		return
 			
@@ -781,6 +795,7 @@ func _input(event):
 	if game_state == "pause" && event.is_action("Quit"):
 		play_sfx(level_sound, snd_ui_select, 0.3, 0.4)
 		pause_screen.visible = false
+		$CanvasLayer/FogBG.visible = true
 		title_setup()
 		return
 	# show/hide timer
@@ -797,6 +812,8 @@ func _input(event):
 		# resume the game
 		game_state = "title"
 		settings_screen.visible = false
+		title_screen.visible = true
+		$CanvasLayer/FogBG.visible = true
 		return
 	if game_state == "settings" && event.is_action("Toggle Music"):
 		toggle_setting("music")
@@ -818,6 +835,7 @@ func _input(event):
 		play_sfx(level_sound, snd_ui_back, 0.9, 1)
 		# back to title
 		game_state = "title"
+		title_screen.visible = true
 		credits_screen.visible = false
 		
 	# things we can do in the shop
@@ -1227,8 +1245,6 @@ func try_move(dx, dy):
 #				for slimestain in slimestains:
 #					if slimestain.position.x == x * TILE_SIZE && slimestain.position.y == y * TILE_SIZE:
 #						has_slimy_feet = true
-						
-				
 
 #				# leave slime trail where we were
 #				if player_status.slime.active == true:
@@ -1580,13 +1596,26 @@ func build_level():
 			
 	# place items
 	
-	var num_items = LEVEL_ITEM_COUNT[level_num] + 1
+	# guaranteed coins
+	
+	randomize()
+	
+	if level_progress > 2:
+		for _i in range(1):
+			var room = rooms[randi() % (rooms.size())]
+			var x = room.position.x + 1 + randi() % int(room.size.x - 2)
+			var y = room.position.y + 1 + randi() % int(room.size.y - 2)
+			items.append(Item.new(self, x, y, 18))
+		
+	# chance items
+	
+	var num_items = LEVEL_ITEM_COUNT[level_num]
 	for _i in range(num_items):
 		var room = rooms[randi() % (rooms.size())]
 		var x = room.position.x + 1 + randi() % int(room.size.x - 2)
 		var y = room.position.y + 1 + randi() % int(room.size.y - 2)
 		var r = randi() % 100
-		if r >= 70:
+		if r >= 66:
 			items.append(Item.new(self, x, y, 16))
 		else:
 			items.append(Item.new(self, x, y, 18))
@@ -1685,7 +1714,6 @@ func update_visuals():
 			if !occlusion:
 				# turn node visibility on
 				enemy.sprite_node.visible = true
-				
 				
 				if player_status.scaryface.active == true:
 					enemy.take_damage(self, player_status.scaryface.damage)
