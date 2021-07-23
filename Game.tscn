@@ -984,8 +984,8 @@ __meta__ = {
 [node name="Slot1" type="Sprite" parent="CanvasLayer/Shop"]
 position = Vector2( 120, 120 )
 texture = ExtResource( 1 )
-vframes = 8
 hframes = 8
+vframes = 8
 frame = 56
 
 [node name="Name" type="Label" parent="CanvasLayer/Shop/Slot1"]
@@ -1005,8 +1005,8 @@ __meta__ = {
 [node name="Slot2" type="Sprite" parent="CanvasLayer/Shop"]
 position = Vector2( 200, 120 )
 texture = ExtResource( 1 )
-vframes = 8
 hframes = 8
+vframes = 8
 frame = 56
 
 [node name="Name" type="Label" parent="CanvasLayer/Shop/Slot2"]
@@ -1026,8 +1026,8 @@ __meta__ = {
 [node name="Slot3" type="Sprite" parent="CanvasLayer/Shop"]
 position = Vector2( 280, 120 )
 texture = ExtResource( 1 )
-vframes = 8
 hframes = 8
+vframes = 8
 frame = 56
 
 [node name="Name" type="Label" parent="CanvasLayer/Shop/Slot3"]
@@ -1047,8 +1047,8 @@ __meta__ = {
 [node name="SelectedMarker" type="Sprite" parent="CanvasLayer/Shop"]
 position = Vector2( 120, 100 )
 texture = ExtResource( 1 )
-vframes = 16
 hframes = 16
+vframes = 16
 frame = 223
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="CanvasLayer/Shop/SelectedMarker"]
@@ -1648,4 +1648,5 @@ align = 1
 __meta__ = {
 "_edit_use_anchors_": false
 }
+
 [connection signal="animation_finished" from="Player/PlayerAnims" to="." method="_on_PlayerAnims_animation_finished"]
