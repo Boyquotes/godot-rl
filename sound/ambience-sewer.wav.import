@@ -1,0 +1,21 @@
+[remap]
+
+importer="wav"
+type="AudioStreamSample"
+path="res://.import/ambience-sewer.wav-173e80b6b80294abc620e4fc031fa042.sample"
+
+[deps]
+
+source_file="res://sound/ambience-sewer.wav"
+dest_files=[ "res://.import/ambience-sewer.wav-173e80b6b80294abc620e4fc031fa042.sample" ]
+
+[params]
+
+force/8_bit=false
+force/mono=true
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop=true
+compress/mode=0
